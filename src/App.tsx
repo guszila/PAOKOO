@@ -151,7 +151,7 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark text-neutral-900 dark:text-neutral-100 flex flex-col font-sans transition-colors">
+    <div className="min-h-screen bg-background-light dark:bg-background-dark text-neutral-900 dark:text-neutral-100 flex flex-col font-sans transition-colors overflow-x-hidden">
       <Header
         user={user}
         household={household}
