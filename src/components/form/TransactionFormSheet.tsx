@@ -33,6 +33,7 @@ interface TransactionFormSheetProps {
     note?: string;
     category?: string;
     date?: string;
+    time?: string;
     refNo?: string;
     slipThumbnail?: string;
     fullSlipBase64?: string;
@@ -61,6 +62,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
   const [note, setNote] = useState<string>('');
   const [category, setCategory] = useState<string>('อาหาร');
   const [date, setDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
+  const [time, setTime] = useState<string>('');
   const [refNo, setRefNo] = useState<string>('');
   const [slipThumbnail, setSlipThumbnail] = useState<string | undefined>();
   const [fullSlipBase64, setFullSlipBase64] = useState<string | undefined>();
@@ -84,6 +86,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
       setNote(initialTransaction.note || '');
       setCategory(initialTransaction.category || 'อื่นๆ');
       setDate(initialTransaction.date);
+      setTime(initialTransaction.time || '');
       setRefNo(initialTransaction.refNo || '');
       setSlipThumbnail(initialTransaction.slipThumbnail);
       setFullSlipBase64(undefined);
@@ -94,6 +97,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
       setNote(prefill.note || '');
       setCategory(prefill.category || categories[0] || 'อาหาร');
       setDate(prefill.date || new Date().toISOString().slice(0, 10));
+      setTime(prefill.time || new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false }));
       setRefNo(prefill.refNo || '');
       setSlipThumbnail(prefill.slipThumbnail);
       setFullSlipBase64(prefill.fullSlipBase64);
@@ -104,6 +108,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
       setNote('');
       setCategory(categories[0] || 'อาหาร');
       setDate(new Date().toISOString().slice(0, 10));
+      setTime(new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false }));
       setRefNo('');
       setSlipThumbnail(undefined);
       setFullSlipBase64(undefined);
@@ -166,6 +171,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
         note: note.trim(),
         category: type === 'out' ? category : undefined,
         date,
+        time: time.trim() || undefined,
         refNo: refNo.trim() || undefined,
         slipThumbnail: slipThumbnail || undefined,
         createdBy: initialTransaction?.createdBy || who.trim(),
@@ -329,62 +335,99 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
             />
           </div>
 
-          {/* Date & Scan Slip Row */}
-          <div className="grid grid-cols-2 gap-3 items-center">
-            <div>
-              <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300 block mb-1.5">
-                วันที่ทำรายการ
+          {/* Date & Time Row */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                วันที่และเวลาทำรายการ
               </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300 block mb-1.5">
-                สลิปโอนเงิน
-              </label>
-              {slipThumbnail ? (
-                <div className="flex items-center justify-between p-1.5 px-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-border-light dark:border-border-dark">
-                  <div className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={() => setIsViewerOpen(true)}>
-                    <img
-                      src={slipThumbnail}
-                      alt="สลิป"
-                      className="w-7 h-9 object-cover rounded-lg border border-border-light dark:border-border-dark shadow-sm"
-                    />
-                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium truncate hover:underline">
-                      ดูรูปสลิป
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSlipThumbnail(undefined);
-                      setFullSlipBase64(undefined);
-                    }}
-                    className="p-1 rounded-lg text-neutral-400 hover:text-red-500 transition-colors"
-                    title="ลบสลิปออก"
-                  >
-                    <X size={15} />
-                  </button>
-                </div>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  fullWidth
-                  onClick={() => onOpenScanner?.()}
-                  className="text-xs py-2"
-                >
-                  <Camera size={14} strokeWidth={1.5} className="mr-1 text-emerald-600 dark:text-emerald-400" />
-                  <span>สแกนสลิป</span>
-                </Button>
+              {time && (
+                <span className="text-[11px] text-neutral-400 font-mono">
+                  {time} น.
+                </span>
               )}
             </div>
+
+            <div className="grid grid-cols-5 gap-2">
+              {/* Date Input (3 cols) */}
+              <div className="col-span-3 min-w-0">
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100"
+                />
+              </div>
+
+              {/* Time Input (2 cols) */}
+              <div className="col-span-2 min-w-0">
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="w-full px-2.5 py-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100 text-center font-mono"
+                  placeholder="00:00"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Slip Attachment (Full Width) */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300 block">
+              สลิปโอนเงิน (หลักฐาน)
+            </label>
+            {slipThumbnail ? (
+              <div className="p-3 rounded-2xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark flex items-center justify-between gap-3 shadow-sm">
+                <div
+                  className="flex items-center gap-3 min-w-0 cursor-pointer group"
+                  onClick={() => setIsViewerOpen(true)}
+                >
+                  <img
+                    src={slipThumbnail}
+                    alt="สลิป"
+                    className="w-11 h-14 object-cover rounded-xl border border-border-light dark:border-border-dark shadow-sm group-hover:opacity-90 transition-opacity"
+                  />
+                  <div className="min-w-0">
+                    <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 block truncate">
+                      แนบสลิปเรียบร้อย
+                    </span>
+                    {refNo && (
+                      <span className="text-[10px] text-neutral-500 font-mono block truncate">
+                        Ref: {refNo}
+                      </span>
+                    )}
+                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium inline-block mt-0.5 group-hover:underline">
+                      แตะเพื่อดูสลิปขนาดเต็ม
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSlipThumbnail(undefined);
+                    setFullSlipBase64(undefined);
+                  }}
+                  className="p-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-red-500 transition-colors"
+                  title="ลบสลิปออก"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="md"
+                fullWidth
+                onClick={() => onOpenScanner?.()}
+                className="py-2.5 border-dashed hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 text-neutral-700 dark:text-neutral-300"
+              >
+                <Camera size={16} strokeWidth={1.5} className="mr-2 text-emerald-600 dark:text-emerald-400" />
+                <span>แตะเพื่อสแกนสลิป หรือเลือกรูปภาพ</span>
+              </Button>
+            )}
           </div>
 
           {/* Future Date Warning */}

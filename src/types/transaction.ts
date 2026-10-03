@@ -11,6 +11,8 @@ export interface Transaction {
   note: string;
   /** Date formatted as YYYY-MM-DD */
   date: string;
+  /** Time formatted as HH:mm (e.g. 12:31) */
+  time?: string;
   /** Expense Category (for type === 'out') e.g. 'อาหาร', 'เดินทาง', etc. */
   category?: string;
   /** Reference number from bank transfer slip (for duplicate check) */

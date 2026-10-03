@@ -84,6 +84,7 @@ export function App() {
     note?: string;
     category?: string;
     date?: string;
+    time?: string;
     refNo?: string;
     slipThumbnail?: string;
     fullSlipBase64?: string;
@@ -105,6 +106,7 @@ export function App() {
   const handleApplySlip = (data: {
     amountSatang: number;
     date: string;
+    time?: string;
     refNo: string;
     who: string;
     note: string;
@@ -118,6 +120,7 @@ export function App() {
       who: data.who || activeMembers[0] || '',
       note: data.note,
       date: data.date,
+      time: data.time,
       refNo: data.refNo,
       slipThumbnail: data.slipThumbnail,
       fullSlipBase64: data.fullSlipBase64,

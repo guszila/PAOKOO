@@ -14,6 +14,7 @@ interface SlipScannerModalProps {
   onApplySlip: (data: {
     amountSatang: number;
     date: string;
+    time?: string;
     refNo: string;
     who: string;
     note: string;
@@ -97,6 +98,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
     onApplySlip({
       amountSatang,
       date,
+      time: parsed.time,
       refNo,
       who,
       note,
@@ -263,9 +265,10 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
 
               <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border-light dark:border-border-dark">
                 <div>
-                  <span className="text-[10px] text-neutral-400 block">วันที่ทำรายการ</span>
+                  <span className="text-[10px] text-neutral-400 block">วันที่และเวลา</span>
                   <span className="font-semibold text-neutral-800 dark:text-neutral-200">
                     {scanResult.parsed.date || 'วันนี้'}
+                    {scanResult.parsed.time ? ` (${scanResult.parsed.time} น.)` : ''}
                   </span>
                 </div>
                 <div>

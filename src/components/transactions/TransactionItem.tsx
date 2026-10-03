@@ -97,7 +97,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
             )}
           </div>
           <div className="text-xs text-neutral-500 truncate mt-0.5">
-            {transaction.note ? transaction.note : 'ไม่มีบันทึก'} · {transaction.date}
+            {transaction.note ? transaction.note : 'ไม่มีบันทึก'} · {transaction.date}{transaction.time ? ` (${transaction.time} น.)` : ''}
           </div>
         </div>
       </div>
