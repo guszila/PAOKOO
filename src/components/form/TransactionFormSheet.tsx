@@ -237,7 +237,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                   setErrorMsg(null);
                 }}
                 placeholder="0.00"
-                className="w-full text-center text-4xl font-light tracking-tight bg-transparent text-neutral-900 dark:text-neutral-50 focus:outline-none tabular-nums placeholder:text-neutral-300 dark:placeholder:text-neutral-600"
+                className="w-full text-center text-4xl font-light tracking-tight bg-transparent text-neutral-900 dark:text-neutral-50 focus:outline-none tabular-nums placeholder:text-neutral-300 dark:placeholder:text-neutral-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0"
                 autoFocus={!initialTransaction && !prefill}
               />
             </div>
