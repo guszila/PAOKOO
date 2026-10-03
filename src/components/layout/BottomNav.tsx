@@ -16,24 +16,27 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 }) => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 pb-safe">
-      {/* 3-Part Seamless Background with Curved Center Notch */}
-      <div className="absolute inset-0 flex items-stretch pointer-events-none">
-        <div className="flex-1 bg-white dark:bg-[#1C1D22] border-t border-neutral-300 dark:border-neutral-700" />
-        <div className="w-[120px] relative shrink-0">
+      {/* 3-Part Seamless Background with Upward Curved Arch (Following Circular Button) */}
+      <div className="absolute inset-0 flex items-stretch pointer-events-none -top-[18px]">
+        {/* Left segment */}
+        <div className="flex-1 bg-white/95 dark:bg-[#1C1D22]/95 backdrop-blur-md border-t border-neutral-300 dark:border-neutral-700 mt-[18px]" />
+
+        {/* Center SVG Arch */}
+        <div className="w-[108px] h-[82px] relative shrink-0">
           <svg
             className="w-full h-full overflow-visible"
-            viewBox="0 0 120 64"
+            viewBox="0 0 108 82"
             preserveAspectRatio="none"
           >
-            {/* Notch Fill */}
+            {/* Arch Fill */}
             <path
-              d="M 0,0 L 14,0 C 32,0 40,46 60,46 C 80,46 88,0 106,0 L 120,0 L 120,64 L 0,64 Z"
+              d="M 0,18 L 18,18 C 30,18 38,2 54,2 C 70,2 78,18 90,18 L 108,18 L 108,82 L 0,82 Z"
               fill="currentColor"
               className="text-white dark:text-[#1C1D22]"
             />
-            {/* Notch Top Border */}
+            {/* Arch Top Border */}
             <path
-              d="M 0,0.75 L 14,0.75 C 32,0.75 40,46.75 60,46.75 C 80,46.75 88,0.75 106,0.75 L 120,0.75"
+              d="M 0,18.5 L 18,18.5 C 30,18.5 38,2.5 54,2.5 C 70,2.5 78,18.5 90,18.5 L 108,18.5"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.5"
@@ -41,7 +44,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             />
           </svg>
         </div>
-        <div className="flex-1 bg-white dark:bg-[#1C1D22] border-t border-neutral-300 dark:border-neutral-700" />
+
+        {/* Right segment */}
+        <div className="flex-1 bg-white/95 dark:bg-[#1C1D22]/95 backdrop-blur-md border-t border-neutral-300 dark:border-neutral-700 mt-[18px]" />
       </div>
 
       <div className="max-w-md mx-auto grid grid-cols-5 h-16 items-center px-1 relative">
