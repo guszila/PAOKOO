@@ -45,8 +45,8 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
       {/* 1. เงินเก็บคงเหลือ (Balance) */}
       <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-            <Wallet size={19} strokeWidth={1.5} />
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-emerald-50 via-emerald-50/90 to-emerald-100/80 dark:from-emerald-950/70 dark:to-emerald-900/40 border border-emerald-300/70 dark:border-emerald-700/50 shadow-[0_4px_12px_rgba(16,185,129,0.2)] dark:shadow-[0_4px_14px_rgba(16,185,129,0.25)] ring-1 ring-inset ring-white/80 dark:ring-white/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <Wallet size={20} strokeWidth={2} />
           </div>
           <div className="min-w-0">
             <div className="text-xs text-neutral-500">เงินเก็บคงเหลือ</div>
@@ -71,8 +71,8 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
           className="flex items-center justify-between gap-3 cursor-pointer select-none"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
-              <HandCoins size={19} strokeWidth={1.5} />
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-amber-50 via-amber-50/90 to-amber-100/80 dark:from-amber-950/70 dark:to-amber-900/40 border border-amber-300/70 dark:border-amber-700/50 shadow-[0_4px_12px_rgba(245,158,11,0.2)] dark:shadow-[0_4px_14px_rgba(245,158,11,0.25)] ring-1 ring-inset ring-white/80 dark:ring-white/10 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+              <HandCoins size={20} strokeWidth={2} />
             </div>
             <div className="min-w-0">
               <div className="text-xs text-neutral-500">เงินที่ให้ยืม / สำรองจ่าย</div>
@@ -140,8 +140,8 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
       {/* 3. ค่าใช้จ่ายเดือนนี้ (Expenses) */}
       <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
-            <ArrowUpRight size={19} strokeWidth={1.5} />
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-red-50 via-red-50/90 to-red-100/80 dark:from-red-950/70 dark:to-red-900/40 border border-red-300/70 dark:border-red-700/50 shadow-[0_4px_12px_rgba(239,68,68,0.2)] dark:shadow-[0_4px_14px_rgba(239,68,68,0.25)] ring-1 ring-inset ring-white/80 dark:ring-white/10 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
+            <ArrowUpRight size={20} strokeWidth={2} />
           </div>
           <div className="min-w-0">
             <div className="text-xs text-neutral-500">ค่าใช้จ่ายเดือนนี้</div>
@@ -166,8 +166,8 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
       {/* 4. เงินเข้าเดือนนี้ (Deposits) */}
       <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-            <ArrowDownLeft size={19} strokeWidth={1.5} />
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-emerald-50 via-emerald-50/90 to-emerald-100/80 dark:from-emerald-950/70 dark:to-emerald-900/40 border border-emerald-300/70 dark:border-emerald-700/50 shadow-[0_4px_12px_rgba(16,185,129,0.2)] dark:shadow-[0_4px_14px_rgba(16,185,129,0.25)] ring-1 ring-inset ring-white/80 dark:ring-white/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <ArrowDownLeft size={20} strokeWidth={2} />
           </div>
           <div className="min-w-0">
             <div className="text-xs text-neutral-500">เงินเข้าเดือนนี้</div>
