@@ -43,16 +43,25 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <span className="text-[10px] mt-1">รายการ</span>
         </button>
 
-        {/* Slot 3: Exact Center Floating Action Button (+) */}
+        {/* Slot 3: Exact Center Floating Action Button (+) - Prominent Elevated Design */}
         <div className="flex items-center justify-center h-full relative">
-          <button
-            onClick={onOpenAdd}
-            className="w-13 h-13 -translate-y-2.5 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-lg shadow-emerald-600/35 hover:scale-105 active:scale-95 transition-transform border-[3px] border-surface-light dark:border-surface-dark select-none"
-            aria-label="เพิ่มรายการ"
-            title="เพิ่มรายการ"
-          >
-            <Plus size={24} strokeWidth={2.5} />
-          </button>
+          <div className="relative -top-5">
+            {/* Ambient Glow Behind Button */}
+            <div className="absolute inset-0 rounded-full bg-emerald-500/30 blur-md transform scale-110 pointer-events-none" />
+
+            <button
+              onClick={onOpenAdd}
+              className="relative w-[58px] h-[58px] rounded-full bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-[0_10px_25px_-3px_rgba(16,185,129,0.5),0_4px_12px_rgba(0,0,0,0.12)] hover:shadow-[0_14px_30px_-3px_rgba(16,185,129,0.65)] hover:scale-105 active:scale-95 transition-all duration-200 border-[4px] border-surface-light dark:border-surface-dark select-none group"
+              aria-label="เพิ่มรายการ"
+              title="เพิ่มรายการ"
+            >
+              <Plus
+                size={28}
+                strokeWidth={2.75}
+                className="transition-transform duration-300 group-hover:rotate-90 group-active:scale-90"
+              />
+            </button>
+          </div>
         </div>
 
         {/* Tab 4: Analytics */}
