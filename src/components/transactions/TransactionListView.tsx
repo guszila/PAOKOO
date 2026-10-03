@@ -78,15 +78,16 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Filter and Count Summary */}
-      <div className="flex items-center justify-between px-1">
-        <span className="text-xs text-neutral-500 font-medium">
-          พบ {filtered.length} รายการ
-        </span>
-      </div>
-
       {/* Filters Card */}
-      <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-4 shadow-sm space-y-3">
+      <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-lg shadow-emerald-950/5 dark:shadow-none space-y-3.5">
+        <div className="flex items-center justify-between px-1">
+          <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+            ตัวกรองและค้นหา
+          </span>
+          <span className="text-xs text-neutral-500 font-medium">
+            พบ {filtered.length} จาก {transactions.length} รายการ
+          </span>
+        </div>
         <TransactionFilters
           selectedType={selectedType}
           onTypeChange={setSelectedType}

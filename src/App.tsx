@@ -208,7 +208,7 @@ export function App() {
         )}
 
         {activeTab === 'transactions' && (
-          <div className="relative -mt-6 space-y-3 z-20 animate-fade-in">
+          <div className="relative -mt-10 space-y-3 z-20 animate-fade-in">
             <TransactionListView
               transactions={activeTransactions}
               onSelectTx={handleSelectTx}
@@ -225,7 +225,7 @@ export function App() {
         )}
 
         {activeTab === 'analytics' && (
-          <div className="relative -mt-6 z-20">
+          <div className="relative -mt-10 z-20 animate-fade-in">
             <AnalyticsView
               transactions={activeTransactions}
               isMasked={isMasked}
@@ -234,7 +234,7 @@ export function App() {
         )}
 
         {activeTab === 'settings' && (
-          <div className="relative -mt-6 z-20 animate-fade-in">
+          <div className="relative -mt-10 z-20 animate-fade-in">
             <SettingsView
               transactions={activeTransactions}
               members={activeMembers}
