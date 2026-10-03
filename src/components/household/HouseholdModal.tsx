@@ -215,7 +215,7 @@ export const HouseholdModal: React.FC<HouseholdModalProps> = ({
                     type="text"
                     value={myName}
                     onChange={(e) => setMyName(e.target.value)}
-                    placeholder="เช่น บีม"
+                    placeholder="เช่น โฟกัส"
                     required
                     className="w-full px-3 py-2 bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none"
                   />
@@ -254,7 +254,7 @@ export const HouseholdModal: React.FC<HouseholdModalProps> = ({
                     type="text"
                     value={myName}
                     onChange={(e) => setMyName(e.target.value)}
-                    placeholder="เช่น กิ๊ฟ"
+                    placeholder="เช่น ต้นหยง"
                     required
                     className="w-full px-3 py-2 bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none"
                   />

@@ -9,94 +9,28 @@ const STORAGE_KEYS = {
   HIDE_AMOUNTS: 'paokoo_hide_amounts',
 };
 
-const DEFAULT_MEMBERS = ['บีม', 'กิ๊ฟ'];
-
-const DEFAULT_TRANSACTIONS: Transaction[] = [
-  {
-    id: 'tx-sample-1',
-    type: 'in',
-    amount: 1500000, // 15,000.00 THB
-    who: 'บีม',
-    note: 'เงินเดือนโอนเข้ากองกลาง',
-    date: new Date().toISOString().slice(0, 7) + '-01',
-    createdAt: new Date().toISOString(),
-    createdBy: 'บีม',
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'tx-sample-2',
-    type: 'in',
-    amount: 1500000, // 15,000.00 THB
-    who: 'กิ๊ฟ',
-    note: 'เงินเดือนโอนเข้ากองกลาง',
-    date: new Date().toISOString().slice(0, 7) + '-01',
-    createdAt: new Date().toISOString(),
-    createdBy: 'กิ๊ฟ',
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'tx-sample-3',
-    type: 'out',
-    amount: 245075, // 2,450.75 THB
-    who: 'กิ๊ฟ',
-    note: 'ซื้อของสดและของใช้เข้าบ้าน',
-    category: 'ของใช้',
-    date: new Date().toISOString().slice(0, 7) + '-03',
-    createdAt: new Date().toISOString(),
-    createdBy: 'กิ๊ฟ',
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'tx-sample-4',
-    type: 'lend',
-    amount: 150000, // 1,500.00 THB
-    who: 'สมชาย',
-    note: 'สำรองจ่ายค่าอะไหล่รถให้ก่อน',
-    date: new Date().toISOString().slice(0, 7) + '-05',
-    createdAt: new Date().toISOString(),
-    createdBy: 'บีม',
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'tx-sample-5',
-    type: 'lend',
-    amount: 60000, // 600.00 THB
-    who: 'พี่นก',
-    note: 'จ่ายค่าตั๋วหนังล่วงหน้า',
-    date: new Date().toISOString().slice(0, 7) + '-06',
-    createdAt: new Date().toISOString(),
-    createdBy: 'บีม',
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'tx-sample-6',
-    type: 'back',
-    amount: 50000, // 500.00 THB
-    who: 'สมชาย',
-    note: 'สมชายโอนคืนรอบแรก',
-    date: new Date().toISOString().slice(0, 7) + '-08',
-    createdAt: new Date().toISOString(),
-    createdBy: 'บีม',
-    updatedAt: new Date().toISOString(),
-  },
-];
+const DEFAULT_MEMBERS = ['โฟกัส', 'ต้นหยง'];
 
 export function getLocalTransactions(): Transaction[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
     if (!raw) {
-      saveLocalTransactions(DEFAULT_TRANSACTIONS);
-      return DEFAULT_TRANSACTIONS;
+      return [];
     }
     const parsed: Transaction[] = JSON.parse(raw);
+    // Auto-clean any dummy test/sample transactions
+    const cleaned = parsed.filter((tx) => !tx.id.startsWith('tx-sample-'));
+    if (cleaned.length !== parsed.length) {
+      saveLocalTransactions(cleaned);
+    }
     // Safe migration: ensure any old expenses without category default gracefully
-    return parsed.map((tx) => ({
+    return cleaned.map((tx) => ({
       ...tx,
       category: tx.type === 'out' ? (tx.category || 'อื่นๆ') : undefined,
     }));
   } catch (e) {
     console.error('Error reading transactions from localStorage:', e);
-    return DEFAULT_TRANSACTIONS;
+    return [];
   }
 }
 
@@ -115,7 +49,18 @@ export function getLocalMembers(): string[] {
       localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(DEFAULT_MEMBERS));
       return DEFAULT_MEMBERS;
     }
-    return JSON.parse(raw);
+    const parsed: string[] = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      // Migrate old dummy placeholder names ('บีม', 'กิ๊ฟ') to actual names
+      const m1 = parsed[0] === 'บีม' ? 'โฟกัส' : (parsed[0] || 'โฟกัส');
+      const m2 = parsed[1] === 'กิ๊ฟ' ? 'ต้นหยง' : (parsed[1] || 'ต้นหยง');
+      const updated = [m1, m2];
+      if (updated[0] !== parsed[0] || updated[1] !== parsed[1]) {
+        localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(updated));
+      }
+      return updated;
+    }
+    return DEFAULT_MEMBERS;
   } catch (e) {
     return DEFAULT_MEMBERS;
   }

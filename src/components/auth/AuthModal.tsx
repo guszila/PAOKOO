@@ -121,7 +121,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="เช่น บีม หรือ กิ๊ฟ"
+                  placeholder="เช่น โฟกัส หรือ ต้นหยง"
                   className="w-full pl-9 pr-3 py-2 bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none"
                 />
               </div>

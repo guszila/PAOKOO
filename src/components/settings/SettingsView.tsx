@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Transaction } from '../../types/transaction';
 import { Button } from '../common/Button';
 import { exportToJSON, exportToCSV, parseImportJSON } from '../../lib/export';
@@ -56,9 +56,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onResetData,
 }) => {
   const { theme, setTheme } = useTheme();
-  const [member1, setMember1] = useState(members[0] || 'บีม');
-  const [member2, setMember2] = useState(members[1] || 'กิ๊ฟ');
+  const [member1, setMember1] = useState(members[0] || 'โฟกัส');
+  const [member2, setMember2] = useState(members[1] || 'ต้นหยง');
   const [isSavedMembers, setIsSavedMembers] = useState(false);
+
+  useEffect(() => {
+    if (members[0]) setMember1(members[0]);
+    if (members[1]) setMember2(members[1]);
+  }, [members]);
 
   // New category input
   const [newCatInput, setNewCatInput] = useState('');
@@ -111,7 +116,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       onResetData();
       setShowResetModal(false);
       setConfirmInput('');
-      alert('รีเซ็ตข้อมูลทั้งหมดกลับเป็นชุดตัวอย่างเริ่มต้นเรียบร้อยแล้ว');
+      alert('ล้างข้อมูลรายการทั้งหมดเรียบร้อยแล้ว');
     }
   };
 
@@ -412,7 +417,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             รีเซ็ตข้อมูลเริ่มต้น
           </div>
           <div className="text-[11px] text-neutral-500">
-            ล้างข้อมูลและกลับเป็นชุดตัวอย่าง
+            ล้างข้อมูลรายการทั้งหมดและเริ่มต้นใหม่
           </div>
         </div>
         <Button
