@@ -1,0 +1,415 @@
+import React, { useState, useRef } from 'react';
+import { Transaction } from '../../types/transaction';
+import { Button } from '../common/Button';
+import { exportToJSON, exportToCSV, parseImportJSON } from '../../lib/export';
+import { APP_NAME, APP_SUBTITLE } from '../../config/app';
+import { MAX_CATEGORIES } from '../../config/categories';
+import {
+  Users,
+  Download,
+  Upload,
+  FileSpreadsheet,
+  Check,
+  RefreshCw,
+  Tag,
+  Plus,
+  X,
+  AlertTriangle,
+} from 'lucide-react';
+
+import { User } from 'firebase/auth';
+import { Household } from '../../types/household';
+
+interface SettingsViewProps {
+  transactions: Transaction[];
+  members: string[];
+  categories: string[];
+  user: User | null;
+  household: Household | null;
+  onOpenAuth: () => void;
+  onOpenHousehold: () => void;
+  onLogout: () => void;
+  onUpdateMembers: (newMembers: string[]) => void;
+  onAddCategory: (category: string) => void;
+  onDeleteCategory: (category: string) => void;
+  onImportData: (importedTxs: Transaction[], importedMembers?: string[], importedCategories?: string[]) => void;
+  onResetData: () => void;
+}
+
+export const SettingsView: React.FC<SettingsViewProps> = ({
+  transactions,
+  members,
+  categories,
+  user,
+  household,
+  onOpenAuth,
+  onOpenHousehold,
+  onLogout,
+  onUpdateMembers,
+  onAddCategory,
+  onDeleteCategory,
+  onImportData,
+  onResetData,
+}) => {
+  const [member1, setMember1] = useState(members[0] || 'บีม');
+  const [member2, setMember2] = useState(members[1] || 'กิ๊ฟ');
+  const [isSavedMembers, setIsSavedMembers] = useState(false);
+
+  // New category input
+  const [newCatInput, setNewCatInput] = useState('');
+
+  // Reset modal state
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [confirmInput, setConfirmInput] = useState('');
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSaveMembers = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!member1.trim() || !member2.trim()) return;
+    onUpdateMembers([member1.trim(), member2.trim()]);
+    setIsSavedMembers(true);
+    setTimeout(() => setIsSavedMembers(false), 2000);
+  };
+
+  const handleAddCategorySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = newCatInput.trim();
+    if (!trimmed) return;
+    onAddCategory(trimmed);
+    setNewCatInput('');
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const text = evt.target?.result as string;
+        const result = parseImportJSON(text);
+        if (confirm(`พบ ${result.transactions.length} รายการ ต้องการนำเข้าข้อมูลใช่หรือไม่?`)) {
+          onImportData(result.transactions, result.members, result.categories);
+          alert('นำเข้าข้อมูลสำเร็จแล้ว!');
+        }
+      } catch (err: any) {
+        alert('เกิดข้อผิดพลาดในการอ่านไฟล์: ' + err.message);
+      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+    reader.readAsText(file);
+  };
+
+  const handleExecuteReset = () => {
+    if (confirmInput === 'RESET' || confirmInput === 'รีเซ็ต') {
+      onResetData();
+      setShowResetModal(false);
+      setConfirmInput('');
+      alert('รีเซ็ตข้อมูลทั้งหมดกลับเป็นชุดตัวอย่างเริ่มต้นเรียบร้อยแล้ว');
+    }
+  };
+
+  return (
+    <div className="space-y-4 pb-12">
+      {/* App Info Card */}
+      <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-sm text-center">
+        <img
+          src="/paokoo-logo-dark.svg"
+          alt="PAOKOO Logo"
+          className="w-16 h-16 mx-auto object-contain drop-shadow-sm mb-2"
+        />
+        <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">{APP_NAME}</h2>
+        <p className="text-xs text-neutral-500 mt-0.5">{APP_SUBTITLE}</p>
+        <div className="inline-block mt-3 text-[11px] px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-200 dark:border-emerald-900/40">
+          บันทึกในอุปกรณ์ (Local-first)
+        </div>
+      </div>
+
+      {/* Two-User Cloud Sync Section */}
+      <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+              <Users size={16} strokeWidth={1.5} />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                ระบบซิงค์ 2 คน (บัญชีคู่)
+              </h3>
+              <p className="text-[11px] text-neutral-500">
+                {user ? `เข้าสู่ระบบด้วย: ${user.email}` : 'ใช้งานในเครื่อง (ยังไม่ได้เชื่อมต่อ)'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {user ? (
+          <div className="space-y-2 pt-1">
+            {household ? (
+              <div className="p-3 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">
+                    {household.name}
+                  </span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 font-medium">
+                    {household.isLocked ? 'ซิงค์ 2 คนเรียลไทม์' : 'รอคู่ของคุณ (1/2)'}
+                  </span>
+                </div>
+                <div className="text-[11px] text-neutral-600 dark:text-neutral-400">
+                  รหัสเชิญ: <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{household.inviteCode}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="p-3 rounded-2xl bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-xs text-amber-800 dark:text-amber-300">
+                ยังไม่ได้สร้างหรือเข้าร่วมบัญชีคู่
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" size="sm" fullWidth onClick={onOpenHousehold}>
+                {household ? 'จัดการบัญชีคู่ / ดูรหัส' : 'สร้างหรือเข้าร่วมบัญชีคู่'}
+              </Button>
+              <Button variant="outline" size="sm" onClick={onLogout} className="shrink-0 text-xs text-neutral-500">
+                ออกจากระบบ
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="pt-1">
+            <Button variant="primary" size="md" fullWidth onClick={onOpenAuth}>
+              เข้าสู่ระบบ / สมัครเพื่อซิงค์ 2 คน
+            </Button>
+          </div>
+        )}
+      </div>
+      <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-sm space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-300">
+            <Users size={14} strokeWidth={1.5} />
+          </div>
+          <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+            ชื่อสมาชิกบัญชีคู่ (2 คน)
+          </h3>
+        </div>
+
+        <form onSubmit={handleSaveMembers} className="space-y-3">
+          <div className="grid grid-cols-2 gap-2.5">
+            <div>
+              <label className="text-[11px] text-neutral-500 block mb-1">คนที่ 1</label>
+              <input
+                type="text"
+                value={member1}
+                onChange={(e) => setMember1(e.target.value)}
+                className="w-full px-3 py-2 bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] text-neutral-500 block mb-1">คนที่ 2</label>
+              <input
+                type="text"
+                value={member2}
+                onChange={(e) => setMember2(e.target.value)}
+                className="w-full px-3 py-2 bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <Button type="submit" variant="secondary" size="sm" fullWidth>
+            {isSavedMembers ? (
+              <>
+                <Check size={14} className="text-emerald-500 mr-1" />
+                <span>บันทึกชื่อเรียบร้อย</span>
+              </>
+            ) : (
+              'บันทึกชื่อสมาชิก'
+            )}
+          </Button>
+        </form>
+      </div>
+
+      {/* Expense Categories Manager */}
+      <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-red-100 dark:bg-red-950/40 flex items-center justify-center text-red-600 dark:text-red-400">
+              <Tag size={14} strokeWidth={1.5} />
+            </div>
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+              หมวดหมู่รายจ่าย ({categories.length}/{MAX_CATEGORIES})
+            </h3>
+          </div>
+          <span className="text-[11px] text-neutral-400">สูงสุด 12 หมวด</span>
+        </div>
+
+        {/* Existing Categories Chips */}
+        <div className="flex items-center gap-1.5 flex-wrap pt-1">
+          {categories.map((cat) => (
+            <div
+              key={cat}
+              className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-xl bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark text-neutral-800 dark:text-neutral-200"
+            >
+              <span>{cat}</span>
+              {categories.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => onDeleteCategory(cat)}
+                  className="text-neutral-400 hover:text-red-500 p-0.5 rounded-full"
+                  title={`ลบหมวด ${cat}`}
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Add Category Form */}
+        {categories.length < MAX_CATEGORIES && (
+          <form onSubmit={handleAddCategorySubmit} className="flex items-center gap-2 pt-1">
+            <input
+              type="text"
+              value={newCatInput}
+              onChange={(e) => setNewCatInput(e.target.value)}
+              placeholder="เพิ่มหมวดใหม่..."
+              className="flex-1 px-3 py-2 bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none"
+            />
+            <Button type="submit" size="sm" variant="secondary" className="shrink-0 text-xs">
+              <Plus size={13} className="mr-0.5" />
+              <span>เพิ่ม</span>
+            </Button>
+          </form>
+        )}
+      </div>
+
+      {/* Backup & Export Options */}
+      <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-sm space-y-3">
+        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+          สำรองข้อมูลและการส่งออก
+        </h3>
+
+        <div className="space-y-2">
+          {/* Export JSON */}
+          <Button
+            variant="outline"
+            fullWidth
+            onClick={() => exportToJSON(transactions, members, categories)}
+            className="justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <Download size={16} strokeWidth={1.5} />
+              <span>สำรองข้อมูลเป็นไฟล์ JSON</span>
+            </div>
+            <span className="text-[11px] text-neutral-400">.json</span>
+          </Button>
+
+          {/* Import JSON */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept=".json"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+          <Button
+            variant="outline"
+            fullWidth
+            onClick={() => fileInputRef.current?.click()}
+            className="justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <Upload size={16} strokeWidth={1.5} />
+              <span>นำเข้าข้อมูลสำรอง (Restore JSON)</span>
+            </div>
+            <span className="text-[11px] text-neutral-400">เลือกไฟล์</span>
+          </Button>
+
+          {/* Export CSV */}
+          <Button
+            variant="outline"
+            fullWidth
+            onClick={() => exportToCSV(transactions)}
+            className="justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <FileSpreadsheet size={16} strokeWidth={1.5} />
+              <span>ส่งออกไฟล์ตาราง Excel / CSV</span>
+            </div>
+            <span className="text-[11px] text-neutral-400">.csv</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Danger Zone: Reset with Type to Confirm Modal */}
+      <div className="p-4 rounded-3xl bg-red-50/50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 flex items-center justify-between">
+        <div>
+          <div className="text-xs font-semibold text-red-600 dark:text-red-400">
+            รีเซ็ตข้อมูลเริ่มต้น
+          </div>
+          <div className="text-[11px] text-neutral-500">
+            ล้างข้อมูลและกลับเป็นชุดตัวอย่าง
+          </div>
+        </div>
+        <Button
+          size="sm"
+          variant="danger"
+          onClick={() => {
+            setConfirmInput('');
+            setShowResetModal(true);
+          }}
+          className="text-xs"
+        >
+          <RefreshCw size={13} className="mr-1" />
+          รีเซ็ตข้อมูล
+        </Button>
+      </div>
+
+      {/* Type-To-Confirm Reset Modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowResetModal(false)} />
+          <div className="relative w-full max-w-sm bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-2xl z-10 space-y-4 animate-fade-in">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-red-100 dark:bg-red-950/50 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
+                <AlertTriangle size={22} strokeWidth={1.5} />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+                  ยืนยันการรีเซ็ตข้อมูล
+                </h4>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1 leading-relaxed">
+                  การกระทำนี้จะล้างธุรกรรมทั้งหมดและคืนค่าเริ่มต้น เพื่อยืนยัน กรุณาพิมพ์คำว่า <b className="text-red-600 dark:text-red-400 font-mono">รีเซ็ต</b> หรือ <b className="text-red-600 dark:text-red-400 font-mono">RESET</b> ในช่องด้านล่าง
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <input
+                type="text"
+                value={confirmInput}
+                onChange={(e) => setConfirmInput(e.target.value)}
+                placeholder="พิมพ์ รีเซ็ต หรือ RESET เพื่อยืนยัน"
+                className="w-full px-3.5 py-2.5 bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <Button variant="secondary" fullWidth onClick={() => setShowResetModal(false)}>
+                ยกเลิก
+              </Button>
+              <Button
+                variant="danger"
+                fullWidth
+                disabled={confirmInput !== 'RESET' && confirmInput !== 'รีเซ็ต'}
+                onClick={handleExecuteReset}
+              >
+                ยืนยันการรีเซ็ต
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

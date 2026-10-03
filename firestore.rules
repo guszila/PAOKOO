@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isHouseholdMember(householdId) {
+      return isAuthenticated() && 
+        request.auth.uid in get(/databases/$(database)/documents/households/$(householdId)).data.members;
+    }
+
+    // Household document
+    match /households/{householdId} {
+      // Members can read, or any authenticated user can read if they have invite code
+      allow read: if isAuthenticated() && (
+        resource.data.inviteCode != null || request.auth.uid in resource.data.members
+      );
+      
+      // Creating household: must have exactly 1 member which is creator
+      allow create: if isAuthenticated() && 
+        request.resource.data.members.size() == 1 && 
+        request.resource.data.members[0] == request.auth.uid;
+      
+      // Updating household: either existing member updates, OR second member joins
+      allow update: if isAuthenticated() && (
+        (request.auth.uid in resource.data.members) ||
+        (resource.data.members.size() == 1 && 
+         request.resource.data.members.size() == 2 && 
+         request.resource.data.members[1] == request.auth.uid &&
+         request.resource.data.isLocked == true)
+      );
+    }
+
+    // Transactions subcollection
+    match /households/{householdId}/transactions/{transactionId} {
+      allow read, delete: if isHouseholdMember(householdId);
+      allow create, update: if isHouseholdMember(householdId) &&
+        request.resource.data.amount is int &&
+        request.resource.data.amount > 0 &&
+        request.resource.data.type in ['in', 'out', 'lend', 'back'] &&
+        request.resource.data.date.matches('^\\d{4}-\\d{2}-\\d{2}$') &&
+        (request.resource.data.slipThumbnail == null || request.resource.data.slipThumbnail.size() < 60000);
+    }
+
+    // High-resolution slip images (separate collection, max 600KB base64)
+    match /households/{householdId}/slips/{transactionId} {
+      allow read, delete: if isHouseholdMember(householdId);
+      allow create, update: if isHouseholdMember(householdId) &&
+        request.resource.data.imageData.size() < 800000;
+    }
+
+    // Invite codes lookup
+    match /invites/{code} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+    }
+  }
+}
