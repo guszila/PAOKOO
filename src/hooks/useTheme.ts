@@ -18,6 +18,12 @@ export function useTheme() {
       } else {
         root.classList.remove('dark');
       }
+
+      // Update meta theme-color for seamless iOS & Android status bar color matching
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) {
+        meta.setAttribute('content', isDark ? '#022c22' : '#047857');
+      }
     };
 
     applyTheme();

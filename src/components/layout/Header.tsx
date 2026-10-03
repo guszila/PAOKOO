@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { APP_NAME } from '../../config/app';
-import { Sun, Moon, Users, Receipt, PieChart, Settings, Clock } from 'lucide-react';
-import { useTheme } from '../../hooks/useTheme';
+import { Receipt, PieChart, Settings, Clock } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { Household } from '../../types/household';
 import { TabType } from './BottomNav';
@@ -26,12 +25,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAuth,
   onOpenHousehold,
 }) => {
-  const { theme, setTheme } = useTheme();
-
-  const toggleTheme = () => {
-    if (theme === 'dark') setTheme('light');
-    else setTheme('dark');
-  };
 
   const handleSyncChipClick = () => {
     if (!user) {
@@ -86,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({
   }, [activeTab, household, user, totalTransactions, latestDate]);
 
   return (
-    <header className="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-900 dark:from-emerald-950 dark:via-teal-950 dark:to-neutral-900 text-white px-5 pt-[max(env(safe-area-inset-top,0px)+18px,60px)] pb-14 transition-all overflow-hidden shadow-sm">
+    <header className="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-900 dark:from-emerald-950 dark:via-teal-950 dark:to-neutral-900 text-white px-5 pt-[max(env(safe-area-inset-top,0px)+6px,38px)] pb-12 transition-all overflow-hidden shadow-sm">
       {/* Background ambient concentric rings & glows (matching Image 2 aesthetic) */}
       <div className="absolute -top-16 -right-16 w-80 h-80 rounded-full border border-white/10 pointer-events-none" />
       <div className="absolute -top-6 -right-6 w-56 h-56 rounded-full border border-white/10 pointer-events-none" />
@@ -94,39 +87,16 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="absolute -top-10 -right-10 w-64 h-64 bg-emerald-400/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-28 -left-14 w-48 h-48 bg-teal-300/10 rounded-full blur-2xl pointer-events-none" />
 
-      <div className="max-w-md mx-auto relative z-10 space-y-3.5">
-        {/* Top row: Icon Badge on the left, Utility buttons on the right (safely below Dynamic Island) */}
+      <div className="max-w-md mx-auto relative z-10 space-y-3">
+        {/* Top row: Icon Badge */}
         <div className="flex items-center justify-between">
-          {/* Badge Icon in sleek rounded-2xl glassmorphism box (just like Image 2) */}
-          <div className="w-12 h-12 shrink-0 rounded-2xl bg-white/15 dark:bg-white/10 backdrop-blur-xl border border-white/25 flex items-center justify-center shadow-lg shadow-black/10">
+          {/* Badge Icon in sleek rounded-2xl glassmorphism box */}
+          <div className="w-11 h-11 shrink-0 rounded-2xl bg-white/15 dark:bg-white/10 backdrop-blur-xl border border-white/25 flex items-center justify-center shadow-lg shadow-black/10">
             {headerContent.icon}
-          </div>
-
-          {/* Action buttons on the right edge */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleSyncChipClick}
-              className="h-9 px-3 rounded-full flex items-center gap-1.5 text-xs text-white/95 bg-white/15 hover:bg-white/25 border border-white/20 backdrop-blur-md transition-all active:scale-95 shadow-sm"
-              title="จัดการบัญชีคู่"
-            >
-              <Users size={14} strokeWidth={1.75} />
-              <span className="text-[11px] font-medium">
-                {household ? (household.isLocked ? 'บัญชีคู่' : 'รอคู่') : 'เชื่อมต่อ'}
-              </span>
-            </button>
-
-            <button
-              onClick={toggleTheme}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-white/95 bg-white/15 hover:bg-white/25 border border-white/20 backdrop-blur-md transition-all active:scale-95 shadow-sm"
-              title="สลับธีม สว่าง/มืด"
-              aria-label="สลับธีม สว่าง/มืด"
-            >
-              {theme === 'dark' ? <Sun size={15} strokeWidth={1.75} /> : <Moon size={15} strokeWidth={1.75} />}
-            </button>
           </div>
         </div>
 
-        {/* Large Bold Title & Subtitle (Faithful to Image 2 "Market Overview") */}
+        {/* Large Bold Title & Subtitle */}
         <div className="pt-0.5">
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-tight">
             {headerContent.title}

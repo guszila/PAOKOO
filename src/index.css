@@ -6,6 +6,14 @@
   color-scheme: light dark;
 }
 
+html {
+  background-color: #047857; /* Matches top header emerald gradient start to eliminate black status bar gap */
+}
+
+html.dark {
+  background-color: #022c22; /* Matches dark header emerald gradient start */
+}
+
 /* Hide scrollbars globally across all browsers while preserving scrollability */
 *,
 *::before,

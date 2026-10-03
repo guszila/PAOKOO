@@ -15,10 +15,14 @@ import {
   Plus,
   X,
   AlertTriangle,
+  Sun,
+  Moon,
+  Laptop,
 } from 'lucide-react';
 
 import { User } from 'firebase/auth';
 import { Household } from '../../types/household';
+import { useTheme } from '../../hooks/useTheme';
 
 interface SettingsViewProps {
   transactions: Transaction[];
@@ -51,6 +55,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onImportData,
   onResetData,
 }) => {
+  const { theme, setTheme } = useTheme();
   const [member1, setMember1] = useState(members[0] || 'บีม');
   const [member2, setMember2] = useState(members[1] || 'กิ๊ฟ');
   const [isSavedMembers, setIsSavedMembers] = useState(false);
@@ -123,6 +128,66 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <p className="text-xs text-neutral-500 mt-0.5">{APP_SUBTITLE}</p>
         <div className="inline-block mt-3 text-[11px] px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-200 dark:border-emerald-900/40">
           บันทึกในอุปกรณ์ (Local-first)
+        </div>
+      </div>
+
+      {/* Theme & Appearance Section */}
+      <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-950/40 flex items-center justify-center text-amber-600 dark:text-amber-400">
+              <Sun size={16} strokeWidth={1.75} />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                ธีมและการแสดงผล
+              </h3>
+              <p className="text-[11px] text-neutral-500">
+                เลือกโหมดสว่าง โหมดมืด หรือปรับตามระบบ
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 pt-1">
+          <button
+            type="button"
+            onClick={() => setTheme('light')}
+            className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl border text-xs font-medium transition-all ${
+              theme === 'light'
+                ? 'bg-amber-500/15 border-amber-500 text-amber-700 dark:text-amber-300 shadow-sm'
+                : 'bg-surfaceElevated-light dark:bg-surfaceElevated-dark border-border-light dark:border-border-dark text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
+            }`}
+          >
+            <Sun size={15} />
+            <span>สว่าง</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTheme('dark')}
+            className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl border text-xs font-medium transition-all ${
+              theme === 'dark'
+                ? 'bg-emerald-500/15 border-emerald-500 text-emerald-700 dark:text-emerald-300 shadow-sm'
+                : 'bg-surfaceElevated-light dark:bg-surfaceElevated-dark border-border-light dark:border-border-dark text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
+            }`}
+          >
+            <Moon size={15} />
+            <span>มืด</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTheme('system')}
+            className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl border text-xs font-medium transition-all ${
+              theme === 'system'
+                ? 'bg-blue-500/15 border-blue-500 text-blue-700 dark:text-blue-300 shadow-sm'
+                : 'bg-surfaceElevated-light dark:bg-surfaceElevated-dark border-border-light dark:border-border-dark text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
+            }`}
+          >
+            <Laptop size={15} />
+            <span>ตามระบบ</span>
+          </button>
         </div>
       </div>
 
