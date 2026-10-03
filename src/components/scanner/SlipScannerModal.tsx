@@ -5,6 +5,7 @@ import { Camera, Image as ImageIcon, AlertTriangle, RefreshCw, ArrowRight, Shiel
 import { scanBankSlip, ScanProgressUpdate, ScanSlipResult } from '../../lib/slip/scannerService';
 import { Transaction } from '../../types/transaction';
 import { formatSatang } from '../../lib/money';
+import { formatSlipDisplayDate } from '../../lib/slip/slipParser';
 
 interface SlipScannerModalProps {
   isOpen: boolean;
@@ -267,8 +268,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
                 <div>
                   <span className="text-[10px] text-neutral-400 block">วันที่และเวลา</span>
                   <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                    {scanResult.parsed.date || 'วันนี้'}
-                    {scanResult.parsed.time ? ` (${scanResult.parsed.time} น.)` : ''}
+                    {formatSlipDisplayDate(scanResult.parsed.date, scanResult.parsed.time)}
                   </span>
                 </div>
                 <div>

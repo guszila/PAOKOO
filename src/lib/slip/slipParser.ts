@@ -16,40 +16,75 @@ export interface ParsedSlipData {
   confidence: number;
 }
 
-const THAI_MONTH_MAP: Record<string, string> = {
-  'ม.ค.': '01', 'มกราคม': '01', 'มกรา': '01',
-  'ก.พ.': '02', 'กุมภาพันธ์': '02', 'กุมภา': '02',
-  'มี.ค.': '03', 'มีนาคม': '03', 'มีนา': '03',
-  'เม.ย.': '04', 'เมษายน': '04', 'เมษา': '04',
-  'พ.ค.': '05', 'พฤษภาคม': '05', 'พฤษภา': '05',
-  'มิ.ย.': '06', 'มิถุนายน': '06', 'มิถุนา': '06',
-  'ก.ค.': '07', 'กรกฎาคม': '07', 'กรกฎา': '07',
-  'ส.ค.': '08', 'สิงหาคม': '08', 'สิงหา': '08',
-  'ก.ย.': '09', 'กันยายน': '09', 'กันยา': '09',
-  'ต.ค.': '10', 'ตุลาคม': '10', 'ตุลา': '10',
-  'พ.ย.': '11', 'พฤศจิกายน': '11', 'พฤศจิกา': '11',
-  'ธ.ค.': '12', 'ธันวาคม': '12', 'ธันวา': '12',
+/**
+ * Comprehensive lookup dictionary for Thai and English months, abbreviations, and frequent OCR misreads
+ */
+export const THAI_MONTH_LOOKUP: Record<string, string> = {
+  // Jan (มกราคม / ม.ค.)
+  'มกราคม': '01', 'มกรา': '01', 'ม.ค.': '01', 'ม.ค': '01', 'มค': '01', 'ม,ค': '01',
+  'jan': '01', 'january': '01', 'un': '01', 'u.n.': '01',
+
+  // Feb (กุมภาพันธ์ / ก.พ.)
+  'กุมภาพันธ์': '02', 'กุมภา': '02', 'ก.พ.': '02', 'ก.พ': '02', 'กพ': '02', 'ก,พ': '02',
+  'feb': '02', 'february': '02', 'nw': '02', 'n.w.': '02',
+
+  // Mar (มีนาคม / มี.ค.)
+  'มีนาคม': '03', 'มีนา': '03', 'มี.ค.': '03', 'มี.ค': '03', 'มีค': '03', 'มี,ค': '03',
+  'mar': '03', 'march': '03',
+
+  // Apr (เมษายน / เม.ย.)
+  'เมษายน': '04', 'เมษา': '04', 'เม.ย.': '04', 'เม.ย': '04', 'เมย': '04', 'เม,ย': '04',
+  'apr': '04', 'april': '04',
+
+  // May (พฤษภาคม / พ.ค.)
+  'พฤษภาคม': '05', 'พฤษภา': '05', 'พ.ค.': '05', 'พ.ค': '05', 'พค': '05', 'พ,ค': '05',
+  'may': '05',
+
+  // Jun (มิถุนายน / มิ.ย.)
+  'มิถุนายน': '06', 'มิถุนา': '06', 'มิ.ย.': '06', 'มิ.ย': '06', 'มิย': '06', 'มิ,ย': '06',
+  'jun': '06', 'june': '06',
+
+  // Jul (กรกฎาคม / ก.ค.)
+  'กรกฎาคม': '07', 'กรกฎา': '07', 'ก.ค.': '07', 'ก.ค': '07', 'กค': '07', 'ก,ค': '07',
+  'jul': '07', 'july': '07',
+
+  // Aug (สิงหาคม / ส.ค.)
+  'สิงหาคม': '08', 'สิงหา': '08', 'ส.ค.': '08', 'ส.ค': '08', 'สค': '08', 'ส,ค': '08',
+  'aug': '08', 'august': '08',
+
+  // Sep (กันยายน / ก.ย.) - very common in test slips
+  'กันยายน': '09', 'กันยา': '09', 'ก.ย.': '09', 'ก.ย': '09', 'กย': '09', 'ก,ย': '09',
+  'sep': '09', 'sept': '09', 'september': '09',
+  // OCR typos for ก.ย.
+  'ถุย': '09', 'กุย': '09', 'ne': '09', 'ne.': '09', 'n.e.': '09', 'n.e': '09',
+  'nย': '09', 'n.ย.': '09', 'ก.น.': '09', 'nu': '09', 'ny': '09',
+
+  // Oct (ตุลาคม / ต.ค.)
+  'ตุลาคม': '10', 'ตุลา': '10', 'ต.ค.': '10', 'ต.ค': '10', 'ตค': '10', 'ต,ค': '10',
+  'oct': '10', 'october': '10',
+
+  // Nov (พฤศจิกายน / พ.ย.)
+  'พฤศจิกายน': '11', 'พฤศจิกา': '11', 'พ.ย.': '11', 'พ.ย': '11', 'พย': '11', 'พ,ย': '11',
+  'nov': '11', 'november': '11',
+
+  // Dec (ธันวาคม / ธ.ค.)
+  'ธันวาคม': '12', 'ธันวา': '12', 'ธ.ค.': '12', 'ธ.ค': '12', 'ธค': '12', 'ธ,ค': '12',
+  'dec': '12', 'december': '12',
 };
 
-// Also support common OCR typos in Thai month abbreviations
-const THAI_MONTH_OCR_TYPOS: Record<string, string> = {
-  'ถุย': '09', // OCR often misreads ก.ย. as ถุย or กุย
-  'กุย': '09',
-  'ne': '09',  // OCR in eng mode often misreads ก.ย. as ne
-  'n.ย.': '09',
-  'ก.ย': '09',
-  'ต.ค': '10',
-  'ม.ค': '01',
-  'ก.พ': '02',
-  'มี.ค': '03',
-  'เม.ย': '04',
-  'พ.ค': '05',
-  'มิ.ย': '06',
-  'ก.ค': '07',
-  'ส.ค': '08',
-  'พ.ย': '11',
-  'ธ.ค': '12',
-};
+/**
+ * Normalizes and matches month token against dictionary
+ */
+export function matchMonthToken(raw: string): string | undefined {
+  const clean = raw.trim().toLowerCase().replace(/^[^\wก-๙]+|[^\wก-๙]+$/g, '');
+  if (!clean) return undefined;
+  if (THAI_MONTH_LOOKUP[clean]) return THAI_MONTH_LOOKUP[clean];
+  if (THAI_MONTH_LOOKUP[clean + '.']) return THAI_MONTH_LOOKUP[clean + '.'];
+  for (const [key, val] of Object.entries(THAI_MONTH_LOOKUP)) {
+    if (clean === key || clean.includes(key)) return val;
+  }
+  return undefined;
+}
 
 /**
  * Parses OCR extracted text and optional QR code verification payload into structured slip data
@@ -98,8 +133,8 @@ export function parseSlipText(
     result.confidence += 35;
   }
 
-  // 4. Extract Date & Time
-  const dateTime = extractSlipDateTime(ocrText);
+  // 4. Extract Date & Time (passing refNo for smart cross-validation)
+  const dateTime = extractSlipDateTime(ocrText, result.refNo);
   if (dateTime.date) {
     result.date = dateTime.date;
     result.time = dateTime.time;
@@ -162,41 +197,65 @@ export function extractSlipAmount(text: string): number | undefined {
 }
 
 /**
- * Extracts Date & Time with Buddhist Era (พ.ศ.) to Gregorian conversion
+ * Extracts Time in HH:mm format from slip text
  */
-export function extractSlipDateTime(text: string): { date?: string; time?: string } {
-  // Regex 1: "30 ก.ย. 2569 21:44" or "30 ก.ย. 69 12:31" or "30 กันยายน 2569"
-  const thaiDateRegex = /(\d{1,2})\s+([^\s\d]{2,12})\s+(\d{2,4})(?:\s+(\d{1,2}:\d{2}))?/;
+export function extractSlipTime(text: string): string | undefined {
+  // 1. Time with colon: "12:31", "21:44", "09:05:22"
+  const colonMatch = text.match(/\b([01]?\d|2[0-3])[:]([0-5]\d)(?::[0-5]\d)?\b/);
+  if (colonMatch) {
+    const hh = colonMatch[1].padStart(2, '0');
+    const mm = colonMatch[2];
+    return `${hh}:${mm}`;
+  }
+
+  // 2. 4-digit time glued to Thai น. or OCR misread: "12314.", "1231น.", "1231 น.", "1231w."
+  const gluedThaiMatch = text.match(/\b([01]?\d|2[0-3])([0-5]\d)\s*(?:น\.?|[4wuv]\.)/i);
+  if (gluedThaiMatch) {
+    const hh = gluedThaiMatch[1].padStart(2, '0');
+    const mm = gluedThaiMatch[2];
+    return `${hh}:${mm}`;
+  }
+
+  // 3. Time with dot and Thai น. or OCR artifacts: "12.31 น.", "12.31 4."
+  const dotThaiMatch = text.match(/\b([01]?\d|2[0-3])[\.]([0-5]\d)\s*(?:น\.?|[4wuv]\.|\b)/i);
+  if (dotThaiMatch) {
+    const hh = dotThaiMatch[1].padStart(2, '0');
+    const mm = dotThaiMatch[2];
+    return `${hh}:${mm}`;
+  }
+
+  // 4. 4 digits right after year (e.g. "69 1231" or "2569 1231")
+  const afterYearMatch = text.match(/(?:25\d{2}|20\d{2}|\b[567]\d)\s+([01]\d|2[0-3])([0-5]\d)\b/);
+  if (afterYearMatch) {
+    const hh = afterYearMatch[1];
+    const mm = afterYearMatch[2];
+    return `${hh}:${mm}`;
+  }
+
+  return undefined;
+}
+
+/**
+ * Extracts Date in YYYY-MM-DD format from slip text
+ */
+export function extractSlipDate(text: string): string | undefined {
+  // Regex A: "30 ก.ย. 2569", "30 ne. 69", "30-Sep-2026", "30ก.ย.69"
+  const thaiDateRegex = /(\d{1,2})\s*[\s\.\-\/]?\s*([^\s\d\n]{2,15})\s*[\s\.\-\/]?\s*(\d{2,4})/;
   const match = text.match(thaiDateRegex);
 
   if (match) {
     const day = parseInt(match[1], 10);
-    const rawMonth = match[2].trim().replace(/\.$/, '');
+    const monthStr = matchMonthToken(match[2]);
     const rawYear = parseInt(match[3], 10);
-    const time = match[4];
-
-    let monthStr = THAI_MONTH_MAP[rawMonth] || THAI_MONTH_MAP[rawMonth + '.'];
-    if (!monthStr) {
-      // Check OCR typo table
-      for (const [typo, m] of Object.entries(THAI_MONTH_OCR_TYPOS)) {
-        if (rawMonth.includes(typo)) {
-          monthStr = m;
-          break;
-        }
-      }
-    }
 
     if (monthStr && day >= 1 && day <= 31) {
       const gregorianYear = convertBuddhistToGregorianYear(rawYear);
       const dayStr = day.toString().padStart(2, '0');
-      return {
-        date: `${gregorianYear}-${monthStr}-${dayStr}`,
-        time: time || undefined,
-      };
+      return `${gregorianYear}-${monthStr}-${dayStr}`;
     }
   }
 
-  // Regex 2: Standard numeric date "DD/MM/YYYY" or "YYYY-MM-DD"
+  // Regex B: Standard numeric date "DD/MM/YYYY", "DD-MM-YYYY", "DD.MM.YYYY"
   const numericMatch = text.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
   if (numericMatch) {
     const d = parseInt(numericMatch[1], 10);
@@ -204,13 +263,131 @@ export function extractSlipDateTime(text: string): { date?: string; time?: strin
     const y = parseInt(numericMatch[3], 10);
     if (d >= 1 && d <= 31 && m >= 1 && m <= 12) {
       const year = convertBuddhistToGregorianYear(y);
+      return `${year}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+    }
+  }
+
+  // Regex C: ISO date "YYYY-MM-DD"
+  const isoMatch = text.match(/\b(20\d{2}|25\d{2})[\/\-](\d{1,2})[\/\-](\d{1,2})\b/);
+  if (isoMatch) {
+    const y = parseInt(isoMatch[1], 10);
+    const m = parseInt(isoMatch[2], 10);
+    const d = parseInt(isoMatch[3], 10);
+    if (d >= 1 && d <= 31 && m >= 1 && m <= 12) {
+      const year = convertBuddhistToGregorianYear(y);
+      return `${year}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Decodes transaction timestamp embedded in bank reference numbers:
+ * 1. KBank PromptPay/Slip Ref: 01 + Y (year digit, e.g. 6 = 2026) + DDD (day of year 001-366) + HHmm (time)
+ *    Example: 016273123127ATF02002 -> 2026-09-30 12:31
+ * 2. Standard timestamp prefix: YYYYMMDDHHmmss
+ */
+export function extractDateTimeFromRefNo(refNo?: string): { date?: string; time?: string } {
+  if (!refNo || !refNo.trim()) return {};
+  const clean = refNo.trim();
+
+  // Pattern 1: KBank reference format (01 + YearDigit + DayOfYear + HHmm)
+  const kbankMatch = clean.match(/^01([0-9])([0-3][0-9]{2})([0-2][0-9][0-5][0-9])/);
+  if (kbankMatch) {
+    const yearDigit = parseInt(kbankMatch[1], 10);
+    const dayOfYear = parseInt(kbankMatch[2], 10);
+    const timeStr = kbankMatch[3];
+    const hour = timeStr.slice(0, 2);
+    const min = timeStr.slice(2, 4);
+
+    // KBank year digit: 4=2024, 5=2025, 6=2026, etc.
+    const year = 2020 + yearDigit;
+    if (dayOfYear >= 1 && dayOfYear <= 366) {
+      const d = new Date(Date.UTC(year, 0, 1));
+      d.setUTCDate(dayOfYear);
+      const yyyy = d.getUTCFullYear();
+      const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+      const dd = String(d.getUTCDate()).padStart(2, '0');
       return {
-        date: `${year}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`,
+        date: `${yyyy}-${mm}-${dd}`,
+        time: `${hour}:${min}`,
       };
     }
   }
 
+  // Pattern 2: Standard ISO compact timestamp YYYYMMDDHHmmss
+  const compactMatch = clean.match(/^(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])([0-5]\d)/);
+  if (compactMatch) {
+    return {
+      date: `${compactMatch[1]}-${compactMatch[2]}-${compactMatch[3]}`,
+      time: `${compactMatch[4]}:${compactMatch[5]}`,
+    };
+  }
+
   return {};
+}
+
+/**
+ * Extracts Date & Time with Buddhist Era (พ.ศ.) to Gregorian conversion
+ * Uses multi-strategy OCR extraction with Bank Ref No cross-validation
+ */
+export function extractSlipDateTime(
+  text: string,
+  refNo?: string
+): { date?: string; time?: string } {
+  let date = extractSlipDate(text);
+  let time = extractSlipTime(text);
+
+  // If date or time missing, check reference number metadata
+  if (!date || !time) {
+    const fromRef = extractDateTimeFromRefNo(refNo);
+    if (!date && fromRef.date) {
+      date = fromRef.date;
+    }
+    if (!time && fromRef.time) {
+      time = fromRef.time;
+    }
+  }
+
+  return { date, time };
+}
+
+/**
+ * Formats date (YYYY-MM-DD) and time (HH:mm) into clear, friendly Thai display
+ * Example:
+ * formatSlipDisplayDate('2026-09-30', '12:31') -> '30 ก.ย. 2569 • 12:31 น.'
+ * formatSlipDisplayDate('2026-09-30') -> '30 ก.ย. 2569'
+ * formatSlipDisplayDate(undefined, '12:31') -> 'วันนี้ • 12:31 น.'
+ * formatSlipDisplayDate() -> 'วันนี้'
+ */
+export function formatSlipDisplayDate(dateStr?: string, timeStr?: string): string {
+  let datePart = 'วันนี้';
+
+  if (dateStr) {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const monthIdx = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+
+      const thaiMonths = [
+        'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+        'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.',
+      ];
+
+      const beYear = year < 2400 ? year + 543 : year;
+      const monthName = thaiMonths[monthIdx] || parts[1];
+      datePart = `${day} ${monthName} ${beYear}`;
+    } else {
+      datePart = dateStr;
+    }
+  }
+
+  if (timeStr) {
+    return `${datePart} • ${timeStr} น.`;
+  }
+  return datePart;
 }
 
 /**

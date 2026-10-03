@@ -6,6 +6,8 @@ import {
   extractSlipDateTime,
   convertBuddhistToGregorianYear,
   checkDuplicateSlip,
+  extractDateTimeFromRefNo,
+  formatSlipDisplayDate,
 } from '../lib/slip/slipParser';
 import { Transaction } from '../types/transaction';
 
@@ -88,6 +90,33 @@ describe('Slip Scanner & Parser Tests', () => {
       expect(dt.time).toBe('12:31');
     });
 
+    it('extracts date and time from actual noisy OCR output of Capybara slip', () => {
+      const noisyText = `
+| โอนเงินสําเร็จ                            I<+
+30 ne. 69 12314. XD        SA
+Ie
+๕       เซผาเคช์ ศ     Rt
+ธ.กสิกรไทย                ส    @
+XXX-X-X8681-x
+>
+&7C      ณิ ธนภรณ์ วะรัมย์              a 2 1
+๓๑๐  ธ.กสิกรไทย               ง
+2         XXX-X-X5797-x             (7     ()
+เลขที่รายการ:
+016273123127ATF02002 [ติไม อหน [wu]
+จํานวน:                                  รบลาได
+ale ร
+100.00 บาท        ey os
+1      จ                                 ณี   “สี
+ค่าธรรมเนียม:                           [๒]:   A al
+0.00 บาท      สแกนตรวจสอบสลิป
+      `;
+      const dt = extractSlipDateTime(noisyText);
+      console.log('Noisy text dt extracted:', dt);
+      expect(dt.date).toBe('2026-09-30');
+      expect(dt.time).toBe('12:31');
+    });
+
     it('fuses QR code and OCR text with household member matching', () => {
       const qrPayload = '00410006000001010300402200462735o97eef7tpkHoF5102TH91049E4F';
       const decodedQR = parseBotSlipPayload(qrPayload);
@@ -104,10 +133,29 @@ describe('Slip Scanner & Parser Tests', () => {
       expect(parsed.amountSatang).toBe(100000);
       expect(parsed.amountFormatted).toBe('1,000.00');
       expect(parsed.date).toBe('2026-09-30');
+      expect(parsed.time).toBe('21:44');
       expect(parsed.refNo).toBe('0462735o97eef7tpkHoF');
       expect(parsed.bankName).toContain('ธนาคารกสิกรไทย');
       // Matched alias ภาณุเดช -> โฟกัส
       expect(parsed.matchedMemberWho).toBe('โฟกัส');
+    });
+  });
+
+  describe('Bank Reference Number Timestamp Extraction', () => {
+    it('decodes KBank PromptPay ref format into exact date and time', () => {
+      const dt = extractDateTimeFromRefNo('016273123127ATF02002');
+      expect(dt.date).toBe('2026-09-30');
+      expect(dt.time).toBe('12:31');
+    });
+  });
+
+  describe('Thai Slip Display Date Formatter', () => {
+    it('formats date and time clearly in Thai for the user', () => {
+      expect(formatSlipDisplayDate('2026-09-30', '12:31')).toBe('30 ก.ย. 2569 • 12:31 น.');
+      expect(formatSlipDisplayDate('2026-09-30', '21:44')).toBe('30 ก.ย. 2569 • 21:44 น.');
+      expect(formatSlipDisplayDate('2026-09-30')).toBe('30 ก.ย. 2569');
+      expect(formatSlipDisplayDate(undefined, '12:31')).toBe('วันนี้ • 12:31 น.');
+      expect(formatSlipDisplayDate()).toBe('วันนี้');
     });
   });
 
