@@ -14,6 +14,7 @@ import { SettingsView } from './components/settings/SettingsView';
 import { TransactionFormSheet } from './components/form/TransactionFormSheet';
 import { AuthModal } from './components/auth/AuthModal';
 import { HouseholdModal } from './components/household/HouseholdModal';
+import { SlipScannerModal } from './components/scanner/SlipScannerModal';
 import { Transaction, TransactionType, OutstandingDebtor } from './types/transaction';
 import { calculateSummary } from './lib/summary';
 
@@ -74,6 +75,7 @@ export function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isHouseholdOpen, setIsHouseholdOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [selectedTxForEdit, setSelectedTxForEdit] = useState<Transaction | null>(null);
   const [prefillData, setPrefillData] = useState<{
     type?: TransactionType;
@@ -81,6 +83,10 @@ export function App() {
     amount?: number;
     note?: string;
     category?: string;
+    date?: string;
+    refNo?: string;
+    slipThumbnail?: string;
+    fullSlipBase64?: string;
   } | null>(null);
 
   // Filters State for All Transactions tab
@@ -92,6 +98,31 @@ export function App() {
   const handleOpenAdd = () => {
     setSelectedTxForEdit(null);
     setPrefillData(null);
+    setIsFormOpen(true);
+  };
+
+  // Apply scanned slip data to prefill form
+  const handleApplySlip = (data: {
+    amountSatang: number;
+    date: string;
+    refNo: string;
+    who: string;
+    note: string;
+    slipThumbnail: string;
+    fullSlipBase64: string;
+  }) => {
+    setSelectedTxForEdit(null);
+    setPrefillData({
+      type: 'out',
+      amount: data.amountSatang,
+      who: data.who || activeMembers[0] || '',
+      note: data.note,
+      date: data.date,
+      refNo: data.refNo,
+      slipThumbnail: data.slipThumbnail,
+      fullSlipBase64: data.fullSlipBase64,
+      category: categories[0] || 'อาหาร',
+    });
     setIsFormOpen(true);
   };
 
@@ -180,9 +211,7 @@ export function App() {
             {/* 2. Quick-Action Row (5 actions) */}
             <QuickActions
               onSelectAction={handleQuickAction}
-              onOpenScanner={() => {
-                alert('ระบบสแกนสลิปออฟไลน์ Tesseract จะถูกเปิดใช้งานในระยะที่ (d)');
-              }}
+              onOpenScanner={() => setIsScannerOpen(true)}
             />
 
             {/* 3. Asset Summary Cards */}
@@ -272,6 +301,16 @@ export function App() {
         existingTransactions={activeTransactions}
         memberNames={activeMembers}
         categories={categories}
+        onOpenScanner={() => setIsScannerOpen(true)}
+      />
+
+      {/* Slip Scanner Bottom Sheet */}
+      <SlipScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        existingTransactions={activeTransactions}
+        memberNames={activeMembers}
+        onApplySlip={handleApplySlip}
       />
 
       {/* Auth Modal (Login / Register) */}

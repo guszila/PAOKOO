@@ -16,7 +16,9 @@ import {
   CornerDownLeft,
   AlertCircle,
   Tag,
+  X,
 } from 'lucide-react';
+import { SlipViewerModal } from '../scanner/SlipViewerModal';
 
 interface TransactionFormSheetProps {
   isOpen: boolean;
@@ -30,6 +32,10 @@ interface TransactionFormSheetProps {
     amount?: number; // satang
     note?: string;
     category?: string;
+    date?: string;
+    refNo?: string;
+    slipThumbnail?: string;
+    fullSlipBase64?: string;
   } | null;
   existingTransactions: Transaction[];
   memberNames: string[];
@@ -56,6 +62,9 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
   const [category, setCategory] = useState<string>('อาหาร');
   const [date, setDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [refNo, setRefNo] = useState<string>('');
+  const [slipThumbnail, setSlipThumbnail] = useState<string | undefined>();
+  const [fullSlipBase64, setFullSlipBase64] = useState<string | undefined>();
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   const [showOverRepaymentWarning, setShowOverRepaymentWarning] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -76,14 +85,18 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
       setCategory(initialTransaction.category || 'อื่นๆ');
       setDate(initialTransaction.date);
       setRefNo(initialTransaction.refNo || '');
+      setSlipThumbnail(initialTransaction.slipThumbnail);
+      setFullSlipBase64(undefined);
     } else if (prefill) {
       setType(prefill.type || 'out');
       setAmountStr(prefill.amount ? satangToBaht(prefill.amount).toString() : '');
       setWho(prefill.who || '');
       setNote(prefill.note || '');
       setCategory(prefill.category || categories[0] || 'อาหาร');
-      setDate(new Date().toISOString().slice(0, 10));
-      setRefNo('');
+      setDate(prefill.date || new Date().toISOString().slice(0, 10));
+      setRefNo(prefill.refNo || '');
+      setSlipThumbnail(prefill.slipThumbnail);
+      setFullSlipBase64(prefill.fullSlipBase64);
     } else {
       setType('out');
       setAmountStr('');
@@ -92,6 +105,8 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
       setCategory(categories[0] || 'อาหาร');
       setDate(new Date().toISOString().slice(0, 10));
       setRefNo('');
+      setSlipThumbnail(undefined);
+      setFullSlipBase64(undefined);
     }
 
     setErrorMsg(null);
@@ -152,7 +167,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
         category: type === 'out' ? category : undefined,
         date,
         refNo: refNo.trim() || undefined,
-        slipThumbnail: initialTransaction?.slipThumbnail,
+        slipThumbnail: slipThumbnail || undefined,
         createdBy: initialTransaction?.createdBy || who.trim(),
       },
       initialTransaction?.id
@@ -330,22 +345,45 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
 
             <div>
               <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300 block mb-1.5">
-                สแกนสลิปโอนเงิน
+                สลิปโอนเงิน
               </label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                fullWidth
-                onClick={() => {
-                  if (onOpenScanner) onOpenScanner();
-                  else alert('ระบบสแกนสลิปออฟไลน์ Tesseract จะถูกเปิดใช้งานในระยะที่ (d)');
-                }}
-                className="text-xs py-2"
-              >
-                <Camera size={14} strokeWidth={1.5} />
-                <span>สแกนสลิป</span>
-              </Button>
+              {slipThumbnail ? (
+                <div className="flex items-center justify-between p-1.5 px-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-border-light dark:border-border-dark">
+                  <div className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={() => setIsViewerOpen(true)}>
+                    <img
+                      src={slipThumbnail}
+                      alt="สลิป"
+                      className="w-7 h-9 object-cover rounded-lg border border-border-light dark:border-border-dark shadow-sm"
+                    />
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium truncate hover:underline">
+                      ดูรูปสลิป
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSlipThumbnail(undefined);
+                      setFullSlipBase64(undefined);
+                    }}
+                    className="p-1 rounded-lg text-neutral-400 hover:text-red-500 transition-colors"
+                    title="ลบสลิปออก"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  fullWidth
+                  onClick={() => onOpenScanner?.()}
+                  className="text-xs py-2"
+                >
+                  <Camera size={14} strokeWidth={1.5} className="mr-1 text-emerald-600 dark:text-emerald-400" />
+                  <span>สแกนสลิป</span>
+                </Button>
+              )}
             </div>
           </div>
 
@@ -423,6 +461,15 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
           }
         }}
         onCancel={() => setShowDeleteConfirm(false)}
+      />
+
+      {/* Slip Viewer Lightbox */}
+      <SlipViewerModal
+        isOpen={isViewerOpen}
+        onClose={() => setIsViewerOpen(false)}
+        imageUrl={fullSlipBase64 || slipThumbnail}
+        refNo={refNo}
+        date={date}
       />
     </>
   );
