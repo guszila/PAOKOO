@@ -15,7 +15,35 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onOpenAdd,
 }) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-t border-border-light dark:border-border-dark pb-safe">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 pb-safe">
+      {/* 3-Part Seamless Background with Curved Center Notch */}
+      <div className="absolute inset-0 flex items-stretch pointer-events-none">
+        <div className="flex-1 bg-white dark:bg-[#1C1D22] border-t border-neutral-300 dark:border-neutral-700" />
+        <div className="w-[120px] relative shrink-0">
+          <svg
+            className="w-full h-full overflow-visible"
+            viewBox="0 0 120 64"
+            preserveAspectRatio="none"
+          >
+            {/* Notch Fill */}
+            <path
+              d="M 0,0 L 14,0 C 32,0 40,46 60,46 C 80,46 88,0 106,0 L 120,0 L 120,64 L 0,64 Z"
+              fill="currentColor"
+              className="text-white dark:text-[#1C1D22]"
+            />
+            {/* Notch Top Border */}
+            <path
+              d="M 0,0.75 L 14,0.75 C 32,0.75 40,46.75 60,46.75 C 80,46.75 88,0.75 106,0.75 L 120,0.75"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className="text-neutral-300 dark:text-neutral-700"
+            />
+          </svg>
+        </div>
+        <div className="flex-1 bg-white dark:bg-[#1C1D22] border-t border-neutral-300 dark:border-neutral-700" />
+      </div>
+
       <div className="max-w-md mx-auto grid grid-cols-5 h-16 items-center px-1 relative">
         {/* Tab 1: Overview */}
         <button
