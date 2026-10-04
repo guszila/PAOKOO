@@ -23,48 +23,46 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
-  const [isRendered, setIsRendered] = useState(isOpen);
-  const [isClosing, setIsClosing] = useState(false);
+  const [isMounted, setIsMounted] = useState(isOpen);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    let animFrame: number;
+    let timer: NodeJS.Timeout;
+
     if (isOpen) {
-      setIsRendered(true);
-      setIsClosing(false);
-    } else if (isRendered && !isClosing) {
-      setIsClosing(true);
-      const timer = setTimeout(() => {
-        setIsRendered(false);
-        setIsClosing(false);
+      setIsMounted(true);
+      animFrame = requestAnimationFrame(() => {
+        setIsVisible(true);
+      });
+    } else {
+      setIsVisible(false);
+      timer = setTimeout(() => {
+        setIsMounted(false);
       }, 200);
-      return () => clearTimeout(timer);
     }
-  }, [isOpen, isRendered, isClosing]);
 
-  const handleStartCancel = () => {
-    if (isClosing) return;
-    setIsClosing(true);
-    setTimeout(() => {
-      onCancel();
-      setIsRendered(false);
-      setIsClosing(false);
-    }, 200);
-  };
+    return () => {
+      if (animFrame) cancelAnimationFrame(animFrame);
+      if (timer) clearTimeout(timer);
+    };
+  }, [isOpen]);
 
-  if (!isRendered) return null;
+  if (!isMounted) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className={`fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity ${
-          isClosing ? 'animate-fade-out' : 'animate-fade-in'
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-200 ease-out ${
+          isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
-        onClick={handleStartCancel}
+        onClick={onCancel}
       />
       <div
-        className={`relative w-full max-w-sm bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-2xl z-10 space-y-4 transition-all duration-200 ${
-          isClosing
-            ? 'opacity-0 scale-95 duration-200'
-            : 'animate-fade-in scale-100'
+        className={`relative w-full max-w-sm bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-2xl z-10 space-y-4 transition-all duration-200 ease-out ${
+          isVisible
+            ? 'opacity-100 scale-100'
+            : 'opacity-0 scale-95 pointer-events-none'
         }`}
       >
         <div className="flex items-start gap-3">
@@ -78,7 +76,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         </div>
 
         <div className="flex items-center gap-2 pt-2">
-          <Button variant="secondary" fullWidth onClick={handleStartCancel}>
+          <Button variant="secondary" fullWidth onClick={onCancel}>
             {cancelText}
           </Button>
           <Button
