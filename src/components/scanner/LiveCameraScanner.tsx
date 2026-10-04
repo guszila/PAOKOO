@@ -48,14 +48,6 @@ export const LiveCameraScanner: React.FC<LiveCameraScannerProps> = ({
     stopCamera();
     setPermissionError(null);
 
-    const isIOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
-    const isSecure = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
-    if (isIOS && !isSecure) {
-      setPermissionError('iOS / Safari ไม่อนุญาตให้เปิดกล้องสดผ่าน HTTP ธรรมดา (กดปุ่ม "ถ่ายรูปผ่านกล้องมือถือ" ด้านล่าง หรือเปิดผ่าน HTTPS)');
-      return;
-    }
-
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setPermissionError('เบราว์เซอร์นี้ไม่รองรับการเปิดกล้องแบบสด โปรดใช้การถ่ายรูปแทน');
       return;
@@ -88,8 +80,6 @@ export const LiveCameraScanner: React.FC<LiveCameraScannerProps> = ({
       streamRef.current = stream;
 
       if (videoRef.current) {
-        videoRef.current.setAttribute('playsinline', 'true');
-        videoRef.current.setAttribute('webkit-playsinline', 'true');
         videoRef.current.srcObject = stream;
         try {
           await videoRef.current.play();

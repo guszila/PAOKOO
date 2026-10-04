@@ -185,107 +185,70 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
         )}
 
         {/* Initial Choice: Live Camera or Gallery */}
-        {!selectedImage && !isScanning && !scanResult && !isLiveScanning && (() => {
-          const isIOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
-          const isSecure = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
-          return (
-            <div className="space-y-4 py-2">
-              <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-900/40 text-xs text-emerald-800 dark:text-emerald-300 flex items-start gap-2.5">
-                <ShieldCheck size={18} className="shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
-                <div>
-                  <p className="font-semibold">ระบบสแกนสลิปออฟไลน์ ปลอดภัย 100%</p>
-                  <p className="text-[11px] text-emerald-700/80 dark:text-emerald-300/80 mt-0.5 leading-relaxed">
-                    ส่อง QR Code หรือถ่ายรูปสลิป ข้อมูลอ่านและประมวลผลในเครื่องทันที
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                {/* Primary Camera Button (Native on iOS over HTTP, Live on HTTPS/Desktop) */}
-                {isIOS && !isSecure ? (
-                  <button
-                    type="button"
-                    onClick={() => cameraInputRef.current?.click()}
-                    className="relative flex flex-col items-center justify-center gap-2 p-5 rounded-3xl bg-emerald-500/10 dark:bg-emerald-950/40 border-2 border-emerald-500 hover:bg-emerald-500/20 transition-all group active:scale-95 shadow-sm text-emerald-800 dark:text-emerald-300"
-                  >
-                    <span className="absolute -top-2.5 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1">
-                      <Sparkles size={10} /> กล้อง iPhone
-                    </span>
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-md shadow-emerald-500/30">
-                      <Camera size={26} strokeWidth={2} />
-                    </div>
-                    <div className="text-center">
-                      <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100 block">
-                        ถ่ายรูปสลิป
-                      </span>
-                      <span className="text-[10px] text-emerald-700 dark:text-emerald-400">เปิดกล้องถ่าย & สแกน</span>
-                    </div>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setIsLiveScanning(true)}
-                    className="relative flex flex-col items-center justify-center gap-2 p-5 rounded-3xl bg-emerald-500/10 dark:bg-emerald-950/40 border-2 border-emerald-500 hover:bg-emerald-500/20 transition-all group active:scale-95 shadow-sm text-emerald-800 dark:text-emerald-300"
-                  >
-                    <span className="absolute -top-2.5 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1">
-                      <Sparkles size={10} /> สแกนสด
-                    </span>
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-md shadow-emerald-500/30">
-                      <QrCode size={26} strokeWidth={2} />
-                    </div>
-                    <div className="text-center">
-                      <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100 block">
-                        เปิดกล้องสแกนสด
-                      </span>
-                      <span className="text-[10px] text-emerald-700 dark:text-emerald-400">ส่อง QR & กรอกทันที</span>
-                    </div>
-                  </button>
-                )}
-
-                {/* Gallery Button */}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex flex-col items-center justify-center gap-2 p-5 rounded-3xl bg-surface-light dark:bg-surface-dark border-2 border-dashed border-border-light dark:border-border-dark hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 transition-all group active:scale-95 shadow-sm"
-                >
-                  <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 flex items-center justify-center transition-transform group-hover:scale-110">
-                    <ImageIcon size={24} strokeWidth={1.75} />
-                  </div>
-                  <div className="text-center">
-                    <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 block">
-                      เลือกจากอัลบั้ม
-                    </span>
-                    <span className="text-[10px] text-neutral-400">รูปภาพในเครื่อง</span>
-                  </div>
-                </button>
-              </div>
-
-              {/* Sub-actions / Tips */}
-              <div className="text-center pt-1">
-                {isIOS && !isSecure ? (
-                  <button
-                    type="button"
-                    onClick={() => setIsLiveScanning(true)}
-                    className="text-xs text-neutral-500 hover:text-emerald-600 dark:text-neutral-400 dark:hover:text-emerald-400 inline-flex items-center gap-1.5 transition-colors underline-offset-4 hover:underline"
-                  >
-                    <QrCode size={13} />
-                    <span>หรือ ลองเปิดกล้องสแกนสดในเบราว์เซอร์</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => cameraInputRef.current?.click()}
-                    className="text-xs text-neutral-500 hover:text-emerald-600 dark:text-neutral-400 dark:hover:text-emerald-400 inline-flex items-center gap-1.5 transition-colors underline-offset-4 hover:underline"
-                  >
-                    <Camera size={13} />
-                    <span>หรือ ถ่ายรูปผ่านกล้องมือถือของระบบ</span>
-                  </button>
-                )}
+        {!selectedImage && !isScanning && !scanResult && !isLiveScanning && (
+          <div className="space-y-4 py-2">
+            <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-900/40 text-xs text-emerald-800 dark:text-emerald-300 flex items-start gap-2.5">
+              <ShieldCheck size={18} className="shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
+              <div>
+                <p className="font-semibold">ระบบสแกนสลิปออฟไลน์ ปลอดภัย 100%</p>
+                <p className="text-[11px] text-emerald-700/80 dark:text-emerald-300/80 mt-0.5 leading-relaxed">
+                  ส่อง QR Code หรือสลิปผ่านกล้องสด หรืออัปโหลดรูปภาพ อ่านข้อมูลในเครื่องทันที
+                </p>
               </div>
             </div>
-          );
-        })()}
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              {/* Live Camera Scanner Button */}
+              <button
+                type="button"
+                onClick={() => setIsLiveScanning(true)}
+                className="relative flex flex-col items-center justify-center gap-2 p-5 rounded-3xl bg-emerald-500/10 dark:bg-emerald-950/40 border-2 border-emerald-500 hover:bg-emerald-500/20 transition-all group active:scale-95 shadow-sm text-emerald-800 dark:text-emerald-300"
+              >
+                <span className="absolute -top-2.5 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1">
+                  <Sparkles size={10} /> สแกนสด
+                </span>
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-md shadow-emerald-500/30">
+                  <QrCode size={26} strokeWidth={2} />
+                </div>
+                <div className="text-center">
+                  <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100 block">
+                    เปิดกล้องสแกนสด
+                  </span>
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400">ส่อง QR & กรอกทันที</span>
+                </div>
+              </button>
+
+              {/* Gallery Button */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex flex-col items-center justify-center gap-2 p-5 rounded-3xl bg-surface-light dark:bg-surface-dark border-2 border-dashed border-border-light dark:border-border-dark hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 transition-all group active:scale-95 shadow-sm"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 flex items-center justify-center transition-transform group-hover:scale-110">
+                  <ImageIcon size={24} strokeWidth={1.75} />
+                </div>
+                <div className="text-center">
+                  <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 block">
+                    เลือกจากอัลบั้ม
+                  </span>
+                  <span className="text-[10px] text-neutral-400">รูปภาพในเครื่อง</span>
+                </div>
+              </button>
+            </div>
+
+            {/* Native Camera Fallback */}
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={() => cameraInputRef.current?.click()}
+                className="text-xs text-neutral-500 hover:text-emerald-600 dark:text-neutral-400 dark:hover:text-emerald-400 inline-flex items-center gap-1.5 transition-colors underline-offset-4 hover:underline"
+              >
+                <Camera size={13} />
+                <span>หรือ ถ่ายรูปผ่านกล้องมือถือของระบบ</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Scanning Progress with Animated Laser Beam */}
         {selectedImage && isScanning && (
