@@ -165,19 +165,39 @@ export function parseSlipText(
 export function extractSlipAmount(text: string): number | undefined {
   const lines = text.split('\n');
 
-  // Strategy A: Find line after or on "จำนวน" or "จํานวน"
+  const amountKeywords = [
+    'จำนวน', 'จํานวน', 'ยอดเงิน', 'ยอดโอน', 'ยอดชำระ', 'ยอดรวม',
+    'โอนเงิน', 'amount', 'total', 'transfer', 'baht', 'thb'
+  ];
+
+  // Strategy A: Find line after or on amount keywords
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (line.includes('จำนวน') || line.includes('จํานวน') || line.toLowerCase().includes('amount')) {
+    const line = lines[i].toLowerCase();
+    const hasKeyword = amountKeywords.some((kw) => line.includes(kw));
+    if (hasKeyword) {
       // Check current line and next 2 lines for amount
       for (let j = i; j <= Math.min(i + 2, lines.length - 1); j++) {
         const target = lines[j];
-        if (target.includes('ค่าธรรมเนียม') || target.includes('fee')) continue;
-        const m = target.match(/(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d+)\s*\.\s*(\d{2})(?:[^\d]|$)/);
-        if (m) {
-          const numStr = `${m[1].replace(/,/g, '')}.${m[2]}`;
+        if (target.includes('ค่าธรรมเนียม') || target.toLowerCase().includes('fee')) continue;
+
+        // Match numbers with decimal (e.g. 500.00, 1,250.50, 500.-)
+        const mDecimal = target.match(/(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d+)\s*[\.,]\s*(\d{2}|-)(?:[^\d]|$)/);
+        if (mDecimal) {
+          const cents = mDecimal[2] === '-' ? '00' : mDecimal[2];
+          const numStr = `${mDecimal[1].replace(/,/g, '')}.${cents}`;
           const satang = parseToSatang(numStr);
           if (satang > 0) return satang;
+        }
+
+        // Match integer amount followed by บาท, THB or preceding keyword
+        const mInt = target.match(/(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d{2,7})(?:\s*(?:บาท|thb|baht|\.-)|\s*$)/i);
+        if (mInt) {
+          const numStr = mInt[1].replace(/,/g, '');
+          const satang = parseToSatang(numStr);
+          // Exclude Buddhist/Gregorian years
+          if (satang > 0 && satang !== 256700 && satang !== 256800 && satang !== 256900 && satang !== 202400 && satang !== 202500 && satang !== 202600) {
+            return satang;
+          }
         }
       }
     }
@@ -185,7 +205,7 @@ export function extractSlipAmount(text: string): number | undefined {
 
   // Strategy B: Find all decimal numbers with 2 decimal places and exclude 0.00
   const allMatches: number[] = [];
-  const regex = /(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d+)\s*\.\s*(\d{2})(?:[^\d]|$)/g;
+  const regex = /(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d+)\s*[\.,]\s*(\d{2})(?:[^\d]|$)/g;
   let match;
   while ((match = regex.exec(text)) !== null) {
     const numStr = `${match[1].replace(/,/g, '')}.${match[2]}`;

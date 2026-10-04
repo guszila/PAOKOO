@@ -44,6 +44,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
   const [isLiveScanning, setIsLiveScanning] = useState(false);
   const [progress, setProgress] = useState<ScanProgressUpdate | null>(null);
   const [scanResult, setScanResult] = useState<ScanSlipResult | null>(null);
+  const [editableAmount, setEditableAmount] = useState<string>('');
   const [selectedPocketId, setSelectedPocketId] = useState<string | undefined>(undefined);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -56,6 +57,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
     setIsLiveScanning(false);
     setProgress(null);
     setScanResult(null);
+    setEditableAmount('');
     setSelectedPocketId(undefined);
     setErrorMsg(null);
   };
@@ -63,6 +65,15 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
   const handleClose = () => {
     resetState();
     onClose();
+  };
+
+  const applyScanResult = (result: ScanSlipResult) => {
+    setScanResult(result);
+    if (result.parsed.amountSatang && result.parsed.amountSatang > 0) {
+      setEditableAmount((result.parsed.amountSatang / 100).toFixed(2));
+    } else {
+      setEditableAmount('');
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,7 +94,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
           setProgress(update);
         }
       );
-      setScanResult(result);
+      applyScanResult(result);
     } catch (err: any) {
       console.error('Scan failed:', err);
       setErrorMsg(err.message || 'ไม่สามารถสแกนสลิปได้ โปรดลองอีกครั้ง');
@@ -108,7 +119,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
           setProgress(update);
         }
       );
-      setScanResult(result);
+      applyScanResult(result);
     } catch (err: any) {
       console.error('Scan failed:', err);
       setErrorMsg(err.message || 'ไม่สามารถสแกนสลิปได้ โปรดลองอีกครั้ง');
@@ -122,7 +133,10 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
     const { parsed, thumbnailBase64, fullBase64 } = scanResult;
 
     const today = new Date().toISOString().slice(0, 10);
-    const amountSatang = parsed.amountSatang || 0;
+    const customNum = parseFloat(editableAmount);
+    const amountSatang = !isNaN(customNum) && customNum > 0
+      ? Math.round(customNum * 100)
+      : (parsed.amountSatang || 0);
     const date = parsed.date || today;
     const refNo = parsed.refNo || '';
     const who = parsed.matchedMemberWho || memberNames[0] || '';
@@ -313,15 +327,31 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
             {/* Extracted Details Card */}
             <div className="p-4 rounded-3xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm space-y-3">
               <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-[10px] text-neutral-400 font-medium uppercase tracking-wider block">
-                    ยอดเงินที่ตรวจพบ
-                  </span>
-                  <div className="flex items-baseline gap-1 mt-0.5">
-                    <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
-                      {scanResult.parsed.amountFormatted || '0.00'}
+                <div className="flex-1 mr-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-neutral-400 font-medium uppercase tracking-wider block">
+                      ยอดเงินในสลิป
                     </span>
-                    <span className="text-xs text-neutral-500">บาท</span>
+                    {!editableAmount && (
+                      <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+                        ✏️ แตะเพื่อใส่ยอดเงิน
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={editableAmount}
+                      onChange={(e) => setEditableAmount(e.target.value)}
+                      className={`text-2xl font-black tabular-nums rounded-xl px-2.5 py-1 w-36 border transition-all ${
+                        editableAmount
+                          ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20'
+                          : 'text-amber-600 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40'
+                      } focus:outline-none focus:ring-2 focus:ring-emerald-500`}
+                    />
+                    <span className="text-xs text-neutral-500 font-semibold">บาท</span>
                   </div>
                 </div>
 
@@ -330,10 +360,17 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
                   <img
                     src={scanResult.thumbnailBase64}
                     alt="สลิป"
-                    className="w-14 h-18 object-cover rounded-xl border border-border-light dark:border-border-dark shadow-sm"
+                    className="w-14 h-18 object-cover rounded-xl border border-border-light dark:border-border-dark shadow-sm shrink-0"
                   />
                 )}
               </div>
+
+              {/* Informational Tip if amount wasn't extracted by OCR */}
+              {!editableAmount && (
+                <div className="p-2.5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                  💡 <strong>QR Code สลิปธนาคารไม่มีข้อมูลยอดเงิน</strong> (เป็นไปตามมาตรฐานความปลอดภัย BOT) ระบบดึงรหัสอ้างอิงและธนาคารให้แล้ว สามารถพิมพ์ยอดเงินด้านบนเพื่อนำไปลงบัญชีได้ทันทีครับ
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border-light dark:border-border-dark">
                 <div>

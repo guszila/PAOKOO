@@ -318,10 +318,10 @@ export const LiveCameraScanner: React.FC<LiveCameraScannerProps> = ({
             {/* Dark Vignette Mask */}
             <div className="absolute inset-0 pointer-events-none bg-black/25" />
 
-            {/* Target Reticle (กรอบเล็ง) */}
-            <div className="absolute inset-x-8 top-12 bottom-24 pointer-events-none flex flex-col items-center justify-center">
+            {/* Target Reticle (กรอบเล็งทรงสลิปแนวตั้ง) */}
+            <div className="absolute inset-x-6 top-10 bottom-24 pointer-events-none flex flex-col items-center justify-center">
               <div
-                className={`relative w-full aspect-square max-w-[230px] rounded-2xl border-2 transition-all duration-200 ${
+                className={`relative w-full max-w-[220px] h-[270px] rounded-2xl border-2 transition-all duration-200 flex flex-col justify-between p-3 ${
                   qrDetected
                     ? 'border-emerald-400 bg-emerald-500/20 shadow-[0_0_25px_#10b981]'
                     : 'border-white/50 shadow-[0_0_15px_rgba(0,0,0,0.5)]'
@@ -333,6 +333,16 @@ export const LiveCameraScanner: React.FC<LiveCameraScannerProps> = ({
                 <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-4 border-l-4 border-emerald-400 rounded-bl-lg" />
                 <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-4 border-r-4 border-emerald-400 rounded-br-lg" />
 
+                {/* Upper Guide: Amount Area */}
+                <div className="text-center py-2 border-b border-dashed border-white/20">
+                  <span className="text-[10px] text-white/70 block">📄 วางยอดเงินให้อยู่ด้านบน</span>
+                </div>
+
+                {/* Lower Guide: QR Area */}
+                <div className="text-center py-2.5 border-2 border-dashed border-emerald-400/40 rounded-xl bg-black/25">
+                  <span className="text-[10px] text-emerald-300 block">🏁 QR Code สลิป</span>
+                </div>
+
                 {/* Laser Scanning Beam (up & down) */}
                 {!qrDetected && (
                   <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_12px_#10b981] animate-bounce" />
@@ -340,7 +350,7 @@ export const LiveCameraScanner: React.FC<LiveCameraScannerProps> = ({
 
                 {/* QR Detected Status Badge */}
                 {qrDetected && (
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-2xl">
                     <span className="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse">
                       ✓ ตรวจพบ QR Code!
                     </span>
@@ -349,8 +359,8 @@ export const LiveCameraScanner: React.FC<LiveCameraScannerProps> = ({
               </div>
 
               {/* Instructions Pill */}
-              <div className="mt-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-[11px] text-white/90 font-medium">
-                จ่อกล้องให้ QR Code หรือสลิปอยู่ในกรอบ
+              <div className="mt-3 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md text-[11px] text-white/95 font-medium text-center shadow">
+                ส่องให้เห็นทั้งใบสลิป (QR Code + ยอดเงิน)
               </div>
             </div>
 
