@@ -167,20 +167,9 @@ export const Header: React.FC<HeaderProps> = ({
               ))}
             </div>
           ) : (
-            <div className="relative inline-flex items-baseline">
-              <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-tight flex items-baseline gap-1">
-                <span>{headerContent.title}</span>
-                <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] mb-1 animate-pulse" />
-              </h1>
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 pointer-events-none select-none text-3xl sm:text-4xl font-black tracking-tight leading-tight flex items-baseline gap-1"
-              >
-                <span className="text-glyph-shimmer">
-                  {headerContent.title}
-                </span>
-              </div>
-            </div>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-tight">
+              {headerContent.title}
+            </h1>
           )}
 
           <p className="text-xs sm:text-sm text-emerald-100/85 dark:text-emerald-200/80 font-normal mt-1 leading-relaxed">
