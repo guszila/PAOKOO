@@ -27,8 +27,12 @@ import { useToast } from './context/ToastContext';
 import { formatSatang } from './lib/money';
 import { CoinCelebration } from './components/common/CoinCelebration';
 import { triggerCoinShower } from './lib/celebration';
+import { SplashScreen } from './components/layout/SplashScreen';
 
 export function App() {
+  // App Entry Splash Screen state
+  const [showSplash, setShowSplash] = useState(true);
+
   // Toast notification hook
   const { showToast } = useToast();
 
@@ -58,7 +62,7 @@ export function App() {
   } = useTransactions();
 
   // Cloud Auth & Household hooks
-  const { user, login, register, logout, authError } = useAuth();
+  const { user, login, register, logout, authError, isLoading: isAuthLoading } = useAuth();
   const {
     household,
     transactions: cloudTransactions,
@@ -413,7 +417,14 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark text-neutral-900 dark:text-neutral-100 flex flex-col font-sans transition-colors overflow-x-hidden">
+    <>
+      {showSplash && (
+        <SplashScreen
+          isReady={!isAuthLoading}
+          onFinish={() => setShowSplash(false)}
+        />
+      )}
+      <div className="min-h-screen bg-background-light dark:bg-background-dark text-neutral-900 dark:text-neutral-100 flex flex-col font-sans transition-colors overflow-x-hidden">
       <Header
         user={user}
         household={household}
@@ -609,6 +620,7 @@ export function App() {
       {/* Falling Coins Animation (Celebration) */}
       <CoinCelebration />
     </div>
+    </>
   );
 }
 

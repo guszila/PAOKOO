@@ -42,7 +42,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   </head>
   <body class="bg-background-light dark:bg-background-dark text-neutral-900 dark:text-neutral-100 font-sans antialiased min-h-screen selection:bg-neutral-200 dark:selection:bg-neutral-800">
-    <div id="root"></div>
+    <div id="root">
+      <!-- Instant inline splash to prevent white flash before bundle execution -->
+      <div style="position:fixed;inset:0;background:#070b10;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9998;font-family:'Outfit',sans-serif;color:#ffffff;user-select:none;">
+        <div style="font-size:3rem;font-weight:900;letter-spacing:-0.03em;display:flex;align-items:baseline;">
+          <span>PAO</span>
+          <span style="color:#34d399;margin-left:1px;">KOO</span>
+          <span style="width:8px;height:8px;border-radius:50%;background:#34d399;margin-left:4px;box-shadow:0 0 10px #34d399;"></span>
+        </div>
+        <p style="color:#94a3b8;font-size:0.8rem;margin-top:10px;font-family:'Noto Sans Thai',sans-serif;font-weight:500;">คู่คิดการเงิน จัดสรรทุกเป้าหมาย</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
