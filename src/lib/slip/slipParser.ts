@@ -89,6 +89,9 @@ export function matchMonthToken(raw: string): string | undefined {
 /**
  * Parses OCR extracted text and optional QR code verification payload into structured slip data
  */
+/**
+ * Parses OCR extracted text and optional QR code verification payload into structured slip data
+ */
 export function parseSlipText(
   ocrText: string,
   decodedQR?: DecodedSlipQR | null,
@@ -108,7 +111,7 @@ export function parseSlipText(
 
   // 2. Parse Reference Number from Text if not found from QR
   if (!result.refNo) {
-    const refMatch = ocrText.match(/(?:เลขที่รายการ|รหัสอ้างอิง|เลขที่อ้างอิง|Ref(?:\s*No)?\.?)\s*[:\-]?\s*([A-Za-z0-9]{12,35})/i);
+    const refMatch = ocrText.match(/(?:เลขที่รายการ|รหัสอ้างอิง|เลขที่อ้างอิง|หมายเลขอ้างอิง|รหัสธุรกรรม|รหัสสลิป|slip\s*(?:id|no)?|ref(?:\s*no)?\.?)\s*[:\-]?\s*([A-Za-z0-9]{10,35})/i);
     if (refMatch) {
       result.refNo = refMatch[1].trim();
       result.confidence += 25;
@@ -119,6 +122,15 @@ export function parseSlipText(
         result.refNo = standaloneRef[1].trim();
         result.confidence += 20;
       }
+    }
+  }
+
+  // 2.1 Fallback Bank Detection from Text if QR didn't provide bankName
+  if (!result.bankName) {
+    const textBank = extractBankFromText(ocrText);
+    if (textBank) {
+      result.bankName = textBank;
+      result.confidence += 15;
     }
   }
 
@@ -148,75 +160,161 @@ export function parseSlipText(
 
   // 5. Match Sender or Recipient against Known Household Members
   const matched = matchMemberNames(ocrText, knownMembers);
-  if (matched.matchedWho) {
-    result.matchedMemberWho = matched.matchedWho;
-    result.senderName = matched.sender;
-    result.recipientName = matched.recipient;
-  } else if (decodedQR?.merchantName) {
-    result.recipientName = decodedQR.merchantName;
-  }
+  result.matchedMemberWho = matched.matchedWho;
+  result.senderName = matched.sender;
+  result.recipientName = matched.recipient || decodedQR?.merchantName;
 
   return result;
 }
 
 /**
- * Extracts Amount from slip text, ignoring 0.00 fee
+ * Extracts bank institution name from OCR text as a fallback when QR is unavailable
+ */
+export function extractBankFromText(ocrText: string): string | undefined {
+  const text = ocrText.toLowerCase();
+  if (text.includes('dime') || text.includes('kkp') || text.includes('เกียรตินาคิน')) {
+    return 'ธนาคารเกียรตินาคินภัทร (KKP / Dime!)';
+  }
+  if (text.includes('scb') || text.includes('ไทยพาณิชย์') || text.includes('แม่มณี')) {
+    return 'ธนาคารไทยพาณิชย์ (SCB)';
+  }
+  if (text.includes('bangkok bank') || text.includes('กรุงเทพ') || text.includes('bbl')) {
+    return 'ธนาคารกรุงเทพ (BBL)';
+  }
+  if (text.includes('krungthai') || text.includes('กรุงไทย') || text.includes('ktb') || text.includes('เป๋าตัง')) {
+    return 'ธนาคารกรุงไทย (KTB)';
+  }
+  if (text.includes('kbank') || text.includes('กสิกร') || text.includes('kasikorn')) {
+    return 'ธนาคารกสิกรไทย (KBANK)';
+  }
+  if (text.includes('ttb') || text.includes('ทหารไทยธนชาต') || text.includes('ทีเอ็มบี')) {
+    return 'ธนาคารทหารไทยธนชาต (TTB)';
+  }
+  if (text.includes('krungsri') || text.includes('กรุงศรี') || text.includes('bay')) {
+    return 'ธนาคารกรุงศรีอยุธยา (BAY)';
+  }
+  if (text.includes('gsb') || text.includes('ออมสิน')) {
+    return 'ธนาคารออมสิน (GSB)';
+  }
+  if (text.includes('baac') || text.includes('ธ.ก.ส') || text.includes('ธกส')) {
+    return 'ธนาคารเพื่อการเกษตรและสหกรณ์การเกษตร (BAAC)';
+  }
+  if (text.includes('พร้อมเพย์') || text.includes('promptpay')) {
+    return 'พร้อมเพย์ (PromptPay)';
+  }
+  return undefined;
+}
+
+/**
+ * Extracts Amount from slip text across all Thai bank layouts, ignoring 0.00 fees and dates
  */
 export function extractSlipAmount(text: string): number | undefined {
   const lines = text.split('\n');
 
-  const amountKeywords = [
-    'จำนวน', 'จํานวน', 'ยอดเงิน', 'ยอดโอน', 'ยอดชำระ', 'ยอดรวม',
-    'โอนเงิน', 'amount', 'total', 'transfer', 'baht', 'thb'
+  // Primary keywords specifically denoting transfer amount
+  const primaryAmountKeywords = [
+    'จำนวนเงิน', 'จํานวนเงิน', 'ยอดเงิน', 'ยอดโอน', 'ยอดชำระ', 'ยอดรวม',
+    'amount', 'total'
   ];
 
-  // Strategy A: Find line after or on amount keywords
+  // Secondary keywords (headers like Transfer, จ่ายบิลสำเร็จ)
+  const secondaryKeywords = [
+    'จำนวน', 'จํานวน', 'โอนเงิน', 'จ่ายบิล', 'ชำระบิล', 'transfer'
+  ];
+
+  // Helper to check if a line is a date, time, account number, or fee
+  const isIgnoredLine = (l: string) => {
+    const low = l.toLowerCase();
+    if (low.includes('ค่าธรรมเนียม') || low.includes('fee')) return true;
+    if (low.includes('วันที่') || low.includes('date')) return true;
+    if (low.includes('เวลา') || low.includes('time')) return true;
+    if (low.includes('รหัส') || low.includes('ref') || low.includes('หมายเลข')) return true;
+    if (low.includes(':')) return true; // HH:mm or key:value
+    return false;
+  };
+
+  // Helper to extract decimal number from line
+  const parseDecimalFromLine = (target: string): number | undefined => {
+    if (isIgnoredLine(target)) return undefined;
+
+    // Pattern A: Match standard decimal (e.g. "150.00 THB", "800.00", "552.12 บาท", "1,250.50")
+    const mDecimal = target.match(/(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d+)\s*[\.,]\s*(\d{2}|-)(?:\s*(?:บาท|thb|baht|\.-))?(?:[^\d]|$)/i);
+    if (mDecimal) {
+      const cents = mDecimal[2] === '-' ? '00' : mDecimal[2];
+      const numStr = `${mDecimal[1].replace(/,/g, '')}.${cents}`;
+      const satang = parseToSatang(numStr);
+      // Skip 0.00 (fee or zero)
+      if (satang > 0) return satang;
+    }
+
+    // Pattern B: Match integer amount followed by currency (e.g. "500 บาท", "150 THB")
+    const mInt = target.match(/(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d{2,7})\s*(?:บาท|thb|baht|\.-)(?:[^\d]|$)/i);
+    if (mInt) {
+      const numStr = mInt[1].replace(/,/g, '');
+      const satang = parseToSatang(numStr);
+      // Exclude years
+      if (satang > 0 && satang !== 256700 && satang !== 256800 && satang !== 256900 && satang !== 202400 && satang !== 202500 && satang !== 202600) {
+        return satang;
+      }
+    }
+    return undefined;
+  };
+
+  // Pass 1: Strict search right on or up to 4 lines after PRIMARY keywords ('จำนวนเงิน', 'ยอดเงิน', etc.)
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].toLowerCase();
-    const hasKeyword = amountKeywords.some((kw) => line.includes(kw));
-    if (hasKeyword) {
-      // Check current line and next 2 lines for amount
-      for (let j = i; j <= Math.min(i + 2, lines.length - 1); j++) {
-        const target = lines[j];
-        if (target.includes('ค่าธรรมเนียม') || target.toLowerCase().includes('fee')) continue;
+    const hasPrimary = primaryAmountKeywords.some((kw) => line.includes(kw));
+    if (hasPrimary) {
+      // 1a. Check on the same line (e.g. "จำนวนเงิน 800.00", "จำนวนเงิน 552.12 บาท")
+      const cleanLine = line.replace(/(?:จำนวนเงิน|จํานวนเงิน|ยอดเงิน|ยอดโอน|ยอดชำระ|ยอดรวม|amount|total)\s*[:\-]?/i, '').trim();
+      const onSameLine = parseDecimalFromLine(cleanLine);
+      if (onSameLine !== undefined) return onSameLine;
 
-        // Match numbers with decimal (e.g. 500.00, 1,250.50, 500.-)
-        const mDecimal = target.match(/(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d+)\s*[\.,]\s*(\d{2}|-)(?:[^\d]|$)/);
-        if (mDecimal) {
-          const cents = mDecimal[2] === '-' ? '00' : mDecimal[2];
-          const numStr = `${mDecimal[1].replace(/,/g, '')}.${cents}`;
-          const satang = parseToSatang(numStr);
-          if (satang > 0) return satang;
-        }
-
-        // Match integer amount followed by บาท, THB or preceding keyword
-        const mInt = target.match(/(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d{2,7})(?:\s*(?:บาท|thb|baht|\.-)|\s*$)/i);
-        if (mInt) {
-          const numStr = mInt[1].replace(/,/g, '');
-          const satang = parseToSatang(numStr);
-          // Exclude Buddhist/Gregorian years
-          if (satang > 0 && satang !== 256700 && satang !== 256800 && satang !== 256900 && satang !== 202400 && satang !== 202500 && satang !== 202600) {
-            return satang;
-          }
-        }
+      // 1b. Check following lines (up to 4 lines down, e.g. BBL where 56.00 THB is next line)
+      for (let j = i + 1; j <= Math.min(i + 4, lines.length - 1); j++) {
+        const amt = parseDecimalFromLine(lines[j]);
+        if (amt !== undefined) return amt;
       }
     }
   }
 
-  // Strategy B: Find all decimal numbers with 2 decimal places and exclude 0.00
+  // Pass 2: Secondary keywords (e.g. Dime! where "Transfer" is at top, followed by "150.00 THB")
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].toLowerCase();
+    const hasSecondary = secondaryKeywords.some((kw) => line.includes(kw));
+    if (hasSecondary) {
+      for (let j = i; j <= Math.min(i + 3, lines.length - 1); j++) {
+        const amt = parseDecimalFromLine(lines[j]);
+        if (amt !== undefined) return amt;
+      }
+    }
+  }
+
+  // Pass 3: Lines explicitly containing currency suffix (THB, บาท, Baht)
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.match(/(?:บาท|thb|baht)/i) && !line.includes('ค่าธรรมเนียม') && !line.toLowerCase().includes('fee')) {
+      const amt = parseDecimalFromLine(line);
+      if (amt !== undefined) return amt;
+    }
+  }
+
+  // Pass 4: Fallback scan for any non-zero decimal number, excluding fee lines and date/time
   const allMatches: number[] = [];
-  const regex = /(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d+)\s*[\.,]\s*(\d{2})(?:[^\d]|$)/g;
-  let match;
-  while ((match = regex.exec(text)) !== null) {
-    const numStr = `${match[1].replace(/,/g, '')}.${match[2]}`;
-    const satang = parseToSatang(numStr);
-    if (satang > 0) {
-      allMatches.push(satang);
+  for (const line of lines) {
+    if (isIgnoredLine(line)) continue;
+    const regex = /(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d+)\s*[\.,]\s*(\d{2})(?:[^\d]|$)/g;
+    let match;
+    while ((match = regex.exec(line)) !== null) {
+      const numStr = `${match[1].replace(/,/g, '')}.${match[2]}`;
+      const satang = parseToSatang(numStr);
+      if (satang > 0) {
+        allMatches.push(satang);
+      }
     }
   }
 
   if (allMatches.length > 0) {
-    // Return largest non-zero amount (transfer amount is always >= fee)
     return Math.max(...allMatches);
   }
 
@@ -266,43 +364,53 @@ export function extractSlipTime(text: string): string | undefined {
  * Extracts Date in YYYY-MM-DD format from slip text
  */
 export function extractSlipDate(text: string): string | undefined {
-  // Regex A: "30 ก.ย. 2569", "30 ne. 69", "30-Sep-2026", "30ก.ย.69"
-  const thaiDateRegex = /(\d{1,2})\s*[\s\.\-\/]?\s*([^\s\d\n]{2,15})\s*[\s\.\-\/]?\s*(\d{2,4})/;
-  const match = text.match(thaiDateRegex);
+  const lines = text.split('\n');
 
-  if (match) {
-    const day = parseInt(match[1], 10);
-    const monthStr = matchMonthToken(match[2]);
-    const rawYear = parseInt(match[3], 10);
+  // Strategy A: Thai/English text date within each single line
+  // Example: "04 ต.ค. 2569", "13 ก.ย. 2569", "12 ก.ย. 69", "30 Sep 2026"
+  const thaiDateRegex = /(?:^|[^\d])(\d{1,2})\s*[\s\.\-\/]?\s*([^\s\d]{2,15})\s*[\s\.\-\/]?\s*(\d{2,4})(?:[^\d]|$)/;
+  for (const line of lines) {
+    const match = line.match(thaiDateRegex);
+    if (match) {
+      const day = parseInt(match[1], 10);
+      const monthStr = matchMonthToken(match[2]);
+      const rawYear = parseInt(match[3], 10);
 
-    if (monthStr && day >= 1 && day <= 31) {
-      const gregorianYear = convertBuddhistToGregorianYear(rawYear);
-      const dayStr = day.toString().padStart(2, '0');
-      return `${gregorianYear}-${monthStr}-${dayStr}`;
+      if (monthStr && day >= 1 && day <= 31) {
+        const gregorianYear = convertBuddhistToGregorianYear(rawYear);
+        const dayStr = day.toString().padStart(2, '0');
+        return `${gregorianYear}-${monthStr}-${dayStr}`;
+      }
     }
   }
 
-  // Regex B: Standard numeric date "DD/MM/YYYY", "DD-MM-YYYY", "DD.MM.YYYY"
-  const numericMatch = text.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
-  if (numericMatch) {
-    const d = parseInt(numericMatch[1], 10);
-    const m = parseInt(numericMatch[2], 10);
-    const y = parseInt(numericMatch[3], 10);
-    if (d >= 1 && d <= 31 && m >= 1 && m <= 12) {
-      const year = convertBuddhistToGregorianYear(y);
-      return `${year}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+  // Strategy B: Numeric date "DD/MM/YYYY", "DD-MM-YYYY", "DD.MM.YYYY"
+  const numericRegex = /(?:^|[^\d])(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})(?:[^\d]|$)/;
+  for (const line of lines) {
+    const match = line.match(numericRegex);
+    if (match) {
+      const d = parseInt(match[1], 10);
+      const m = parseInt(match[2], 10);
+      const y = parseInt(match[3], 10);
+      if (d >= 1 && d <= 31 && m >= 1 && m <= 12) {
+        const year = convertBuddhistToGregorianYear(y);
+        return `${year}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+      }
     }
   }
 
-  // Regex C: ISO date "YYYY-MM-DD"
-  const isoMatch = text.match(/\b(20\d{2}|25\d{2})[\/\-](\d{1,2})[\/\-](\d{1,2})\b/);
-  if (isoMatch) {
-    const y = parseInt(isoMatch[1], 10);
-    const m = parseInt(isoMatch[2], 10);
-    const d = parseInt(isoMatch[3], 10);
-    if (d >= 1 && d <= 31 && m >= 1 && m <= 12) {
-      const year = convertBuddhistToGregorianYear(y);
-      return `${year}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+  // Strategy C: ISO date "YYYY-MM-DD"
+  const isoRegex = /\b(20\d{2}|25\d{2})[\/\-](\d{1,2})[\/\-](\d{1,2})\b/;
+  for (const line of lines) {
+    const match = line.match(isoRegex);
+    if (match) {
+      const y = parseInt(match[1], 10);
+      const m = parseInt(match[2], 10);
+      const d = parseInt(match[3], 10);
+      if (d >= 1 && d <= 31 && m >= 1 && m <= 12) {
+        const year = convertBuddhistToGregorianYear(y);
+        return `${year}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+      }
     }
   }
 
@@ -443,6 +551,50 @@ export function convertBuddhistToGregorianYear(year: number): number {
 }
 
 /**
+ * Extracts sender and recipient names from slip lines (e.g. จาก / ถึง / ไปยัง / ไปที่ / From / To)
+ */
+export function extractSenderRecipient(ocrText: string): { sender?: string; recipient?: string } {
+  let sender: string | undefined;
+  let recipient: string | undefined;
+
+  const lines = ocrText.split('\n');
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // Check sender pattern
+    if (!sender) {
+      const match = line.match(/^(?:จาก|ผู้โอน|from)\s*[:\-]?\s*(.*)$/i);
+      if (match) {
+        let val = match[1].trim();
+        if (!val && i + 1 < lines.length) {
+          val = lines[i + 1].trim();
+        }
+        val = val.replace(/^(?:นาย|นาง|นางสาว|ms\.|mr\.|mrs\.)\s*/i, '');
+        val = val.split(/\b(?:\d{3}[-\s]?\d|xxx|ธนาคาร|กรุงไทย|ไทยพาณิชย์|กรุงเทพ)/i)[0].trim();
+        if (val.length >= 2) sender = val;
+      }
+    }
+
+    // Check recipient pattern
+    if (!recipient) {
+      const match = line.match(/^(?:ไปยัง|ไปที่|ผู้รับ|ถึง|to)\s*[:\-]?\s*(.*)$/i);
+      if (match) {
+        let val = match[1].trim();
+        if (!val && i + 1 < lines.length) {
+          val = lines[i + 1].trim();
+        }
+        val = val.replace(/^(?:นาย|นาง|นางสาว|ms\.|mr\.|mrs\.)\s*/i, '');
+        val = val.split(/\b(?:\d{3}[-\s]?\d|xxx|พร้อมเพย์|ธนาคาร|\()/i)[0].trim();
+        if (val.length >= 2) recipient = val;
+      }
+    }
+  }
+
+  return { sender, recipient };
+}
+
+/**
  * Matches extracted names with household members (e.g. "โฟกัส" / "ภาณุเดช" or "แม่ต้นหยง" / "ธนภรณ์")
  */
 export function matchMemberNames(
@@ -450,6 +602,7 @@ export function matchMemberNames(
   knownMembers: string[]
 ): { matchedWho?: string; sender?: string; recipient?: string } {
   const text = ocrText.toLowerCase();
+  const extracted = extractSenderRecipient(ocrText);
 
   // Known member aliases
   const aliases: Record<string, string[]> = {
@@ -457,22 +610,30 @@ export function matchMemberNames(
     แม่ต้นหยง: ['แม่ต้นหยง', 'ต้นหยง', 'ธนภรณ์', 'tanaporn', 'tonyong'],
   };
 
+  let matchedWho: string | undefined;
+
   for (const member of knownMembers) {
     const memberLower = member.toLowerCase();
     if (text.includes(memberLower)) {
-      return { matchedWho: member };
+      matchedWho = member;
+      break;
     }
     // Check aliases
     const memberAliases = aliases[member] || [];
     for (const alias of memberAliases) {
       if (text.includes(alias.toLowerCase())) {
-        return { matchedWho: member };
+        matchedWho = member;
+        break;
       }
     }
+    if (matchedWho) break;
   }
 
-  // If knownMembers is empty or didn't match, return first known member if any
-  return { matchedWho: knownMembers[0] };
+  return {
+    matchedWho: matchedWho || knownMembers[0],
+    sender: extracted.sender,
+    recipient: extracted.recipient,
+  };
 }
 
 /**

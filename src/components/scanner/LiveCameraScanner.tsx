@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Camera, RefreshCw, Zap, ZapOff, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { Camera, RefreshCw, Zap, ZapOff, Image as ImageIcon, AlertCircle, Check, Sparkles, QrCode } from 'lucide-react';
 import { Button } from '../common/Button';
 import { decodeQRFromImageData, DecodedSlipQR } from '../../lib/slip/qrDecoder';
 
@@ -379,49 +379,64 @@ export const LiveCameraScanner: React.FC<LiveCameraScannerProps> = ({
             {/* Dark Vignette Mask */}
             <div className="absolute inset-0 pointer-events-none bg-black/25" />
 
-            {/* Target Reticle (กรอบเล็งทรงสลิปแนวตั้ง) */}
-            <div className="absolute inset-x-6 top-10 bottom-24 pointer-events-none flex flex-col items-center justify-center">
+            {/* Target Reticle (กรอบเล็งทรงสลิปสากลแบบเต็มใบ - รองรับทุกธนาคาร) */}
+            <div className="absolute inset-x-4 top-10 bottom-24 pointer-events-none flex flex-col items-center justify-center">
               <div
-                className={`relative w-full max-w-[220px] h-[270px] rounded-2xl border-2 transition-all duration-200 flex flex-col justify-between p-3 ${
+                className={`relative w-full max-w-[240px] h-[300px] rounded-2xl border-2 transition-all duration-300 flex flex-col justify-between p-3.5 ${
                   qrDetected
-                    ? 'border-emerald-400 bg-emerald-500/20 shadow-[0_0_25px_#10b981]'
-                    : 'border-white/50 shadow-[0_0_15px_rgba(0,0,0,0.5)]'
+                    ? 'border-emerald-400 bg-emerald-500/20 shadow-[0_0_35px_#10b981]'
+                    : 'border-white/40 shadow-[0_0_20px_rgba(0,0,0,0.6)]'
                 }`}
               >
                 {/* 4 Corner Markers */}
-                <div className="absolute -top-1 -left-1 w-5 h-5 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg" />
-                <div className="absolute -top-1 -right-1 w-5 h-5 border-t-4 border-r-4 border-emerald-400 rounded-tr-lg" />
-                <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-4 border-l-4 border-emerald-400 rounded-bl-lg" />
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-4 border-r-4 border-emerald-400 rounded-br-lg" />
+                <div className="absolute -top-1.5 -left-1.5 w-6 h-6 border-t-4 border-l-4 border-emerald-400 rounded-tl-xl" />
+                <div className="absolute -top-1.5 -right-1.5 w-6 h-6 border-t-4 border-r-4 border-emerald-400 rounded-tr-xl" />
+                <div className="absolute -bottom-1.5 -left-1.5 w-6 h-6 border-b-4 border-l-4 border-emerald-400 rounded-bl-xl" />
+                <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 border-b-4 border-r-4 border-emerald-400 rounded-br-xl" />
 
-                {/* Upper Guide: Amount Area */}
-                <div className="text-center py-2 border-b border-dashed border-white/20">
-                  <span className="text-[10px] text-white/70 block">📄 วางยอดเงินให้อยู่ด้านบน</span>
+                {/* Top Badge: Full Slip Guide */}
+                <div className="text-center">
+                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-black/60 border border-white/15 text-[10px] text-white/90 font-medium tracking-wide">
+                    📄 กรอบสลิปแบบเต็มใบ
+                  </span>
                 </div>
 
-                {/* Lower Guide: QR Area */}
-                <div className="text-center py-2.5 border-2 border-dashed border-emerald-400/40 rounded-xl bg-black/25">
-                  <span className="text-[10px] text-emerald-300 block">🏁 QR Code สลิป</span>
-                </div>
-
-                {/* Laser Scanning Beam (up & down) */}
+                {/* Center Hologram Placeholder */}
                 {!qrDetected && (
-                  <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_12px_#10b981] animate-bounce" />
-                )}
-
-                {/* QR Detected Status Badge */}
-                {qrDetected && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-2xl">
-                    <span className="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse">
-                      ✓ ตรวจพบ QR Code!
-                    </span>
+                  <div className="flex flex-col items-center justify-center gap-1.5 text-white/35 my-auto">
+                    <QrCode size={34} strokeWidth={1.5} className="text-emerald-400/40" />
+                    <span className="text-[10px] text-white/60 font-medium">QR โค้ดอยู่มุมบนหรือล่างก็ได้</span>
                   </div>
                 )}
+
+                {/* Laser Scanning Beam (up & down across full receipt) */}
+                {!qrDetected && (
+                  <div className="absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_14px_#10b981] animate-bounce" />
+                )}
+
+                {/* QR Detected Status Overlay */}
+                {qrDetected && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm rounded-2xl gap-2 p-4 text-center">
+                    <div className="w-11 h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/50 animate-bounce">
+                      <Check size={22} strokeWidth={3} />
+                    </div>
+                    <span className="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                      ✓ ตรวจพบ QR Code สลิปแล้ว!
+                    </span>
+                    <span className="text-[10px] text-emerald-200">กำลังอ่านข้อมูลและยอดเงิน...</span>
+                  </div>
+                )}
+
+                {/* Bottom subtle bar */}
+                <div className="text-center">
+                  <span className="text-[9px] text-white/40 block">รองรับทุกธนาคาร (KTB, SCB, BBL, Dime)</span>
+                </div>
               </div>
 
               {/* Instructions Pill */}
-              <div className="mt-3 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md text-[11px] text-white/95 font-medium text-center shadow">
-                ส่องให้เห็นทั้งใบสลิป (QR Code + ยอดเงิน)
+              <div className="mt-2.5 px-3 py-1 rounded-full bg-neutral-900/90 border border-neutral-700/80 backdrop-blur-md text-[11px] text-white font-medium text-center shadow-lg flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />
+                <span>ส่องให้เห็นสลิปทั้งใบ (ระบบตรวจจับอัตโนมัติ)</span>
               </div>
             </div>
 
@@ -509,9 +524,17 @@ export const LiveCameraScanner: React.FC<LiveCameraScannerProps> = ({
         )}
       </div>
 
-      {/* Helpful Tips */}
-      <div className="text-center text-[11px] text-neutral-400 space-y-1">
-        <p>• สแกน QR Code จากสลิป หรือกดปุ่มชัตเตอร์สีขาวเพื่อถ่ายรูปทันที</p>
+      {/* Helpful Multi-Bank Tips */}
+      <div className="p-3 rounded-2xl bg-neutral-100/80 dark:bg-neutral-900/60 border border-neutral-200/80 dark:border-neutral-800/80 text-[11px] text-neutral-600 dark:text-neutral-400 space-y-1">
+        <p className="font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
+          <Sparkles size={13} className="text-emerald-500 shrink-0" />
+          <span>สลิปแต่ละธนาคารจัดวางตำแหน่งต่างกัน:</span>
+        </p>
+        <p className="text-[10.5px] leading-relaxed text-neutral-500 dark:text-neutral-400">
+          • <strong>กรุงไทย:</strong> QR โค้ดอยู่มุมบนขวา, ยอดเงินอยู่ล่าง<br />
+          • <strong>SCB / BBL / Dime:</strong> QR อยู่มุมล่าง/กลาง, ยอดเงินอยู่บนหรือล่าง<br />
+          💡 <em>เพียงจัดให้เห็นทั้งใบสลิป ระบบจะอ่าน QR และยอดเงินอัตโนมัติ หรือกดชัตเตอร์สีขาวเพื่อถ่ายทันทีครับ</em>
+        </p>
       </div>
     </div>
   );
