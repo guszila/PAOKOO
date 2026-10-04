@@ -40,12 +40,12 @@ export const POCKET_ICONS: Record<string, React.ElementType> = {
 };
 
 export const POCKET_COLORS = [
-  { label: 'เขียวมรกต', value: '#10B981', bgClass: 'bg-emerald-500' },
-  { label: 'ฟ้าน้ำทะเล', value: '#3B82F6', bgClass: 'bg-blue-500' },
   { label: 'ม่วงลาเวนเดอร์', value: '#8B5CF6', bgClass: 'bg-purple-500' },
-  { label: 'ส้มอำพัน', value: '#F59E0B', bgClass: 'bg-amber-500' },
-  { label: 'ชมพูกุหลาบ', value: '#F43F5E', bgClass: 'bg-rose-500' },
+  { label: 'ฟ้าน้ำทะเล', value: '#3B82F6', bgClass: 'bg-blue-500' },
   { label: 'ฟ้าคราม', value: '#06B6D4', bgClass: 'bg-cyan-500' },
+  { label: 'ชมพูกุหลาบ', value: '#F43F5E', bgClass: 'bg-rose-500' },
+  { label: 'ครามคราม', value: '#6366F1', bgClass: 'bg-indigo-500' },
+  { label: 'เขียวมิ้นต์', value: '#14B8A6', bgClass: 'bg-teal-500' },
 ];
 
 export const PocketModal: React.FC<PocketModalProps> = ({
@@ -57,7 +57,7 @@ export const PocketModal: React.FC<PocketModalProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [amountStr, setAmountStr] = useState('');
-  const [color, setColor] = useState('#10B981');
+  const [color, setColor] = useState('#8B5CF6');
   const [icon, setIcon] = useState('wallet');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -68,12 +68,17 @@ export const PocketModal: React.FC<PocketModalProps> = ({
     if (pocket) {
       setName(pocket.name);
       setAmountStr(satangToBaht(pocket.allocatedSatang).toString());
-      setColor(pocket.color || '#10B981');
+      const pColor = pocket.color?.toLowerCase();
+      if (!pocket.color || pColor === '#10b981' || pColor === '#f59e0b') {
+        setColor('#8B5CF6');
+      } else {
+        setColor(pocket.color);
+      }
       setIcon(pocket.icon || 'wallet');
     } else {
       setName('');
       setAmountStr('');
-      setColor('#10B981');
+      setColor('#8B5CF6');
       setIcon('wallet');
     }
     setErrorMsg(null);

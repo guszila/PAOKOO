@@ -1,7 +1,7 @@
 import { Transaction } from '../types/transaction';
 import { getCategoryColor } from '../config/categories';
-
 import { PocketSummary } from '../types/pocket';
+import { calculateDebtors } from './summary';
 
 export interface DonutSegment {
   id: string;
@@ -18,23 +18,47 @@ export interface DonutData {
   isEmpty: boolean;
 }
 
-// Contrasting palette for pockets on donut chart
-const POCKET_DONUT_COLORS = [
-  '#8B5CF6', // Purple
-  '#06B6D4', // Cyan
-  '#3B82F6', // Blue
-  '#EC4899', // Pink
-  '#F59E0B', // Amber
-  '#14B8A6', // Teal
-  '#E11D48', // Rose
+// Distinct, vibrant palette for spending pockets on donut chart
+// Excludes emerald green (#10B981) reserved for main savings and amber (#F59E0B) reserved for lending
+export const POCKET_DONUT_COLORS = [
+  '#8B5CF6', // Lavender Purple
+  '#06B6D4', // Cyan Sky
+  '#3B82F6', // Ocean Blue
+  '#EC4899', // Hot Pink
+  '#6366F1', // Indigo
+  '#14B8A6', // Teal Mint
+  '#D946EF', // Fuchsia
 ];
+
+// Rich, warm palette for lending/borrowing by debtor (Amber, Orange, Golden tones)
+export const LEND_DONUT_COLORS = [
+  '#F59E0B', // Amber 500 (Signature PAOKOO loan color)
+  '#F97316', // Vibrant Orange 500
+  '#EAB308', // Sunflower Gold 500
+  '#FB923C', // Coral Peach 400
+  '#D97706', // Warm Honey 600
+  '#EA580C', // Rust Orange 600
+  '#FBBF24', // Marigold 400
+  '#CA8A04', // Bronze Ochre 600
+];
+
+/**
+ * Returns a display color for a pocket that avoids colliding with main savings (#10B981) or lending (#F59E0B).
+ */
+export function getPocketDisplayColor(color?: string, index = 0): string {
+  const lower = (color || '').toLowerCase();
+  if (!color || lower === '#10b981' || lower === '#f59e0b') {
+    return POCKET_DONUT_COLORS[index % POCKET_DONUT_COLORS.length];
+  }
+  return color;
+}
 
 /**
  * Calculates Tab 1 Donut: "เงินของเรา" (Our Wealth Allocation)
  * Splits total deposited wealth across:
  * 1. กองกลางหลัก (Main savings pool)
  * 2. กล่องแบ่งเงินใช้ (Each spending pocket's remaining balance)
- * 3. เงินที่ถูกยืมค้าง (Outstanding lent)
+ * 3. สัดส่วนเงินให้ยืม (Each debtor's outstanding lent balance with individual colors)
  * 4. ค่าใช้จ่ายสะสม (Total accumulated expenses)
  * Total deposited = balance + total expenses + outstanding lent
  */
@@ -98,11 +122,7 @@ export function calculateWealthDonut(
 
     // 2. Spending Pockets
     activePocketsWithMoney.forEach((ps, idx) => {
-      // Pick color: if pocket color is default emerald (#10B981) which collides with main savings, pick distinct color
-      let segColor = ps.pocket.color;
-      if (!segColor || segColor.toLowerCase() === '#10b981') {
-        segColor = POCKET_DONUT_COLORS[idx % POCKET_DONUT_COLORS.length];
-      }
+      const segColor = getPocketDisplayColor(ps.pocket.color, idx);
 
       rawSegments.push({
         id: `pocket-${ps.pocket.id}`,
@@ -123,14 +143,46 @@ export function calculateWealthDonut(
     }
   }
 
-  // 3. Outstanding lent
+  // 3. Outstanding lent: broken down per person who borrowed (multi-color)
   if (outstandingLent > 0) {
-    rawSegments.push({
-      id: 'lent',
-      label: 'เงินที่ถูกยืมค้าง',
-      valueSatang: outstandingLent,
-      color: '#F59E0B', // Amber
-    });
+    const debtors = calculateDebtors(transactions);
+
+    if (debtors.length > 0) {
+      let allocatedLent = 0;
+      debtors.forEach((debtor, idx) => {
+        const segColor = LEND_DONUT_COLORS[idx % LEND_DONUT_COLORS.length];
+        const displayLabel = debtor.who.includes('ยืม') || debtor.who.includes('กู้')
+          ? debtor.who
+          : `ยืม: ${debtor.who}`;
+
+        rawSegments.push({
+          id: `lend-${debtor.who}`,
+          label: displayLabel,
+          valueSatang: debtor.balance,
+          color: segColor,
+        });
+        allocatedLent += debtor.balance;
+      });
+
+      // If there is any remaining unassigned lent amount (e.g. anonymous lend transactions)
+      const unassignedLent = Math.max(0, outstandingLent - allocatedLent);
+      if (unassignedLent > 0) {
+        rawSegments.push({
+          id: 'lend-other',
+          label: 'ยืม: อื่นๆ',
+          valueSatang: unassignedLent,
+          color: LEND_DONUT_COLORS[debtors.length % LEND_DONUT_COLORS.length],
+        });
+      }
+    } else {
+      // Fallback if no named debtors were found
+      rawSegments.push({
+        id: 'lent',
+        label: 'เงินที่ถูกยืมค้าง',
+        valueSatang: outstandingLent,
+        color: LEND_DONUT_COLORS[0],
+      });
+    }
   }
 
   // 4. Expenses

@@ -3,6 +3,7 @@ import { Pocket, PocketSummary } from '../../types/pocket';
 import { formatSatang } from '../../lib/money';
 import { Plus, MoreHorizontal, PlusCircle, Sparkles, Wallet } from 'lucide-react';
 import { POCKET_ICONS } from './PocketModal';
+import { getPocketDisplayColor } from '../../lib/donut';
 
 interface PocketSectionProps {
   pocketSummaries: PocketSummary[];
@@ -66,10 +67,10 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
       ) : (
         /* Pockets Grid */
         <div className="grid grid-cols-1 gap-3">
-          {pocketSummaries.map((summary) => {
+          {pocketSummaries.map((summary, idx) => {
             const { pocket, spentSatang, remainingSatang, spentPercentage } = summary;
             const IconComp = (pocket.icon && POCKET_ICONS[pocket.icon]) || Wallet;
-            const themeColor = pocket.color || '#10B981';
+            const themeColor = getPocketDisplayColor(pocket.color, idx);
 
             const isOverspent = remainingSatang < 0;
             const isExhausted = remainingSatang === 0;

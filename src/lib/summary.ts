@@ -1,6 +1,55 @@
 import { Transaction, FinancialSummary, OutstandingDebtor } from '../types/transaction';
 
 /**
+ * Calculates list of debtors who have outstanding balance > 0
+ * sorted descending by balance.
+ */
+export function calculateDebtors(transactions: Transaction[]): OutstandingDebtor[] {
+  const debtorMap = new Map<string, { originalWho: string; lent: number; repaid: number }>();
+
+  for (const tx of transactions) {
+    const amount = Math.round(tx.amount);
+    if (amount <= 0) continue;
+
+    const personKey = tx.who ? tx.who.trim().toLowerCase() : '';
+
+    switch (tx.type) {
+      case 'lend':
+        if (personKey) {
+          const entry = debtorMap.get(personKey) || { originalWho: tx.who.trim(), lent: 0, repaid: 0 };
+          entry.lent += amount;
+          debtorMap.set(personKey, entry);
+        }
+        break;
+
+      case 'back':
+        if (personKey) {
+          const entry = debtorMap.get(personKey) || { originalWho: tx.who.trim(), lent: 0, repaid: 0 };
+          entry.repaid += amount;
+          debtorMap.set(personKey, entry);
+        }
+        break;
+    }
+  }
+
+  const debtors: OutstandingDebtor[] = [];
+  debtorMap.forEach((entry) => {
+    const balance = entry.lent - entry.repaid;
+    if (balance > 0) {
+      debtors.push({
+        who: entry.originalWho,
+        totalLent: entry.lent,
+        totalRepaid: entry.repaid,
+        balance,
+      });
+    }
+  });
+
+  debtors.sort((a, b) => b.balance - a.balance);
+  return debtors;
+}
+
+/**
  * Calculates all financial summaries purely from transaction list.
  * All amounts are in integer satang.
  */
@@ -12,10 +61,6 @@ export function calculateSummary(
   let sumOut = 0;
   let sumLend = 0;
   let sumBack = 0;
-
-  // Track per-person lending & repayments
-  // Map key: lowercased/trimmed name -> { who: originalName, lent: satang, repaid: satang }
-  const debtorMap = new Map<string, { originalWho: string; lent: number; repaid: number }>();
 
   // Determine current year-month YYYY-MM
   const year = currentDate.getFullYear();
@@ -29,7 +74,6 @@ export function calculateSummary(
     const amount = Math.round(tx.amount);
     if (amount <= 0) continue;
 
-    const personKey = tx.who.trim().toLowerCase();
     const isThisMonth = tx.date && tx.date.startsWith(currentYearMonth);
 
     switch (tx.type) {
@@ -45,43 +89,17 @@ export function calculateSummary(
 
       case 'lend':
         sumLend += amount;
-        if (personKey) {
-          const entry = debtorMap.get(personKey) || { originalWho: tx.who.trim(), lent: 0, repaid: 0 };
-          entry.lent += amount;
-          debtorMap.set(personKey, entry);
-        }
         break;
 
       case 'back':
         sumBack += amount;
-        if (personKey) {
-          const entry = debtorMap.get(personKey) || { originalWho: tx.who.trim(), lent: 0, repaid: 0 };
-          entry.repaid += amount;
-          debtorMap.set(personKey, entry);
-        }
         break;
     }
   }
 
   // Calculate outstanding balances (show only people with balance > 0)
-  const debtors: OutstandingDebtor[] = [];
-  let totalLentOut = 0;
-
-  debtorMap.forEach((entry) => {
-    const balance = entry.lent - entry.repaid;
-    if (balance > 0) {
-      debtors.push({
-        who: entry.originalWho,
-        totalLent: entry.lent,
-        totalRepaid: entry.repaid,
-        balance,
-      });
-      totalLentOut += balance;
-    }
-  });
-
-  // Sort debtors by balance descending (highest debt first)
-  debtors.sort((a, b) => b.balance - a.balance);
+  const debtors = calculateDebtors(transactions);
+  const totalLentOut = debtors.reduce((sum, d) => sum + d.balance, 0);
 
   // Current account balance = sum(in) + sum(back) - sum(out) - sum(lend)
   const currentBalance = sumIn + sumBack - sumOut - sumLend;

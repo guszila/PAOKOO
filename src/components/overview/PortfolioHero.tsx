@@ -180,7 +180,7 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="text-sm">👛</span>
             <span className="text-neutral-500 dark:text-neutral-400 truncate">ในกล่องแบ่งใช้:</span>
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
+            <span className="font-semibold text-purple-600 dark:text-purple-400 tabular-nums">
               {isMasked
                 ? '••••'
                 : `${formatSatang(pocketSummaries.reduce((sum, p) => sum + p.remainingSatang, 0))} ฿`}
