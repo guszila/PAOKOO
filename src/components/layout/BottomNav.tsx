@@ -30,12 +30,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <span className="text-[10px] mt-1">ภาพรวม</span>
         </button>
 
-        {/* Tab 2: Transactions */}
+        {/* Tab 2: Transactions (Sapphire Blue) */}
         <button
           onClick={() => onTabChange('transactions')}
           className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors select-none ${
             activeTab === 'transactions'
-              ? 'text-emerald-600 dark:text-emerald-400 font-medium'
+              ? 'text-blue-600 dark:text-blue-400 font-semibold'
               : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
           }`}
         >
@@ -64,12 +64,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           </div>
         </div>
 
-        {/* Tab 4: Analytics */}
+        {/* Tab 4: Analytics (Royal Violet) */}
         <button
           onClick={() => onTabChange('analytics')}
           className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors select-none ${
             activeTab === 'analytics'
-              ? 'text-emerald-600 dark:text-emerald-400 font-medium'
+              ? 'text-purple-600 dark:text-purple-400 font-semibold'
               : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
           }`}
         >
@@ -77,12 +77,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <span className="text-[10px] mt-1">วิเคราะห์</span>
         </button>
 
-        {/* Tab 5: Settings */}
+        {/* Tab 5: Settings (Titanium Slate) */}
         <button
           onClick={() => onTabChange('settings')}
           className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors select-none ${
             activeTab === 'settings'
-              ? 'text-emerald-600 dark:text-emerald-400 font-medium'
+              ? 'text-neutral-900 dark:text-neutral-100 font-semibold'
               : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
           }`}
         >

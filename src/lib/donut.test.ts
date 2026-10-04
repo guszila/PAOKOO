@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateWealthDonut } from './donut';
+import { calculateWealthDonut, calculateExpenseCategoryDonut } from './donut';
 import { Transaction } from '../types/transaction';
 import { PocketSummary } from '../types/pocket';
 
@@ -169,3 +169,65 @@ describe('calculateWealthDonut with Pockets', () => {
     expect(Number(totalPercentage.toFixed(2))).toBe(100);
   });
 });
+
+describe('calculateExpenseCategoryDonut', () => {
+  it('should group expenses by category and calculate percentages correctly', () => {
+    const transactions: Transaction[] = [
+      {
+        id: '1',
+        type: 'out',
+        amount: 40000, // 400 Baht
+        category: 'ค่าน้ำ-ไฟ-เน็ต',
+        who: 'โฟกัส',
+        date: '2026-10-04',
+        note: 'ค่าเน็ต',
+        createdBy: 'u1',
+        createdAt: '',
+        updatedAt: '',
+      },
+      {
+        id: '2',
+        type: 'out',
+        amount: 15000, // 150 Baht
+        category: 'อาหาร',
+        who: 'โฟกัส',
+        date: '2026-10-04',
+        note: 'ข้าวกะเพรา',
+        createdBy: 'u1',
+        createdAt: '',
+        updatedAt: '',
+      },
+      {
+        id: '3',
+        type: 'in', // should be excluded from expense donut
+        amount: 100000,
+        who: 'โฟกัส',
+        date: '2026-10-04',
+        note: 'เงินเข้า',
+        createdBy: 'u1',
+        createdAt: '',
+        updatedAt: '',
+      },
+    ];
+
+    const result = calculateExpenseCategoryDonut(transactions, '2026-10');
+    expect(result.isEmpty).toBe(false);
+    expect(result.totalSatang).toBe(55000); // 550 Baht
+    expect(result.segments.length).toBe(2);
+
+    // 400 / 550 = 72.73%
+    const utilitySeg = result.segments.find((s) => s.label === 'ค่าน้ำ-ไฟ-เน็ต');
+    expect(utilitySeg?.valueSatang).toBe(40000);
+    expect(utilitySeg?.percentage).toBe(72.73);
+
+    // 150 / 550 = 27.27%
+    const foodSeg = result.segments.find((s) => s.label === 'อาหาร');
+    expect(foodSeg?.valueSatang).toBe(15000);
+    expect(foodSeg?.percentage).toBe(27.27);
+
+    // Total percentages should equal 100.00%
+    const sum = result.segments.reduce((acc, s) => acc + s.percentage, 0);
+    expect(Number(sum.toFixed(2))).toBe(100);
+  });
+});
+

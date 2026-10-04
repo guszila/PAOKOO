@@ -2,6 +2,7 @@ import React from 'react';
 import { TransactionType } from '../../types/transaction';
 import { Search, Calendar, Tag } from 'lucide-react';
 import { DEFAULT_EXPENSE_CATEGORIES } from '../../config/categories';
+import { getCategoryEmoji } from '../../config/emojis';
 
 interface TransactionFiltersProps {
   selectedType: TransactionType | 'all';
@@ -77,10 +78,10 @@ export const TransactionFilters: React.FC<TransactionFiltersProps> = ({
               onChange={(e) => onCategoryChange(e.target.value)}
               className="appearance-none pl-7 pr-6 py-2 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-800 dark:text-neutral-200 focus:outline-none cursor-pointer"
             >
-              <option value="all">ทุกหมวดหมู่</option>
+              <option value="all">🏷️ ทุกหมวดหมู่</option>
               {categories.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {getCategoryEmoji(c)} {c}
                 </option>
               ))}
             </select>

@@ -18,9 +18,12 @@ import {
   Tag,
   X,
   Wallet,
+  Smile,
 } from 'lucide-react';
 import { SlipViewerModal } from '../scanner/SlipViewerModal';
 import { Pocket, PocketSummary } from '../../types/pocket';
+import { EmojiPickerModal } from '../common/EmojiPickerModal';
+import { POPULAR_EXPENSE_EMOJIS, setLeadingEmoji, getCategoryEmoji, extractEmoji } from '../../config/emojis';
 
 interface TransactionFormSheetProps {
   isOpen: boolean;
@@ -43,11 +46,44 @@ interface TransactionFormSheetProps {
   } | null;
   existingTransactions: Transaction[];
   memberNames: string[];
+  currentMemberName?: string;
   categories?: string[];
   pockets?: Pocket[];
   pocketSummaries?: PocketSummary[];
   onOpenScanner?: () => void;
 }
+
+const getLocalDateString = (offsetDays: number = 0): string => {
+  const d = new Date();
+  if (offsetDays !== 0) d.setDate(d.getDate() + offsetDays);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const getLocalTimeString = (): string => {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
+};
+
+const formatDisplayDate = (dateStr: string): string => {
+  if (!dateStr) return 'เลือกวันที่';
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  const y = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  const d = parseInt(parts[2], 10);
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return dateStr;
+  const thaiMonths = [
+    'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+    'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'
+  ];
+  const thaiYear = y > 2400 ? y : y + 543;
+  return `${d} ${thaiMonths[m - 1] || ''} ${thaiYear}`;
+};
 
 export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
   isOpen,
@@ -58,6 +94,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
   prefill,
   existingTransactions,
   memberNames,
+  currentMemberName,
   categories = DEFAULT_EXPENSE_CATEGORIES,
   pockets = [],
   pocketSummaries = [],
@@ -68,19 +105,22 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
   const [who, setWho] = useState<string>('');
   const [note, setNote] = useState<string>('');
   const [category, setCategory] = useState<string>('อาหาร');
-  const [date, setDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
-  const [time, setTime] = useState<string>('');
+  const [date, setDate] = useState<string>(() => getLocalDateString());
+  const [time, setTime] = useState<string>(() => getLocalTimeString());
   const [refNo, setRefNo] = useState<string>('');
   const [slipThumbnail, setSlipThumbnail] = useState<string | undefined>();
   const [fullSlipBase64, setFullSlipBase64] = useState<string | undefined>();
   const [selectedPocketId, setSelectedPocketId] = useState<string | undefined>(undefined);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+  const [showCustomWho, setShowCustomWho] = useState(false);
 
   const [showOverRepaymentWarning, setShowOverRepaymentWarning] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const todayStr = useMemo(() => getLocalDateString(), []);
+  const yesterdayStr = useMemo(() => getLocalDateString(-1), []);
   const isFutureDate = date > todayStr;
 
   // Sync form state when opened or changed
@@ -91,6 +131,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
       setType(initialTransaction.type);
       setAmountStr(satangToBaht(initialTransaction.amount).toString());
       setWho(initialTransaction.who);
+      setShowCustomWho(!memberNames.includes(initialTransaction.who));
       setNote(initialTransaction.note || '');
       setCategory(initialTransaction.category || 'อื่นๆ');
       setSelectedPocketId(initialTransaction.pocketId);
@@ -102,24 +143,27 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
     } else if (prefill) {
       setType(prefill.type || 'out');
       setAmountStr(prefill.amount ? satangToBaht(prefill.amount).toString() : '');
-      setWho(prefill.who || '');
+      const defaultWho = prefill.who || (prefill.type === 'lend' || prefill.type === 'back' ? '' : (currentMemberName || memberNames[0] || ''));
+      setWho(defaultWho);
+      setShowCustomWho(defaultWho ? !memberNames.includes(defaultWho) : false);
       setNote(prefill.note || '');
       setCategory(prefill.category || categories[0] || 'อาหาร');
       setSelectedPocketId(prefill.pocketId);
-      setDate(prefill.date || new Date().toISOString().slice(0, 10));
-      setTime(prefill.time || new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false }));
+      setDate(prefill.date || getLocalDateString());
+      setTime(prefill.time || getLocalTimeString());
       setRefNo(prefill.refNo || '');
       setSlipThumbnail(prefill.slipThumbnail);
       setFullSlipBase64(prefill.fullSlipBase64);
     } else {
       setType('out');
       setAmountStr('');
-      setWho(memberNames[0] || '');
+      setWho(currentMemberName || memberNames[0] || '');
+      setShowCustomWho(false);
       setNote('');
       setCategory(categories[0] || 'อาหาร');
       setSelectedPocketId(undefined);
-      setDate(new Date().toISOString().slice(0, 10));
-      setTime(new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false }));
+      setDate(getLocalDateString());
+      setTime(getLocalTimeString());
       setRefNo('');
       setSlipThumbnail(undefined);
       setFullSlipBase64(undefined);
@@ -128,7 +172,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
     setErrorMsg(null);
     setShowOverRepaymentWarning(false);
     setShowDeleteConfirm(false);
-  }, [isOpen, initialTransaction, prefill, memberNames, categories]);
+  }, [isOpen, initialTransaction, prefill, memberNames, currentMemberName, categories]);
 
   // Frequently used names for quick chips
   const quickPickNames = useMemo(() => {
@@ -278,13 +322,14 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                     key={cat}
                     type="button"
                     onClick={() => setCategory(cat)}
-                    className={`text-xs px-3 py-1.5 rounded-xl border transition-all ${
+                    className={`text-xs px-3 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 ${
                       category === cat
                         ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white font-medium shadow-sm'
                         : 'bg-surface-light dark:bg-surface-dark text-neutral-600 dark:text-neutral-400 border-border-light dark:border-border-dark hover:border-neutral-400'
                     }`}
                   >
-                    {cat}
+                    <span>{getCategoryEmoji(cat)}</span>
+                    <span>{cat}</span>
                   </button>
                 ))}
               </div>
@@ -350,94 +395,251 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
             </div>
           )}
 
-          {/* Quick-pick Names & Who input */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-              {type === 'lend'
-                ? 'ให้ใครยืม / จ่ายแทนใคร'
-                : type === 'back'
-                ? 'ใครโอนเงินคืน'
-                : type === 'in'
-                ? 'ใครฝากเงินเข้า'
-                : 'ใครเป็นคนจ่าย'}
-            </label>
-            <input
-              type="text"
-              value={who}
-              onChange={(e) => {
-                setWho(e.target.value);
-                setErrorMsg(null);
-              }}
-              placeholder="พิมพ์ชื่อ..."
-              className="w-full px-3.5 py-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100"
-            />
-
-            {/* Quick chips */}
-            <div className="flex items-center gap-1.5 flex-wrap pt-1">
-              <span className="text-[11px] text-neutral-400">ชื่อด่วน:</span>
-              {quickPickNames.map((name) => (
+          {/* Who Section: 1-Tap Member Switch for in/out, Debtor input for lend/back */}
+          {(type === 'out' || type === 'in') ? (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                  {type === 'in' ? 'ใครเป็นคนฝากเงิน' : 'ใครเป็นคนจ่ายเงิน'}
+                </label>
                 <button
-                  key={name}
                   type="button"
-                  onClick={() => setWho(name)}
-                  className={`text-xs px-2.5 py-1 rounded-lg border transition-all ${
-                    who === name
-                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white font-medium'
-                      : 'bg-surface-light dark:bg-surface-dark text-neutral-600 dark:text-neutral-400 border-border-light dark:border-border-dark hover:border-neutral-400'
-                  }`}
+                  onClick={() => setShowCustomWho(!showCustomWho)}
+                  className="text-[11px] text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
                 >
-                  {name}
+                  {showCustomWho ? '← เลือกจากสมาชิก' : 'พิมพ์ชื่ออื่น...'}
+                </button>
+              </div>
+
+              {showCustomWho ? (
+                <input
+                  type="text"
+                  value={who}
+                  onChange={(e) => {
+                    setWho(e.target.value);
+                    setErrorMsg(null);
+                  }}
+                  placeholder="พิมพ์ชื่อ..."
+                  className="w-full px-3.5 py-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100"
+                />
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  {memberNames.map((name) => {
+                    const isYou = name === currentMemberName;
+                    const isSelected = who === name;
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => {
+                          setWho(name);
+                          setErrorMsg(null);
+                        }}
+                        className={`h-11 px-3 rounded-xl border text-xs font-medium transition-all flex items-center justify-center gap-1.5 active:scale-95 ${
+                          isSelected
+                            ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white shadow-sm font-semibold'
+                            : 'bg-surface-light dark:bg-surface-dark text-neutral-600 dark:text-neutral-400 border-border-light dark:border-border-dark hover:border-neutral-400'
+                        }`}
+                      >
+                        <span className="truncate">{name}</span>
+                        {isYou && (
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded-md font-normal ${
+                              isSelected
+                                ? 'bg-white/20 text-white dark:bg-neutral-900/20 dark:text-neutral-900'
+                                : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40'
+                            }`}
+                          >
+                            คุณ
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Debtor Input for lend / back */
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                {type === 'lend' ? 'ให้ใครยืม / จ่ายแทนใคร' : 'ใครโอนเงินคืน'}
+              </label>
+              <input
+                type="text"
+                value={who}
+                onChange={(e) => {
+                  setWho(e.target.value);
+                  setErrorMsg(null);
+                }}
+                placeholder="พิมพ์ชื่อคนยืม เช่น เพื่อน, แม่..."
+                className="w-full px-3.5 py-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100"
+              />
+
+              {/* Quick chips */}
+              <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                <span className="text-[11px] text-neutral-400">ชื่อด่วน:</span>
+                {quickPickNames.map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => {
+                      setWho(name);
+                      setErrorMsg(null);
+                    }}
+                    className={`text-xs px-2.5 py-1 rounded-lg border transition-all ${
+                      who === name
+                        ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white font-medium'
+                        : 'bg-surface-light dark:bg-surface-dark text-neutral-600 dark:text-neutral-400 border-border-light dark:border-border-dark hover:border-neutral-400'
+                    }`}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Note Input with Emoji Picker & Quick Emojis */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                บันทึกช่วยจำ (หมายเหตุ)
+              </label>
+              <button
+                type="button"
+                onClick={() => setIsEmojiPickerOpen(true)}
+                className="inline-flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-medium transition-colors"
+              >
+                <Smile size={13} />
+                <span>เลือก Emoji</span>
+              </button>
+            </div>
+            <div className="relative">
+              <input
+                type="text"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="เช่น ซื้อของ Lotus, ค่าตั๋วหนัง..."
+                className="w-full px-3.5 py-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setIsEmojiPickerOpen(true)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 p-1"
+                title="เลือก Emoji"
+              >
+                <Smile size={17} />
+              </button>
+            </div>
+
+            {/* Quick Emoji Bar */}
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-0.5 pb-1">
+              <span className="text-[11px] text-neutral-400 shrink-0 select-none">Emoji ด่วน:</span>
+              {POPULAR_EXPENSE_EMOJIS.slice(0, 10).map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => {
+                    setNote((prev) => setLeadingEmoji(prev, emoji));
+                    if (localStorage.getItem('paokoo_haptic_enabled') !== 'false' && typeof navigator !== 'undefined' && navigator.vibrate) {
+                      navigator.vibrate(10);
+                    }
+                  }}
+                  className="w-7 h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-base flex items-center justify-center shrink-0 active:scale-90 transition-transform select-none"
+                  title={`ใส่ ${emoji}`}
+                >
+                  {emoji}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() => setIsEmojiPickerOpen(true)}
+                className="text-[11px] px-2 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0 transition-colors select-none font-medium"
+              >
+                + ทั้งหมด
+              </button>
             </div>
           </div>
 
-          {/* Note Input */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-              บันทึกช่วยจำ (หมายเหตุ)
-            </label>
-            <input
-              type="text"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="เช่น ซื้อของ Lotus, ค่าตั๋วหนัง..."
-              className="w-full px-3.5 py-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100"
-            />
-          </div>
-
-          {/* Date & Time Row */}
+          {/* Date & Time Section (50/50 split on the same row) */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
                 วันที่และเวลาทำรายการ
               </label>
-              {time && (
-                <span className="text-[11px] text-neutral-400 font-mono">
-                  {time} น.
-                </span>
-              )}
+              {/* Quick Date & Time Shortcut Chips */}
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setDate(todayStr)}
+                  className={`text-[11px] px-2 py-0.5 rounded-lg transition-colors font-medium select-none ${
+                    date === todayStr
+                      ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 shadow-xs'
+                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  วันนี้
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDate(yesterdayStr)}
+                  className={`text-[11px] px-2 py-0.5 rounded-lg transition-colors font-medium select-none ${
+                    date === yesterdayStr
+                      ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 shadow-xs'
+                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  เมื่อวาน
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTime(getLocalTimeString())}
+                  className="text-[11px] px-2 py-0.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors font-medium select-none"
+                  title="ตั้งเวลาปัจจุบัน"
+                >
+                  ตอนนี้
+                </button>
+              </div>
             </div>
 
-            <div className="grid grid-cols-5 gap-2">
-              {/* Date Input (3 cols) */}
-              <div className="col-span-3 min-w-0">
+            {/* Same Row 50/50 Layout - Sized identically to Member buttons */}
+            <div className="grid grid-cols-2 gap-2">
+              {/* Date Box (Left 50%) */}
+              <div className="relative h-11 px-3 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark flex items-center justify-center transition-all hover:border-neutral-400 active:scale-95 cursor-pointer overflow-hidden shadow-xs">
+                <span className="text-xs font-medium text-neutral-900 dark:text-neutral-100 select-none truncate">
+                  {formatDisplayDate(date)}
+                </span>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100"
+                  onClick={(e) => {
+                    try {
+                      (e.currentTarget as HTMLInputElement).showPicker?.();
+                    } catch {}
+                  }}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  aria-label="เลือกวันที่"
                 />
               </div>
 
-              {/* Time Input (2 cols) */}
-              <div className="col-span-2 min-w-0">
+              {/* Time Box (Right 50%) */}
+              <div className="relative h-11 px-3 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark flex items-center justify-center transition-all hover:border-neutral-400 active:scale-95 cursor-pointer overflow-hidden shadow-xs">
+                <span className="text-xs font-medium text-neutral-900 dark:text-neutral-100 font-mono select-none truncate">
+                  {time ? `${time} น.` : 'ระบุเวลา'}
+                </span>
                 <input
                   type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="w-full px-2.5 py-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100 text-center font-mono"
-                  placeholder="00:00"
+                  onClick={(e) => {
+                    try {
+                      (e.currentTarget as HTMLInputElement).showPicker?.();
+                    } catch {}
+                  }}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  aria-label="เลือกเวลา"
                 />
               </div>
             </div>
@@ -584,6 +786,14 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
         imageUrl={fullSlipBase64 || slipThumbnail}
         refNo={refNo}
         date={date}
+      />
+
+      {/* Emoji Picker Modal */}
+      <EmojiPickerModal
+        isOpen={isEmojiPickerOpen}
+        onClose={() => setIsEmojiPickerOpen(false)}
+        onSelectEmoji={(emoji) => setNote((prev) => setLeadingEmoji(prev, emoji))}
+        currentEmoji={extractEmoji(note)}
       />
     </>
   );

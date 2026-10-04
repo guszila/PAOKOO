@@ -9,6 +9,7 @@ import { formatSatang } from '../../lib/money';
 import { formatSlipDisplayDate } from '../../lib/slip/slipParser';
 import { LiveCameraScanner } from './LiveCameraScanner';
 import { DecodedSlipQR } from '../../lib/slip/qrDecoder';
+import { detectSlipEmoji } from '../../config/emojis';
 
 interface SlipScannerModalProps {
   isOpen: boolean;
@@ -148,10 +149,15 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
     const refNo = parsed.refNo || '';
     const who = parsed.matchedMemberWho || memberNames[0] || '';
 
-    // Smart default note
+    // Smart default note with detected emoji
     let note = parsed.bankName ? `โอนเงินผ่าน ${parsed.bankName}` : 'โอนเงินผ่านธนาคาร';
     if (parsed.senderName && parsed.recipientName) {
       note = `${parsed.senderName} โอนให้ ${parsed.recipientName}`;
+    }
+
+    const detectedEmoji = detectSlipEmoji((parsed.recipientName || '') + ' ' + (parsed.rawOcrText || ''));
+    if (detectedEmoji) {
+      note = `${detectedEmoji} ${note}`;
     }
 
     onApplySlip({

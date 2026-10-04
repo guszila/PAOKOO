@@ -1,17 +1,21 @@
 import React, { useState, useMemo } from 'react';
 import { Transaction } from '../../types/transaction';
-import { calculateWealthDonut, calculateExpenseCategoryDonut } from '../../lib/donut';
+import { calculateWealthDonut } from '../../lib/donut';
 import { DonutChart } from '../overview/DonutChart';
 import { formatSatang } from '../../lib/money';
-import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, HandCoins, Wallet } from 'lucide-react';
-
-import { PocketSummary } from '../../types/pocket';
+import { ChevronLeft, ChevronRight, HandCoins, Wallet } from 'lucide-react';
+import { Pocket, PocketSummary } from '../../types/pocket';
+import { CalendarView } from './CalendarView';
+import { CategoryExpenseView } from './CategoryExpenseView';
+import { FinancialTrendView } from './FinancialTrendView';
 
 interface AnalyticsViewProps {
   transactions: Transaction[];
   isMasked?: boolean;
   pocketSummaries?: PocketSummary[];
   mainSavingsBalance?: number;
+  pockets?: Pocket[];
+  onSelectTx?: (tx: Transaction) => void;
 }
 
 export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
@@ -19,8 +23,10 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
   isMasked = false,
   pocketSummaries,
   mainSavingsBalance,
+  pockets = [],
+  onSelectTx,
 }) => {
-  const [donutTab, setDonutTab] = useState<'wealth' | 'expenses'>('expenses');
+  const [analyticsTab, setAnalyticsTab] = useState<'calendar' | 'expenses' | 'trends' | 'wealth'>('calendar');
   const [expenseYearMonth, setExpenseYearMonth] = useState(() => {
     return new Date().toISOString().slice(0, 7);
   });
@@ -29,11 +35,6 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
   const wealthData = useMemo(() => {
     return calculateWealthDonut(transactions, pocketSummaries, mainSavingsBalance);
   }, [transactions, pocketSummaries, mainSavingsBalance]);
-
-  // Calculate expense category donut
-  const expenseData = useMemo(() => {
-    return calculateExpenseCategoryDonut(transactions, expenseYearMonth);
-  }, [transactions, expenseYearMonth]);
 
   // Month navigation
   const formattedExpenseMonth = useMemo(() => {
@@ -58,62 +59,89 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
     setExpenseYearMonth(`${nextY}-${nextM}`);
   };
 
-  // Monthly stats for selected month
-  const monthlyStats = useMemo(() => {
-    let inAmount = 0;
-    let outAmount = 0;
-    let lendAmount = 0;
-    let backAmount = 0;
-
-    transactions.forEach((tx) => {
-      if (tx.date && tx.date.startsWith(expenseYearMonth)) {
-        if (tx.type === 'in') inAmount += tx.amount;
-        if (tx.type === 'out') outAmount += tx.amount;
-        if (tx.type === 'lend') lendAmount += tx.amount;
-        if (tx.type === 'back') backAmount += tx.amount;
-      }
-    });
-
-    return {
-      inAmount,
-      outAmount,
-      lendAmount,
-      backAmount,
-      net: inAmount - outAmount,
-    };
-  }, [transactions, expenseYearMonth]);
-
   return (
     <div className="space-y-4 animate-fade-in">
 
-      {/* Segmented Control Tabs */}
-      <div className="grid grid-cols-2 p-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-2xl border border-border-light dark:border-border-dark">
+      {/* Segmented Control Tabs (4 Tabs) - Mobile Optimized with Smooth Sliding Pill */}
+      <div className="relative flex items-center p-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-2xl border border-border-light dark:border-border-dark">
+        {/* Sliding Pill Indicator */}
+        <div
+          className="absolute top-1 bottom-1 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-xs transition-transform duration-250 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
+          style={{
+            left: '4px',
+            width: 'calc((100% - 8px) / 4)',
+            transform: `translateX(${
+              analyticsTab === 'calendar'
+                ? '0%'
+                : analyticsTab === 'expenses'
+                ? '100%'
+                : analyticsTab === 'trends'
+                ? '200%'
+                : '300%'
+            })`,
+          }}
+        />
+
         <button
           type="button"
-          onClick={() => setDonutTab('expenses')}
-          className={`py-2 text-xs font-medium rounded-xl transition-all ${
-            donutTab === 'expenses'
-              ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white shadow-sm border border-border-light dark:border-border-dark'
-              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+          onClick={() => setAnalyticsTab('calendar')}
+          className={`relative z-10 flex-1 py-2 text-xs text-center select-none rounded-xl transition-colors duration-150 ${
+            analyticsTab === 'calendar'
+              ? 'text-neutral-900 dark:text-white font-semibold'
+              : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 font-medium'
           }`}
         >
-          รายจ่ายตามหมวดหมู่
+          ปฏิทิน
         </button>
         <button
           type="button"
-          onClick={() => setDonutTab('wealth')}
-          className={`py-2 text-xs font-medium rounded-xl transition-all ${
-            donutTab === 'wealth'
-              ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white shadow-sm border border-border-light dark:border-border-dark'
-              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+          onClick={() => setAnalyticsTab('expenses')}
+          className={`relative z-10 flex-1 py-2 text-xs text-center select-none rounded-xl transition-colors duration-150 ${
+            analyticsTab === 'expenses'
+              ? 'text-neutral-900 dark:text-white font-semibold'
+              : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 font-medium'
           }`}
         >
-          สัดส่วนเงินของเรา
+          ตามหมวด
+        </button>
+        <button
+          type="button"
+          onClick={() => setAnalyticsTab('trends')}
+          className={`relative z-10 flex-1 py-2 text-xs text-center select-none rounded-xl transition-colors duration-150 ${
+            analyticsTab === 'trends'
+              ? 'text-neutral-900 dark:text-white font-semibold'
+              : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 font-medium'
+          }`}
+        >
+          แนวโน้ม
+        </button>
+        <button
+          type="button"
+          onClick={() => setAnalyticsTab('wealth')}
+          className={`relative z-10 flex-1 py-2 text-xs text-center select-none rounded-xl transition-colors duration-150 ${
+            analyticsTab === 'wealth'
+              ? 'text-neutral-900 dark:text-white font-semibold'
+              : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 font-medium'
+          }`}
+        >
+          สัดส่วน
         </button>
       </div>
 
+      {/* Tab: Calendar View */}
+      {analyticsTab === 'calendar' && (
+        <CalendarView
+          transactions={transactions}
+          isMasked={isMasked}
+          pockets={pockets}
+          onSelectTx={onSelectTx}
+          yearMonth={expenseYearMonth}
+          onYearMonthChange={setExpenseYearMonth}
+        />
+      )}
+
       {/* Tab: Expenses by Category */}
-      {donutTab === 'expenses' && (
+      {analyticsTab === 'expenses' && (
         <div className="space-y-3">
           {/* Month Selector */}
           <div className="flex items-center justify-between px-3 py-2 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl text-xs">
@@ -136,47 +164,53 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
             </button>
           </div>
 
-          {/* Donut Chart Card */}
-          <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-sm">
-            <h3 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-              สัดส่วนค่าใช้จ่าย {formattedExpenseMonth}
-            </h3>
-            <DonutChart
-              segments={expenseData.segments}
-              totalSatang={expenseData.totalSatang}
-              centerSubtitle="รวมจ่ายเดือนนี้"
-              isEmpty={expenseData.isEmpty}
-              isMasked={isMasked}
-            />
+          {/* Expenses by Category Breakdown matching Image 2 */}
+          <CategoryExpenseView
+            transactions={transactions}
+            yearMonth={expenseYearMonth}
+            isMasked={isMasked}
+            pockets={pockets}
+            onSelectTx={onSelectTx}
+          />
+        </div>
+      )}
+
+      {/* Tab: Financial Trends View (Mobile-Optimized) */}
+      {analyticsTab === 'trends' && (
+        <div className="space-y-3">
+          {/* Month Selector */}
+          <div className="flex items-center justify-between px-3 py-2 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl text-xs">
+            <button
+              onClick={handlePrevMonth}
+              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-600 dark:text-neutral-300"
+              aria-label="เดือนก่อนหน้า"
+            >
+              <ChevronLeft size={18} strokeWidth={1.5} />
+            </button>
+            <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+              {formattedExpenseMonth}
+            </span>
+            <button
+              onClick={handleNextMonth}
+              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-600 dark:text-neutral-300"
+              aria-label="เดือนถัดไป"
+            >
+              <ChevronRight size={18} strokeWidth={1.5} />
+            </button>
           </div>
 
-          {/* Monthly Cashflow Mini-Cards */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="p-3.5 rounded-2xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark">
-              <div className="flex items-center gap-1.5 text-xs text-neutral-500 mb-1">
-                <TrendingUp size={14} className="text-emerald-500" />
-                <span>เงินเข้าเดือนนี้</span>
-              </div>
-              <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                {isMasked ? '••••' : `+${formatSatang(monthlyStats.inAmount)} ฿`}
-              </div>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark">
-              <div className="flex items-center gap-1.5 text-xs text-neutral-500 mb-1">
-                <TrendingDown size={14} className="text-red-500" />
-                <span>จ่ายออกเดือนนี้</span>
-              </div>
-              <div className="text-sm font-semibold text-red-600 dark:text-red-400 tabular-nums">
-                {isMasked ? '••••' : `-${formatSatang(monthlyStats.outAmount)} ฿`}
-              </div>
-            </div>
-          </div>
+          <FinancialTrendView
+            transactions={transactions}
+            yearMonth={expenseYearMonth}
+            isMasked={isMasked}
+            pockets={pockets}
+            onSelectTx={onSelectTx}
+          />
         </div>
       )}
 
       {/* Tab: Wealth Allocation */}
-      {donutTab === 'wealth' && (
+      {analyticsTab === 'wealth' && (
         <div className="space-y-3">
           <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-sm">
             <h3 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-2">

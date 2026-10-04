@@ -146,6 +146,17 @@ export function App() {
     return localMembers;
   }, [household, localMembers]);
 
+  // Current logged-in user's member name
+  const currentMemberName = useMemo(() => {
+    if (user && household && household.memberNames && household.memberNames[user.uid]) {
+      return household.memberNames[user.uid];
+    }
+    if (user && user.displayName) {
+      return user.displayName;
+    }
+    return activeMembers[0] || '';
+  }, [user, household, activeMembers]);
+
   // Recalculate summary dynamically based on active transactions
   const activeSummary = useMemo(() => {
     if (isCloudActive) {
@@ -285,10 +296,14 @@ export function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('all');
 
-  // Open Form for New Transaction
+  // Open Form for New Transaction (auto defaults who to current user)
   const handleOpenAdd = () => {
     setSelectedTxForEdit(null);
-    setPrefillData(null);
+    setPrefillData({
+      type: 'out',
+      who: currentMemberName,
+      category: categories[0] || 'อาหาร',
+    });
     setIsFormOpen(true);
   };
 
@@ -308,7 +323,7 @@ export function App() {
     setPrefillData({
       type: 'out',
       amount: data.amountSatang,
-      who: data.who || activeMembers[0] || '',
+      who: data.who || currentMemberName || activeMembers[0] || '',
       note: data.note,
       date: data.date,
       time: data.time,
@@ -321,12 +336,12 @@ export function App() {
     setIsFormOpen(true);
   };
 
-  // Quick Action click (opens form pre-selected with type)
+  // Quick Action click (opens form pre-selected with type and auto defaults who for in/out)
   const handleQuickAction = (type: TransactionType) => {
     setSelectedTxForEdit(null);
     setPrefillData({
       type,
-      who: activeMembers[0] || '',
+      who: (type === 'in' || type === 'out') ? currentMemberName : '',
       category: type === 'out' ? categories[0] || 'อาหาร' : undefined,
     });
     setIsFormOpen(true);
@@ -515,6 +530,8 @@ export function App() {
               isMasked={isMasked}
               pocketSummaries={pocketSummaries}
               mainSavingsBalance={mainSavingsBalance}
+              pockets={activePockets}
+              onSelectTx={handleSelectTx}
             />
           </div>
         )}
@@ -561,6 +578,7 @@ export function App() {
         prefill={prefillData}
         existingTransactions={activeTransactions}
         memberNames={activeMembers}
+        currentMemberName={currentMemberName}
         categories={activeCategories}
         pockets={activePockets}
         pocketSummaries={pocketSummaries}

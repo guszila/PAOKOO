@@ -23,6 +23,59 @@ interface SparkleItem {
   ty: number;
 }
 
+interface TabThemeConfig {
+  gradientClass: string;
+  glow1Class: string;
+  glow2Class: string;
+  bead1Class: string;
+  bead2Class: string;
+  subtitleClass: string;
+  pill2Class: string;
+}
+
+const TAB_THEMES: Record<TabType, TabThemeConfig> = {
+  overview: {
+    gradientClass:
+      'from-emerald-600 via-emerald-700 to-teal-900 dark:from-emerald-950 dark:via-teal-950 dark:to-neutral-950',
+    glow1Class: 'bg-emerald-400/20',
+    glow2Class: 'bg-teal-300/15',
+    bead1Class: 'bg-emerald-200/80 shadow-[0_0_8px_#6ee7b7]',
+    bead2Class: 'bg-teal-200/80',
+    subtitleClass: 'text-emerald-100/90 dark:text-emerald-200/80',
+    pill2Class: 'text-emerald-100/90',
+  },
+  transactions: {
+    gradientClass:
+      'from-blue-600 via-indigo-700 to-slate-900 dark:from-blue-950 dark:via-indigo-950 dark:to-neutral-950',
+    glow1Class: 'bg-blue-400/20',
+    glow2Class: 'bg-indigo-300/15',
+    bead1Class: 'bg-sky-200/80 shadow-[0_0_8px_#7dd3fc]',
+    bead2Class: 'bg-blue-200/80',
+    subtitleClass: 'text-blue-100/90 dark:text-blue-200/80',
+    pill2Class: 'text-blue-100/90',
+  },
+  analytics: {
+    gradientClass:
+      'from-violet-600 via-purple-700 to-slate-900 dark:from-purple-950 dark:via-violet-950 dark:to-neutral-950',
+    glow1Class: 'bg-purple-400/20',
+    glow2Class: 'bg-pink-300/15',
+    bead1Class: 'bg-purple-200/80 shadow-[0_0_8px_#d8b4fe]',
+    bead2Class: 'bg-pink-200/80',
+    subtitleClass: 'text-purple-100/90 dark:text-purple-200/80',
+    pill2Class: 'text-purple-100/90',
+  },
+  settings: {
+    gradientClass:
+      'from-slate-700 via-neutral-800 to-zinc-950 dark:from-neutral-900 dark:via-slate-950 dark:to-black',
+    glow1Class: 'bg-slate-400/20',
+    glow2Class: 'bg-zinc-300/15',
+    bead1Class: 'bg-amber-200/80 shadow-[0_0_8px_#fde68a]',
+    bead2Class: 'bg-neutral-200/80',
+    subtitleClass: 'text-slate-200/90 dark:text-neutral-300/80',
+    pill2Class: 'text-slate-200/90',
+  },
+};
+
 export const Header: React.FC<HeaderProps> = ({
   user,
   household,
@@ -34,6 +87,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [isBouncing, setIsBouncing] = useState(false);
   const [sparkles, setSparkles] = useState<SparkleItem[]>([]);
+  const currentTheme = TAB_THEMES[activeTab] || TAB_THEMES.overview;
 
   const handleSyncChipClick = () => {
     if (!user) {
@@ -85,8 +139,8 @@ export const Header: React.FC<HeaderProps> = ({
       case 'analytics':
         return {
           title: 'วิเคราะห์การเงิน',
-          subtitle: 'สัดส่วนสินทรัพย์ กระแสเงินสด และสรุปรายจ่าย',
-          pill1: 'สัดส่วน Donut Chart',
+          subtitle: 'ปฏิทินรายรับ-จ่าย สถิติรายเดือน และสัดส่วนสินทรัพย์',
+          pill1: 'ปฏิทิน & กราฟโดนัท',
           pill2: 'สถิติรายเดือน',
         };
       case 'settings':
@@ -100,13 +154,49 @@ export const Header: React.FC<HeaderProps> = ({
   }, [activeTab, household, user, totalTransactions, latestDate]);
 
   return (
-    <header className="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-900 dark:from-emerald-950 dark:via-teal-950 dark:to-neutral-900 text-white px-5 pt-[max(env(safe-area-inset-top,0px)+18px,48px)] pb-14 transition-all overflow-hidden shadow-sm">
-      {/* Background ambient concentric rings & glows */}
-      <div className="absolute -top-16 -right-16 w-80 h-80 rounded-full border border-white/10 pointer-events-none" />
-      <div className="absolute -top-6 -right-6 w-56 h-56 rounded-full border border-white/10 pointer-events-none" />
-      <div className="absolute top-10 right-10 w-36 h-36 rounded-full border border-white/5 pointer-events-none" />
-      <div className="absolute -top-10 -right-10 w-64 h-64 bg-emerald-400/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-28 -left-14 w-48 h-48 bg-teal-300/10 rounded-full blur-2xl pointer-events-none" />
+    <header className="relative bg-neutral-950 text-white px-5 pt-[max(env(safe-area-inset-top,0px)+18px,48px)] pb-14 transition-all overflow-hidden shadow-sm">
+      {/* 4 Multi-Theme Layer Stack with 500ms Smooth Cross-Fade */}
+      {(['overview', 'transactions', 'analytics', 'settings'] as TabType[]).map((tab) => {
+        const theme = TAB_THEMES[tab];
+        const isActive = activeTab === tab;
+        return (
+          <div
+            key={tab}
+            className={`absolute inset-0 bg-gradient-to-br ${theme.gradientClass} transition-opacity duration-500 ease-out pointer-events-none ${
+              isActive ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+        );
+      })}
+
+      {/* Background ambient concentric rings & glows with smooth kinetic motion */}
+      {/* Outer Ring: Slow clockwise rotation + gentle scale breathing */}
+      <div className="absolute -top-16 -right-16 w-80 h-80 rounded-full border border-white/10 pointer-events-none animate-ambient-ring-outer">
+        {/* Subtle luminous orbital bead along outer rim */}
+        <div
+          className={`absolute top-1/4 -right-1 w-2.5 h-2.5 rounded-full blur-[1px] transition-all duration-500 ${currentTheme.bead1Class}`}
+        />
+      </div>
+
+      {/* Middle Ring: Delicate counter-clockwise rotation */}
+      <div className="absolute -top-6 -right-6 w-56 h-56 rounded-full border border-dashed border-white/15 pointer-events-none animate-ambient-ring-middle">
+        {/* Secondary soft luminous point */}
+        <div
+          className={`absolute bottom-1/3 -left-1 w-2 h-2 rounded-full blur-[1px] transition-all duration-500 ${currentTheme.bead2Class}`}
+        />
+      </div>
+
+      {/* Inner Ring: Soft breathing pulse */}
+      <div className="absolute top-10 right-10 w-36 h-36 rounded-full border border-white/10 pointer-events-none animate-ambient-ring-inner" />
+
+      {/* Ambient Atmospheric Glows */}
+      <div
+        className={`absolute -top-10 -right-10 w-64 h-64 rounded-full blur-3xl pointer-events-none animate-ambient-glow transition-all duration-500 ${currentTheme.glow1Class}`}
+      />
+      <div
+        className={`absolute top-28 -left-14 w-48 h-48 rounded-full blur-2xl pointer-events-none animate-ambient-glow transition-all duration-500 ${currentTheme.glow2Class}`}
+        style={{ animationDelay: '-6s' }}
+      />
 
       <div className="max-w-md mx-auto relative z-10 space-y-2.5">
         {/* Large Bold Distinctive Title & Subtitle */}
@@ -172,7 +262,7 @@ export const Header: React.FC<HeaderProps> = ({
             </h1>
           )}
 
-          <p className="text-xs sm:text-sm text-emerald-100/85 dark:text-emerald-200/80 font-normal mt-1 leading-relaxed">
+          <p className={`text-xs sm:text-sm font-normal mt-1 leading-relaxed transition-colors duration-500 ${currentTheme.subtitleClass}`}>
             {headerContent.subtitle}
           </p>
         </div>
@@ -189,7 +279,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span>{headerContent.pill1}</span>
           </button>
 
-          <div className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-normal bg-black/20 border border-white/10 backdrop-blur-md text-emerald-100/90 shadow-sm">
+          <div className={`inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-normal bg-black/20 border border-white/10 backdrop-blur-md shadow-sm transition-colors duration-500 ${currentTheme.pill2Class}`}>
             <Clock size={12} className="opacity-80" />
             <span>{headerContent.pill2}</span>
           </div>

@@ -246,3 +246,82 @@ input[type='number'] {
   animation: floatSparkle 0.75s ease-out forwards;
 }
 
+/* Ambient kinetic background rings in Header */
+@keyframes ambientRingOuter {
+  0% {
+    transform: rotate(0deg) scale(1) translate(0, 0);
+  }
+  33% {
+    transform: rotate(120deg) scale(1.04) translate(4px, -3px);
+  }
+  66% {
+    transform: rotate(240deg) scale(0.97) translate(-3px, 4px);
+  }
+  100% {
+    transform: rotate(360deg) scale(1) translate(0, 0);
+  }
+}
+
+@keyframes ambientRingMiddle {
+  0% {
+    transform: rotate(0deg) scale(1) translate(0, 0);
+  }
+  50% {
+    transform: rotate(-180deg) scale(1.06) translate(-5px, 3px);
+  }
+  100% {
+    transform: rotate(-360deg) scale(1) translate(0, 0);
+  }
+}
+
+@keyframes ambientRingInner {
+  0% {
+    transform: scale(1) translate(0, 0);
+    opacity: 0.12;
+  }
+  50% {
+    transform: scale(1.14) translate(3px, -2px);
+    opacity: 0.28;
+  }
+  100% {
+    transform: scale(1) translate(0, 0);
+    opacity: 0.12;
+  }
+}
+
+@keyframes ambientGlowPulse {
+  0% {
+    transform: scale(1) translate(0, 0);
+    opacity: 0.15;
+  }
+  50% {
+    transform: scale(1.18) translate(-8px, 6px);
+    opacity: 0.28;
+  }
+  100% {
+    transform: scale(1) translate(0, 0);
+    opacity: 0.15;
+  }
+}
+
+.animate-ambient-ring-outer {
+  animation: ambientRingOuter 26s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.animate-ambient-ring-middle {
+  animation: ambientRingMiddle 20s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.animate-ambient-ring-inner {
+  animation: ambientRingInner 10s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-ambient-glow {
+  animation: ambientGlowPulse 12s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+

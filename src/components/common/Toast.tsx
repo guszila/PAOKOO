@@ -74,7 +74,7 @@ export const Toast: React.FC<ToastProps> = ({ toast, onDismiss }) => {
   return (
     <div
       onClick={handleManualDismiss}
-      className={`fixed top-4 left-1/2 z-[100] max-w-[92vw] sm:max-w-md pointer-events-auto cursor-pointer select-none ${
+      className={`fixed top-[max(env(safe-area-inset-top,0px)+24px,5rem)] sm:top-6 left-1/2 z-[100] max-w-[92vw] sm:max-w-md pointer-events-auto cursor-pointer select-none ${
         isExiting ? 'animate-toast-out' : 'animate-toast-in'
       }`}
       role="alert"

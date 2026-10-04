@@ -4,6 +4,7 @@ import { Button } from '../common/Button';
 import { exportToJSON, exportToCSV, parseImportJSON } from '../../lib/export';
 import { APP_NAME, APP_SUBTITLE } from '../../config/app';
 import { MAX_CATEGORIES } from '../../config/categories';
+import { getCategoryEmoji } from '../../config/emojis';
 import {
   Users,
   Download,
@@ -431,6 +432,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               key={cat}
               className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-xl bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark text-neutral-800 dark:text-neutral-200"
             >
+              <span className="text-sm">{getCategoryEmoji(cat)}</span>
               <span>{cat}</span>
               {categories.length > 1 && (
                 <button

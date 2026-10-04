@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Transaction } from '../../types/transaction';
 import { formatSatang } from '../../lib/money';
-import { ArrowDownLeft, ArrowUpRight, HandCoins, CornerDownLeft, ReceiptText, Tag, Wallet } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, HandCoins, CornerDownLeft, ReceiptText, Wallet } from 'lucide-react';
+import { extractEmoji, getCategoryEmoji } from '../../config/emojis';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -64,14 +65,33 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
     ? (transaction.category?.trim() || 'อื่นๆ')
     : null;
 
+  // Determine icon emoji:
+  // 1. If note has an emoji, use it (e.g. "☕ กาแฟ", "🚗 เติมน้ำมัน")
+  // 2. If it's an expense ('out'), fallback to category emoji (e.g. 🍜 for อาหาร)
+  // 3. Otherwise null (uses standard SVG arrow/hand icon)
+  const txEmoji = useMemo(() => {
+    const noteEmoji = extractEmoji(transaction.note);
+    if (noteEmoji) return noteEmoji;
+    if (transaction.type === 'out') {
+      return getCategoryEmoji(transaction.category);
+    }
+    return null;
+  }, [transaction.note, transaction.type, transaction.category]);
+
   return (
     <div
       onClick={() => onClick?.(transaction)}
       className="group relative flex items-center justify-between p-3.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl hover:bg-neutral-50 dark:hover:bg-surfaceElevated-dark transition-all cursor-pointer active:scale-[0.99] select-none shadow-sm"
     >
       <div className="flex items-center gap-3 min-w-0">
-        <div className={`w-10 h-10 rounded-2xl ${config.bgColor} flex items-center justify-center ${config.iconColor} shrink-0`}>
-          <Icon size={18} strokeWidth={1.5} />
+        <div className={`w-10 h-10 rounded-2xl ${config.bgColor} flex items-center justify-center shrink-0 transition-transform group-hover:scale-105`}>
+          {txEmoji ? (
+            <span className="text-xl leading-none select-none filter drop-shadow-sm">
+              {txEmoji}
+            </span>
+          ) : (
+            <Icon size={18} strokeWidth={1.5} className={config.iconColor} />
+          )}
         </div>
 
         <div className="min-w-0">
@@ -83,10 +103,10 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
               {config.label}
             </span>
 
-            {/* Expense Category Badge */}
+            {/* Expense Category Badge with Emoji */}
             {displayCategory && (
-              <span className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-                <Tag size={9} />
+              <span className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                <span>{getCategoryEmoji(displayCategory)}</span>
                 <span>{displayCategory}</span>
               </span>
             )}
