@@ -1,10 +1,9 @@
 import React, { useMemo } from 'react';
 import { APP_NAME } from '../../config/app';
-import { Receipt, PieChart, Settings, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { Household } from '../../types/household';
 import { TabType } from './BottomNav';
-import { Logo } from '../common/Logo';
 
 interface HeaderProps {
   user: User | null;
@@ -34,12 +33,11 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  // Header content per active tab strictly matching the Reference Image 2 layout
+  // Header content per active tab
   const headerContent = useMemo(() => {
     switch (activeTab) {
       case 'overview':
         return {
-          icon: <Logo className="w-7 h-7" />,
           title: APP_NAME,
           subtitle: 'บันทึกรายรับรายจ่าย บัญชีคู่กระเป๋าเดียวกัน',
           pill1: household ? (
@@ -53,7 +51,6 @@ export const Header: React.FC<HeaderProps> = ({
         };
       case 'transactions':
         return {
-          icon: <Receipt size={24} className="text-white" strokeWidth={1.75} />,
           title: 'รายการทั้งหมด',
           subtitle: 'ประวัติเงินเข้า รายจ่าย และยอดเงินให้ยืมทั้งหมด',
           pill1: `บันทึกแล้ว ${totalTransactions} รายการ`,
@@ -61,7 +58,6 @@ export const Header: React.FC<HeaderProps> = ({
         };
       case 'analytics':
         return {
-          icon: <PieChart size={24} className="text-white" strokeWidth={1.75} />,
           title: 'วิเคราะห์การเงิน',
           subtitle: 'สัดส่วนสินทรัพย์ กระแสเงินสด และสรุปรายจ่าย',
           pill1: 'สัดส่วน Donut Chart',
@@ -69,7 +65,6 @@ export const Header: React.FC<HeaderProps> = ({
         };
       case 'settings':
         return {
-          icon: <Settings size={24} className="text-white" strokeWidth={1.75} />,
           title: 'ตั้งค่าระบบ',
           subtitle: 'จัดการสมาชิกบัญชีคู่ หมวดหมู่ และสำรองข้อมูล',
           pill1: household ? household.name : 'บัญชีเดี่ยวในเครื่อง',
@@ -79,7 +74,7 @@ export const Header: React.FC<HeaderProps> = ({
   }, [activeTab, household, user, totalTransactions, latestDate]);
 
   return (
-    <header className="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-900 dark:from-emerald-950 dark:via-teal-950 dark:to-neutral-900 text-white px-5 pt-[max(env(safe-area-inset-top,0px)+6px,38px)] pb-12 transition-all overflow-hidden shadow-sm">
+    <header className="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-900 dark:from-emerald-950 dark:via-teal-950 dark:to-neutral-900 text-white px-5 pt-[max(env(safe-area-inset-top,0px)+12px,38px)] pb-14 transition-all overflow-hidden shadow-sm">
       {/* Background ambient concentric rings & glows (matching Image 2 aesthetic) */}
       <div className="absolute -top-16 -right-16 w-80 h-80 rounded-full border border-white/10 pointer-events-none" />
       <div className="absolute -top-6 -right-6 w-56 h-56 rounded-full border border-white/10 pointer-events-none" />
@@ -87,17 +82,9 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="absolute -top-10 -right-10 w-64 h-64 bg-emerald-400/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-28 -left-14 w-48 h-48 bg-teal-300/10 rounded-full blur-2xl pointer-events-none" />
 
-      <div className="max-w-md mx-auto relative z-10 space-y-3">
-        {/* Top row: Icon Badge */}
-        <div className="flex items-center justify-between">
-          {/* Badge Icon in sleek rounded-2xl glassmorphism box */}
-          <div className="w-11 h-11 shrink-0 rounded-2xl bg-white/15 dark:bg-white/10 backdrop-blur-xl border border-white/25 flex items-center justify-center shadow-lg shadow-black/10">
-            {headerContent.icon}
-          </div>
-        </div>
-
+      <div className="max-w-md mx-auto relative z-10 space-y-2.5">
         {/* Large Bold Title & Subtitle */}
-        <div className="pt-0.5">
+        <div className="pt-1">
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-tight">
             {headerContent.title}
           </h1>

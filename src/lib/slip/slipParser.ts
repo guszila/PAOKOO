@@ -122,11 +122,11 @@ export function parseSlipText(
     }
   }
 
-  // 3. Extract Transfer Amount
-  const amount = extractSlipAmount(ocrText);
+  // 3. Extract Transfer Amount (PromptPay QR or OCR text)
+  const amount = decodedQR?.amountSatang || extractSlipAmount(ocrText);
   if (amount !== undefined && amount > 0) {
     result.amountSatang = amount;
-    result.amountFormatted = (amount / 100).toLocaleString('th-TH', {
+    result.amountFormatted = decodedQR?.amountFormatted || (amount / 100).toLocaleString('th-TH', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -139,6 +139,11 @@ export function parseSlipText(
     result.date = dateTime.date;
     result.time = dateTime.time;
     result.confidence += 25;
+  } else if (decodedQR?.isPromptPayPayment) {
+    // Default today for live promptpay payment scan
+    result.date = new Date().toISOString().slice(0, 10);
+    const now = new Date();
+    result.time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   }
 
   // 5. Match Sender or Recipient against Known Household Members
@@ -147,6 +152,8 @@ export function parseSlipText(
     result.matchedMemberWho = matched.matchedWho;
     result.senderName = matched.sender;
     result.recipientName = matched.recipient;
+  } else if (decodedQR?.merchantName) {
+    result.recipientName = decodedQR.merchantName;
   }
 
   return result;

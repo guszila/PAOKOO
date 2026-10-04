@@ -25,6 +25,8 @@ import { calculateSummary } from './lib/summary';
 import { calculatePocketSummaries, calculateMainSavingsBalance } from './lib/pocket';
 import { useToast } from './context/ToastContext';
 import { formatSatang } from './lib/money';
+import { CoinCelebration } from './components/common/CoinCelebration';
+import { triggerCoinShower } from './lib/celebration';
 
 export function App() {
   // Toast notification hook
@@ -269,6 +271,7 @@ export function App() {
         title: 'เติมเงินเข้ากล่องสำเร็จ',
         message: `เติมเงิน +${formatSatang(additionalSatang)} ฿ เข้ากล่อง "${targetPocket.name}"`,
       });
+      triggerCoinShower();
     },
     [activePockets, isCloudActive, updateHouseholdPocket, updateLocalPocket, showToast]
   );
@@ -386,6 +389,9 @@ export function App() {
         title: 'บันทึกรายการสำเร็จ',
         message: `${typeLabel} ${formatSatang(txData.amount)} ฿ (${txData.who})`,
       });
+      if (txData.type === 'in' || txData.type === 'back') {
+        triggerCoinShower();
+      }
     }
   };
 
@@ -594,6 +600,9 @@ export function App() {
         localTransactionsCount={localTransactions.length}
         onMigrateLocalToCloud={handleMigrateLocalToCloud}
       />
+
+      {/* Falling Coins Animation (Celebration) */}
+      <CoinCelebration />
     </div>
   );
 }

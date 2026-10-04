@@ -7,10 +7,15 @@ export interface DecodedSlipQR {
   bankCode?: string;
   bankName?: string;
   countryCode?: string;
+  amountSatang?: number;
+  amountFormatted?: string;
+  merchantName?: string;
+  isPromptPayPayment?: boolean;
 }
 
 /**
  * Parses Bank of Thailand (BOT) Standard EMVCo Slip Verification QR Code Payload
+ * and PromptPay Thai QR Payment Payload
  */
 export function parseBotSlipPayload(raw: string): DecodedSlipQR {
   const result: DecodedSlipQR = { raw };
@@ -19,12 +24,14 @@ export function parseBotSlipPayload(raw: string): DecodedSlipQR {
     // Parse top-level TLV
     const topLevel = parseTLV(raw);
 
-    // Tag 51 is country code (TH)
+    // Tag 51 or Tag 58 is country code (TH)
     if (topLevel['51']) {
       result.countryCode = topLevel['51'];
+    } else if (topLevel['58']) {
+      result.countryCode = topLevel['58'];
     }
 
-    // Tag 00 contains API sub-payload
+    // 1. Check for Standard BOT Slip Verification QR (Tag 00 -> sub 01 & 02)
     if (topLevel['00']) {
       const sub = parseTLV(topLevel['00']);
       // Sub-tag 01 is 3-digit Bank Code (e.g. 004 = KBANK, 014 = SCB)
@@ -38,6 +45,35 @@ export function parseBotSlipPayload(raw: string): DecodedSlipQR {
       // Sub-tag 02 is the Transaction Reference Number
       if (sub['02']) {
         result.refNo = sub['02'].trim();
+      }
+    }
+
+    // 2. Check for PromptPay Thai QR Payment (Tag 54 = Amount, Tag 59 = Merchant/Payee)
+    if (topLevel['54']) {
+      const amtStr = topLevel['54'].trim();
+      const num = parseFloat(amtStr);
+      if (!isNaN(num) && num > 0) {
+        result.amountSatang = Math.round(num * 100);
+        result.amountFormatted = num.toLocaleString('th-TH', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+        result.isPromptPayPayment = true;
+      }
+    }
+
+    if (topLevel['59']) {
+      result.merchantName = topLevel['59'].trim();
+    }
+
+    if (topLevel['62']) {
+      const sub62 = parseTLV(topLevel['62']);
+      if (sub62['05']) {
+        result.refNo = sub62['05'].trim();
+      } else if (sub62['01']) {
+        result.refNo = sub62['01'].trim();
+      } else if (sub62['07']) {
+        result.refNo = sub62['07'].trim();
       }
     }
 

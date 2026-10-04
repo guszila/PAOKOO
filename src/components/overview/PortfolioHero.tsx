@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 
 import { PocketSummary } from '../../types/pocket';
+import { triggerCoinShower } from '../../lib/celebration';
 
 interface PortfolioHeroProps {
   currentBalance: number;
@@ -124,7 +125,11 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
       </div>
 
       {/* Large Balance Number */}
-      <div className="mt-1 flex items-baseline gap-2">
+      <div
+        onClick={() => triggerCoinShower()}
+        className="mt-1 flex items-baseline gap-2 cursor-pointer select-none active:scale-[0.98] transition-transform"
+        title="แตะเพื่อโปรยเหรียญ!"
+      >
         <span className="text-4xl sm:text-[42px] font-light tracking-tight text-neutral-900 dark:text-neutral-50 tabular-nums">
           {isMasked ? '••••••••' : formatSatang(currentBalance)}
         </span>

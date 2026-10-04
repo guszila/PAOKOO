@@ -15,44 +15,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onOpenAdd,
 }) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 pb-safe">
-      {/* 3-Part Seamless Background with Upward Curved Arch (Following Circular Button) */}
-      <div className="absolute inset-0 flex items-stretch pointer-events-none -top-[18px]">
-        {/* Left segment */}
-        <div className="flex-1 bg-white/95 dark:bg-[#1C1D22]/95 backdrop-blur-md border-t border-neutral-300 dark:border-neutral-700 mt-[18px]" />
-
-        {/* Center SVG Arch */}
-        <div className="w-[108px] relative shrink-0 flex flex-col">
-          <div className="w-[108px] h-[82px] relative shrink-0">
-            <svg
-              className="w-full h-full overflow-visible"
-              viewBox="0 0 108 82"
-              preserveAspectRatio="none"
-            >
-              {/* Arch Fill */}
-              <path
-                d="M 0,18 L 18,18 C 30,18 38,2 54,2 C 70,2 78,18 90,18 L 108,18 L 108,82 L 0,82 Z"
-                fill="currentColor"
-                className="text-white dark:text-[#1C1D22]"
-              />
-              {/* Arch Top Border */}
-              <path
-                d="M 0,18.5 L 18,18.5 C 30,18.5 38,2.5 54,2.5 C 70,2.5 78,18.5 90,18.5 L 108,18.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                className="text-neutral-300 dark:text-neutral-700"
-              />
-            </svg>
-          </div>
-          {/* Safe area extension below center arch to eliminate transparent gap on mobile */}
-          <div className="flex-1 w-full bg-white dark:bg-[#1C1D22] -mt-[1px]" />
-        </div>
-
-        {/* Right segment */}
-        <div className="flex-1 bg-white/95 dark:bg-[#1C1D22]/95 backdrop-blur-md border-t border-neutral-300 dark:border-neutral-700 mt-[18px]" />
-      </div>
-
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-lg border-t border-border-light dark:border-border-dark pb-safe shadow-[0_-4px_25px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.3)]">
       <div className="max-w-md mx-auto grid grid-cols-5 h-16 items-center px-1 relative">
         {/* Tab 1: Overview */}
         <button

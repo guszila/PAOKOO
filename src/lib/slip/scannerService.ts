@@ -49,6 +49,24 @@ export async function scanBankSlip(
 
   const decodedQR = decodeQRFromImageData(processed.ocrImageData);
 
+  // Fast-track if PromptPay payment QR already has amount and details
+  if (decodedQR?.isPromptPayPayment && decodedQR.amountSatang) {
+    onProgress?.({
+      status: 'completed',
+      progress: 100,
+      message: 'ตรวจพบข้อมูลชำระเงินพร้อมเพย์สำเร็จ!',
+    });
+    const parsed = parseSlipText('', decodedQR, knownMembers);
+    const duplicateTx = checkDuplicateSlip(parsed.refNo, existingTransactions);
+    return {
+      parsed,
+      thumbnailBase64: processed.thumbnailBase64,
+      fullBase64: processed.fullBase64,
+      decodedQR,
+      duplicateTx,
+    };
+  }
+
   // Step 3: OCR Recognition using Tesseract.js Web Worker
   onProgress?.({
     status: 'recognizing_ocr',
