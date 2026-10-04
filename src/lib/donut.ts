@@ -1,6 +1,8 @@
 import { Transaction } from '../types/transaction';
 import { getCategoryColor } from '../config/categories';
 
+import { PocketSummary } from '../types/pocket';
+
 export interface DonutSegment {
   id: string;
   label: string;
@@ -16,16 +18,30 @@ export interface DonutData {
   isEmpty: boolean;
 }
 
+// Contrasting palette for pockets on donut chart
+const POCKET_DONUT_COLORS = [
+  '#8B5CF6', // Purple
+  '#06B6D4', // Cyan
+  '#3B82F6', // Blue
+  '#EC4899', // Pink
+  '#F59E0B', // Amber
+  '#14B8A6', // Teal
+  '#E11D48', // Rose
+];
+
 /**
  * Calculates Tab 1 Donut: "เงินของเรา" (Our Wealth Allocation)
- * 3 segments:
- * 1. เงินเก็บคงเหลือ (Green)
- * 2. เงินที่ถูกยืมค้าง (Amber)
- * 3. ค่าใช้จ่ายสะสม (Slate)
+ * Splits total deposited wealth across:
+ * 1. กองกลางหลัก (Main savings pool)
+ * 2. กล่องแบ่งเงินใช้ (Each spending pocket's remaining balance)
+ * 3. เงินที่ถูกยืมค้าง (Outstanding lent)
+ * 4. ค่าใช้จ่ายสะสม (Total accumulated expenses)
  * Total deposited = balance + total expenses + outstanding lent
  */
 export function calculateWealthDonut(
-  transactions: Transaction[]
+  transactions: Transaction[],
+  pocketSummaries?: PocketSummary[],
+  mainSavingsBalance?: number
 ): DonutData {
   let sumIn = 0;
   let sumOut = 0;
@@ -60,26 +76,72 @@ export function calculateWealthDonut(
     };
   }
 
-  const rawSegments = [
-    {
-      id: 'balance',
-      label: 'เงินเก็บคงเหลือ',
-      valueSatang: Math.max(0, balance),
-      color: '#10B981', // Green
-    },
-    {
+  const rawSegments: Array<{ id: string; label: string; valueSatang: number; color: string }> = [];
+
+  // Active pockets with remaining balance
+  const activePocketsWithMoney = pocketSummaries?.filter((ps) => ps.remainingSatang > 0) || [];
+
+  if (activePocketsWithMoney.length > 0) {
+    // 1. กองกลางหลัก
+    const effectiveMainSavings = mainSavingsBalance !== undefined
+      ? Math.max(0, mainSavingsBalance)
+      : Math.max(0, balance - activePocketsWithMoney.reduce((acc, p) => acc + p.remainingSatang, 0));
+
+    if (effectiveMainSavings > 0) {
+      rawSegments.push({
+        id: 'main-savings',
+        label: 'กองกลางหลัก',
+        valueSatang: effectiveMainSavings,
+        color: '#10B981', // Emerald green
+      });
+    }
+
+    // 2. Spending Pockets
+    activePocketsWithMoney.forEach((ps, idx) => {
+      // Pick color: if pocket color is default emerald (#10B981) which collides with main savings, pick distinct color
+      let segColor = ps.pocket.color;
+      if (!segColor || segColor.toLowerCase() === '#10b981') {
+        segColor = POCKET_DONUT_COLORS[idx % POCKET_DONUT_COLORS.length];
+      }
+
+      rawSegments.push({
+        id: `pocket-${ps.pocket.id}`,
+        label: ps.pocket.name,
+        valueSatang: ps.remainingSatang,
+        color: segColor,
+      });
+    });
+  } else {
+    // No pockets or all pockets have 0 balance: show as single "เงินเก็บคงเหลือ"
+    if (balance > 0) {
+      rawSegments.push({
+        id: 'balance',
+        label: 'เงินเก็บคงเหลือ',
+        valueSatang: balance,
+        color: '#10B981', // Green
+      });
+    }
+  }
+
+  // 3. Outstanding lent
+  if (outstandingLent > 0) {
+    rawSegments.push({
       id: 'lent',
       label: 'เงินที่ถูกยืมค้าง',
       valueSatang: outstandingLent,
       color: '#F59E0B', // Amber
-    },
-    {
+    });
+  }
+
+  // 4. Expenses
+  if (totalExpenses > 0) {
+    rawSegments.push({
       id: 'expenses',
       label: 'ค่าใช้จ่ายสะสม',
       valueSatang: totalExpenses,
       color: '#64748B', // Slate
-    },
-  ].filter(s => s.valueSatang > 0);
+    });
+  }
 
   const segments = normalizePercentages(rawSegments, totalDeposited);
 

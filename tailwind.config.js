@@ -54,6 +54,13 @@ export default {
           'Roboto',
           'sans-serif',
         ],
+        brand: [
+          '"Outfit"',
+          '"Noto Sans Thai"',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'sans-serif',
+        ],
       },
       borderWidth: {
         '1': '1px',

@@ -499,6 +499,8 @@ export function App() {
             <AnalyticsView
               transactions={activeTransactions}
               isMasked={isMasked}
+              pocketSummaries={pocketSummaries}
+              mainSavingsBalance={mainSavingsBalance}
             />
           </div>
         )}

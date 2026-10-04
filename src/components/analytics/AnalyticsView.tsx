@@ -5,14 +5,20 @@ import { DonutChart } from '../overview/DonutChart';
 import { formatSatang } from '../../lib/money';
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, HandCoins, Wallet } from 'lucide-react';
 
+import { PocketSummary } from '../../types/pocket';
+
 interface AnalyticsViewProps {
   transactions: Transaction[];
   isMasked?: boolean;
+  pocketSummaries?: PocketSummary[];
+  mainSavingsBalance?: number;
 }
 
 export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
   transactions,
   isMasked = false,
+  pocketSummaries,
+  mainSavingsBalance,
 }) => {
   const [donutTab, setDonutTab] = useState<'wealth' | 'expenses'>('expenses');
   const [expenseYearMonth, setExpenseYearMonth] = useState(() => {
@@ -21,8 +27,8 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 
   // Calculate wealth donut
   const wealthData = useMemo(() => {
-    return calculateWealthDonut(transactions);
-  }, [transactions]);
+    return calculateWealthDonut(transactions, pocketSummaries, mainSavingsBalance);
+  }, [transactions, pocketSummaries, mainSavingsBalance]);
 
   // Calculate expense category donut
   const expenseData = useMemo(() => {

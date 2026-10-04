@@ -64,8 +64,8 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
 
   // Donut data
   const wealthDonutData = useMemo(() => {
-    return calculateWealthDonut(transactions);
-  }, [transactions]);
+    return calculateWealthDonut(transactions, pocketSummaries, mainSavingsBalance);
+  }, [transactions, pocketSummaries, mainSavingsBalance]);
 
   const expenseDonutData = useMemo(() => {
     return calculateExpenseCategoryDonut(transactions, expenseYearMonth);
