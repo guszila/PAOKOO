@@ -181,23 +181,50 @@ export function extractBankFromText(ocrText: string): string | undefined {
   if (text.includes('bangkok bank') || text.includes('กรุงเทพ') || text.includes('bbl')) {
     return 'ธนาคารกรุงเทพ (BBL)';
   }
-  if (text.includes('krungthai') || text.includes('กรุงไทย') || text.includes('ktb') || text.includes('เป๋าตัง')) {
+  if (text.includes('krungthai') || text.includes('กรุงไทย') || text.includes('ktb') || text.includes('เป๋าตัง') || text.includes('next')) {
     return 'ธนาคารกรุงไทย (KTB)';
   }
-  if (text.includes('kbank') || text.includes('กสิกร') || text.includes('kasikorn')) {
+  if (text.includes('kbank') || text.includes('กสิกร') || text.includes('kasikorn') || text.includes('k plus') || text.includes('k+')) {
     return 'ธนาคารกสิกรไทย (KBANK)';
   }
-  if (text.includes('ttb') || text.includes('ทหารไทยธนชาต') || text.includes('ทีเอ็มบี')) {
+  if (text.includes('ttb') || text.includes('ทหารไทยธนชาต') || text.includes('ทีเอ็มบี') || text.includes('ธนชาต')) {
     return 'ธนาคารทหารไทยธนชาต (TTB)';
   }
   if (text.includes('krungsri') || text.includes('กรุงศรี') || text.includes('bay')) {
     return 'ธนาคารกรุงศรีอยุธยา (BAY)';
   }
-  if (text.includes('gsb') || text.includes('ออมสิน')) {
+  if (text.includes('gsb') || text.includes('ออมสิน') || text.includes('mymo')) {
     return 'ธนาคารออมสิน (GSB)';
+  }
+  if (text.includes('ghb') || text.includes('อาคารสงเคราะห์') || text.includes('ธอส') || text.includes('ghb all')) {
+    return 'ธนาคารอาคารสงเคราะห์ (GHB)';
   }
   if (text.includes('baac') || text.includes('ธ.ก.ส') || text.includes('ธกส')) {
     return 'ธนาคารเพื่อการเกษตรและสหกรณ์การเกษตร (BAAC)';
+  }
+  if (text.includes('uob') || text.includes('ยูโอบี') || text.includes('tmrw')) {
+    return 'ธนาคารยูโอบี (UOB)';
+  }
+  if (text.includes('cimb') || text.includes('ซีไอเอ็มบี')) {
+    return 'ธนาคารซีไอเอ็มบี ไทย (CIMB)';
+  }
+  if (text.includes('lh bank') || text.includes('แลนด์ แอนด์ เฮ้าส์') || text.includes('lhbank')) {
+    return 'ธนาคารแลนด์ แอนด์ เฮ้าส์ (LH Bank)';
+  }
+  if (text.includes('tisco') || text.includes('ทิสโก้')) {
+    return 'ธนาคารทิสโก้ (TISCO)';
+  }
+  if (text.includes('ibank') || text.includes('อิสลามแห่งประเทศไทย')) {
+    return 'ธนาคารอิสลามแห่งประเทศไทย (IBANK)';
+  }
+  if (text.includes('truemoney') || text.includes('ทรูมันนี่') || text.includes('true money')) {
+    return 'ทรูมันนี่ วอลเล็ท (TrueMoney)';
+  }
+  if (text.includes('shopeepay') || text.includes('ช้อปปี้เพย์') || text.includes('shopee pay')) {
+    return 'ช้อปปี้เพย์ (ShopeePay)';
+  }
+  if (text.includes('line bk') || text.includes('ไลน์บีเค')) {
+    return 'LINE BK (กสิกรไทย)';
   }
   if (text.includes('พร้อมเพย์') || text.includes('promptpay')) {
     return 'พร้อมเพย์ (PromptPay)';

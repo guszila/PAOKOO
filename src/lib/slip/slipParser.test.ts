@@ -126,4 +126,70 @@ SUKI TEENOI-PRACHIN BURI
     expect(parsed.bankName).toContain('KTB');
     expect(parsed.recipientName).toContain('SUKI TEENOI');
   });
+
+  // 5. KBank (กสิกรไทย / K PLUS)
+  it('should parse KBank slip accurately', () => {
+    const kbankOcrText = `
+KBANK กสิกรไทย
+โอนเงินสำเร็จ
+016273123127ATF02002
+30 ก.ย. 69 12:31 น.
+จาก นาย ภาณุเดช ศรีวุฒิทรัพย์
+ไปยัง นาย สมชาย ใจดี
+จำนวนเงิน
+1,250.00 บาท
+ค่าธรรมเนียม 0.00 บาท
+    `.trim();
+
+    const parsed = parseSlipText(kbankOcrText, null, ['โฟกัส']);
+
+    expect(parsed.amountSatang).toBe(125000); // 1,250.00 บาท
+    expect(parsed.amountFormatted).toBe('1,250.00');
+    expect(parsed.date).toBe('2026-09-30');
+    expect(parsed.time).toBe('12:31');
+    expect(parsed.refNo).toBe('016273123127ATF02002');
+    expect(parsed.bankName).toContain('KBANK');
+  });
+
+  // 6. TTB (ทหารไทยธนชาต)
+  it('should parse TTB slip accurately', () => {
+    const ttbOcrText = `
+ttb ทีเอ็มบีธนชาต
+โอนเงินสำเร็จ
+วันที่ 25 ส.ค. 2569 09:15 น.
+รหัสอ้างอิง: TTB20260825998124
+จาก ภาณุเดช
+ไปยัง แม่ต้นหยง
+จำนวนเงิน: 350.00 บาท
+    `.trim();
+
+    const parsed = parseSlipText(ttbOcrText, null, ['โฟกัส', 'แม่ต้นหยง']);
+
+    expect(parsed.amountSatang).toBe(35000);
+    expect(parsed.amountFormatted).toBe('350.00');
+    expect(parsed.date).toBe('2026-08-25');
+    expect(parsed.time).toBe('09:15');
+    expect(parsed.refNo).toBe('TTB20260825998124');
+    expect(parsed.bankName).toContain('TTB');
+  });
+
+  // 7. TrueMoney Wallet
+  it('should parse TrueMoney Wallet slip accurately', () => {
+    const trueMoneyText = `
+TrueMoney ทรูมันนี่
+โอนเงินสำเร็จ
+หมายเลขอ้างอิง 500012398471
+15 ต.ค. 2569 14:20
+จำนวนเงิน 299.00 บาท
+    `.trim();
+
+    const parsed = parseSlipText(trueMoneyText, null, ['โฟกัส']);
+
+    expect(parsed.amountSatang).toBe(29900);
+    expect(parsed.amountFormatted).toBe('299.00');
+    expect(parsed.date).toBe('2026-10-15');
+    expect(parsed.time).toBe('14:20');
+    expect(parsed.refNo).toBe('500012398471');
+    expect(parsed.bankName).toContain('TrueMoney');
+  });
 });
