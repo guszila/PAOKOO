@@ -100,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({
   }, [activeTab, household, user, totalTransactions, latestDate]);
 
   return (
-    <header className="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-900 dark:from-emerald-950 dark:via-teal-950 dark:to-neutral-900 text-white px-5 pt-[max(env(safe-area-inset-top,0px)+12px,38px)] pb-14 transition-all overflow-hidden shadow-sm">
+    <header className="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-900 dark:from-emerald-950 dark:via-teal-950 dark:to-neutral-900 text-white px-5 pt-[max(env(safe-area-inset-top,0px)+18px,48px)] pb-14 transition-all overflow-hidden shadow-sm">
       {/* Background ambient concentric rings & glows */}
       <div className="absolute -top-16 -right-16 w-80 h-80 rounded-full border border-white/10 pointer-events-none" />
       <div className="absolute -top-6 -right-6 w-56 h-56 rounded-full border border-white/10 pointer-events-none" />
@@ -110,7 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       <div className="max-w-md mx-auto relative z-10 space-y-2.5">
         {/* Large Bold Distinctive Title & Subtitle */}
-        <div className="pt-1">
+        <div className="pt-2">
           {activeTab === 'overview' ? (
             <div
               role="button"
