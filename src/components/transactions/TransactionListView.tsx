@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Transaction, TransactionType } from '../../types/transaction';
+import { Pocket } from '../../types/pocket';
 import { TransactionItem } from './TransactionItem';
 import { TransactionFilters } from './TransactionFilters';
 import { Receipt } from 'lucide-react';
@@ -15,6 +16,7 @@ interface TransactionListViewProps {
   selectedMonth: string;
   setSelectedMonth: (month: string) => void;
   categories?: string[];
+  pockets?: Pocket[];
   isMasked?: boolean;
 }
 
@@ -28,9 +30,16 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
   selectedMonth,
   setSelectedMonth,
   categories = DEFAULT_EXPENSE_CATEGORIES,
+  pockets = [],
   isMasked = false,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  const pocketMap = useMemo(() => {
+    const map = new Map<string, string>();
+    pockets.forEach((p) => map.set(p.id, p.name));
+    return map;
+  }, [pockets]);
 
   // Available months extracted from transactions
   const availableMonths = useMemo(() => {
@@ -70,11 +79,13 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
         const noteMatch = tx.note.toLowerCase().includes(query);
         const refMatch = tx.refNo?.toLowerCase().includes(query);
         const catMatch = tx.category?.toLowerCase().includes(query);
-        if (!whoMatch && !noteMatch && !refMatch && !catMatch) return false;
+        const pocketName = tx.pocketId ? pocketMap.get(tx.pocketId) : undefined;
+        const pocketMatch = pocketName?.toLowerCase().includes(query);
+        if (!whoMatch && !noteMatch && !refMatch && !catMatch && !pocketMatch) return false;
       }
       return true;
     });
-  }, [transactions, selectedType, selectedMonth, selectedCategory, searchQuery]);
+  }, [transactions, selectedType, selectedMonth, selectedCategory, searchQuery, pocketMap]);
 
   return (
     <div className="space-y-4">
@@ -116,6 +127,7 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
               transaction={tx}
               onClick={onSelectTx}
               isMasked={isMasked}
+              pocketName={tx.pocketId ? pocketMap.get(tx.pocketId) : undefined}
             />
           ))}
         </div>

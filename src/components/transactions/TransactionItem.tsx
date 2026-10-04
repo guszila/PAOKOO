@@ -1,18 +1,20 @@
 import React from 'react';
 import { Transaction } from '../../types/transaction';
 import { formatSatang } from '../../lib/money';
-import { ArrowDownLeft, ArrowUpRight, HandCoins, CornerDownLeft, ReceiptText, Tag } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, HandCoins, CornerDownLeft, ReceiptText, Tag, Wallet } from 'lucide-react';
 
 interface TransactionItemProps {
   transaction: Transaction;
   onClick?: (transaction: Transaction) => void;
   isMasked?: boolean;
+  pocketName?: string;
 }
 
 export const TransactionItem: React.FC<TransactionItemProps> = ({
   transaction,
   onClick,
   isMasked = false,
+  pocketName,
 }) => {
   const getTypeConfig = () => {
     switch (transaction.type) {
@@ -86,6 +88,14 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
               <span className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
                 <Tag size={9} />
                 <span>{displayCategory}</span>
+              </span>
+            )}
+
+            {/* Pocket Badge */}
+            {pocketName && (
+              <span className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40">
+                <Wallet size={9} />
+                <span>{pocketName}</span>
               </span>
             )}
 

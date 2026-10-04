@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Household } from '../../types/household';
 import { Button } from '../common/Button';
-import { Users, Copy, Check, Lock, Plus, ArrowRight, X, AlertCircle } from 'lucide-react';
+import { Users, Copy, Check, Lock, Plus, ArrowRight, X, AlertCircle, CloudUpload, RefreshCw } from 'lucide-react';
 
 interface HouseholdModalProps {
   isOpen: boolean;
@@ -11,6 +11,8 @@ interface HouseholdModalProps {
   onCreateHousehold: (name: string, myName: string) => Promise<any>;
   onJoinHousehold: (code: string, myName: string) => Promise<any>;
   onDisconnect: () => void;
+  localTransactionsCount?: number;
+  onMigrateLocalToCloud?: () => Promise<{ count: number }>;
 }
 
 export const HouseholdModal: React.FC<HouseholdModalProps> = ({
@@ -21,6 +23,8 @@ export const HouseholdModal: React.FC<HouseholdModalProps> = ({
   onCreateHousehold,
   onJoinHousehold,
   onDisconnect,
+  localTransactionsCount = 0,
+  onMigrateLocalToCloud,
 }) => {
   const [tab, setTab] = useState<'create' | 'join'>('create');
   const [houseName, setHouseName] = useState('บัญชีคู่ของเรา');
@@ -29,6 +33,25 @@ export const HouseholdModal: React.FC<HouseholdModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Migration state
+  const [migrating, setMigrating] = useState(false);
+  const [migratedCount, setMigratedCount] = useState<number | null>(null);
+  const [migrateError, setMigrateError] = useState<string | null>(null);
+
+  const handleMigrate = async () => {
+    if (!onMigrateLocalToCloud) return;
+    setMigrating(true);
+    setMigrateError(null);
+    try {
+      const res = await onMigrateLocalToCloud();
+      setMigratedCount(res.count);
+    } catch (err: any) {
+      setMigrateError(err.message || 'ไม่สามารถนำเข้าข้อมูลได้');
+    } finally {
+      setMigrating(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -146,6 +169,53 @@ export const HouseholdModal: React.FC<HouseholdModalProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Local to Cloud Migration Card */}
+            {(localTransactionsCount > 0 || migratedCount !== null) && onMigrateLocalToCloud && (
+              <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                    <CloudUpload size={15} />
+                    <span>ซิงค์ข้อมูลจากในเครื่อง</span>
+                  </div>
+                  <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 bg-white dark:bg-black/40 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-700/40">
+                    {localTransactionsCount} รายการในเครื่อง
+                  </span>
+                </div>
+                <p className="text-[11px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  นำเข้ารายการที่เคยบันทึกไว้ในเครื่องเข้าสู่บัญชีคู่นี้ เพื่อรวมยอดและแชร์ข้อมูลให้คู่ของคุณ
+                </p>
+
+                {migrateError && (
+                  <div className="p-2 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[11px] flex items-center gap-1.5">
+                    <AlertCircle size={13} className="shrink-0" />
+                    <span>{migrateError}</span>
+                  </div>
+                )}
+
+                <Button
+                  size="sm"
+                  fullWidth
+                  onClick={handleMigrate}
+                  disabled={migrating}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-9"
+                >
+                  {migrating ? (
+                    <span className="flex items-center gap-1.5">
+                      <RefreshCw size={13} className="animate-spin" />
+                      กำลังนำเข้าข้อมูลขึ้นคลาวด์...
+                    </span>
+                  ) : migratedCount !== null ? (
+                    <span className="flex items-center gap-1.5 text-white">
+                      <Check size={14} />
+                      {migratedCount > 0 ? `นำเข้าสำเร็จ ${migratedCount} รายการแล้ว` : 'ข้อมูลในเครื่องซิงค์ครบแล้ว'}
+                    </span>
+                  ) : (
+                    <span>นำเข้ารายการในเครื่องสู่บัญชีคู่</span>
+                  )}
+                </Button>
+              </div>
+            )}
 
             <Button
               variant="outline"

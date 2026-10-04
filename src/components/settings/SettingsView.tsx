@@ -22,9 +22,11 @@ import {
 
 import { User } from 'firebase/auth';
 import { Household } from '../../types/household';
-import { useTheme } from '../../hooks/useTheme';
+import { ThemeMode } from '../../hooks/useTheme';
 
 interface SettingsViewProps {
+  theme: ThemeMode;
+  onThemeChange: (theme: ThemeMode) => void;
   transactions: Transaction[];
   members: string[];
   categories: string[];
@@ -38,9 +40,13 @@ interface SettingsViewProps {
   onDeleteCategory: (category: string) => void;
   onImportData: (importedTxs: Transaction[], importedMembers?: string[], importedCategories?: string[]) => void;
   onResetData: () => void;
+  localTransactionsCount?: number;
+  onMigrateLocalToCloud?: () => Promise<{ count: number }>;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
+  theme,
+  onThemeChange,
   transactions,
   members,
   categories,
@@ -54,11 +60,32 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onDeleteCategory,
   onImportData,
   onResetData,
+  localTransactionsCount = 0,
+  onMigrateLocalToCloud,
 }) => {
-  const { theme, setTheme } = useTheme();
   const [member1, setMember1] = useState(members[0] || 'โฟกัส');
   const [member2, setMember2] = useState(members[1] || 'ต้นหยง');
   const [isSavedMembers, setIsSavedMembers] = useState(false);
+
+  // Migration state
+  const [isMigrating, setIsMigrating] = useState(false);
+  const [migrateMessage, setMigrateMessage] = useState<string | null>(null);
+
+  const handleMigrateLocal = async () => {
+    if (!onMigrateLocalToCloud) return;
+    setIsMigrating(true);
+    setMigrateMessage(null);
+    try {
+      const res = await onMigrateLocalToCloud();
+      setMigrateMessage(`ซิงค์เข้าบัญชีคู่สำเร็จ ${res.count} รายการ`);
+      setTimeout(() => setMigrateMessage(null), 5000);
+    } catch (err: any) {
+      setMigrateMessage(err.message || 'ซิงค์ไม่สำเร็จ');
+      setTimeout(() => setMigrateMessage(null), 5000);
+    } finally {
+      setIsMigrating(false);
+    }
+  };
 
   useEffect(() => {
     if (members[0]) setMember1(members[0]);
@@ -157,7 +184,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <div className="grid grid-cols-3 gap-2 pt-1">
           <button
             type="button"
-            onClick={() => setTheme('light')}
+            onClick={() => onThemeChange('light')}
             className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl border text-xs font-medium transition-all ${
               theme === 'light'
                 ? 'bg-amber-500/15 border-amber-500 text-amber-700 dark:text-amber-300 shadow-sm'
@@ -170,7 +197,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
           <button
             type="button"
-            onClick={() => setTheme('dark')}
+            onClick={() => onThemeChange('dark')}
             className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl border text-xs font-medium transition-all ${
               theme === 'dark'
                 ? 'bg-emerald-500/15 border-emerald-500 text-emerald-700 dark:text-emerald-300 shadow-sm'
@@ -183,7 +210,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
           <button
             type="button"
-            onClick={() => setTheme('system')}
+            onClick={() => onThemeChange('system')}
             className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl border text-xs font-medium transition-all ${
               theme === 'system'
                 ? 'bg-blue-500/15 border-blue-500 text-blue-700 dark:text-blue-300 shadow-sm'
@@ -229,6 +256,28 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <div className="text-[11px] text-neutral-600 dark:text-neutral-400">
                   รหัสเชิญ: <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{household.inviteCode}</span>
                 </div>
+
+                {/* Local to Cloud sync badge inside card */}
+                {localTransactionsCount > 0 && onMigrateLocalToCloud && (
+                  <div className="pt-1.5 border-t border-emerald-200/60 dark:border-emerald-800/40 flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-emerald-800 dark:text-emerald-300">
+                      มีในเครื่อง {localTransactionsCount} รายการ
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleMigrateLocal}
+                      disabled={isMigrating}
+                      className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300 underline hover:text-emerald-900 dark:hover:text-white"
+                    >
+                      {isMigrating ? 'กำลังซิงค์...' : 'นำเข้าสู่บัญชีคู่'}
+                    </button>
+                  </div>
+                )}
+                {migrateMessage && (
+                  <div className="text-[10px] text-emerald-700 dark:text-emerald-300 font-medium">
+                    ✓ {migrateMessage}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="p-3 rounded-2xl bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-xs text-amber-800 dark:text-amber-300">

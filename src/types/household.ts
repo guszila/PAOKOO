@@ -1,3 +1,5 @@
+import { Pocket } from './pocket';
+
 export interface HouseholdMember {
   uid: string;
   name: string;
@@ -14,4 +16,6 @@ export interface Household {
   isLocked: boolean;
   createdAt: string;
   updatedAt: string;
+  categories?: string[];
+  pockets?: Pocket[];
 }

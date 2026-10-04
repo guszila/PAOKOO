@@ -17,8 +17,10 @@ import {
   AlertCircle,
   Tag,
   X,
+  Wallet,
 } from 'lucide-react';
 import { SlipViewerModal } from '../scanner/SlipViewerModal';
+import { Pocket, PocketSummary } from '../../types/pocket';
 
 interface TransactionFormSheetProps {
   isOpen: boolean;
@@ -37,10 +39,13 @@ interface TransactionFormSheetProps {
     refNo?: string;
     slipThumbnail?: string;
     fullSlipBase64?: string;
+    pocketId?: string;
   } | null;
   existingTransactions: Transaction[];
   memberNames: string[];
   categories?: string[];
+  pockets?: Pocket[];
+  pocketSummaries?: PocketSummary[];
   onOpenScanner?: () => void;
 }
 
@@ -54,6 +59,8 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
   existingTransactions,
   memberNames,
   categories = DEFAULT_EXPENSE_CATEGORIES,
+  pockets = [],
+  pocketSummaries = [],
   onOpenScanner,
 }) => {
   const [type, setType] = useState<TransactionType>('out');
@@ -66,6 +73,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
   const [refNo, setRefNo] = useState<string>('');
   const [slipThumbnail, setSlipThumbnail] = useState<string | undefined>();
   const [fullSlipBase64, setFullSlipBase64] = useState<string | undefined>();
+  const [selectedPocketId, setSelectedPocketId] = useState<string | undefined>(undefined);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   const [showOverRepaymentWarning, setShowOverRepaymentWarning] = useState(false);
@@ -85,6 +93,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
       setWho(initialTransaction.who);
       setNote(initialTransaction.note || '');
       setCategory(initialTransaction.category || 'อื่นๆ');
+      setSelectedPocketId(initialTransaction.pocketId);
       setDate(initialTransaction.date);
       setTime(initialTransaction.time || '');
       setRefNo(initialTransaction.refNo || '');
@@ -96,6 +105,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
       setWho(prefill.who || '');
       setNote(prefill.note || '');
       setCategory(prefill.category || categories[0] || 'อาหาร');
+      setSelectedPocketId(prefill.pocketId);
       setDate(prefill.date || new Date().toISOString().slice(0, 10));
       setTime(prefill.time || new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false }));
       setRefNo(prefill.refNo || '');
@@ -107,6 +117,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
       setWho(memberNames[0] || '');
       setNote('');
       setCategory(categories[0] || 'อาหาร');
+      setSelectedPocketId(undefined);
       setDate(new Date().toISOString().slice(0, 10));
       setTime(new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false }));
       setRefNo('');
@@ -170,6 +181,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
         who: who.trim(),
         note: note.trim(),
         category: type === 'out' ? category : undefined,
+        pocketId: type === 'out' ? selectedPocketId : undefined,
         date,
         time: time.trim() || undefined,
         refNo: refNo.trim() || undefined,
@@ -275,6 +287,65 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                     {cat}
                   </button>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Spending Pocket Selector (ตัดจากกล่องไหน) */}
+          {type === 'out' && pockets && pockets.length > 0 && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                <div className="flex items-center gap-1.5">
+                  <Wallet size={13} />
+                  <span>ตัดเงินจากกล่องไหน</span>
+                </div>
+                {selectedPocketId && (
+                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                    ตัดจากกล่องแบ่งใช้
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {/* Option 1: เงินกองกลางหลัก */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedPocketId(undefined)}
+                  className={`text-xs px-3 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 ${
+                    !selectedPocketId
+                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white font-medium shadow-sm'
+                      : 'bg-surface-light dark:bg-surface-dark text-neutral-600 dark:text-neutral-400 border-border-light dark:border-border-dark hover:border-neutral-400'
+                  }`}
+                >
+                  <span>🏦</span>
+                  <span>กองกลางหลัก</span>
+                </button>
+
+                {/* Option 2..N: Pockets */}
+                {pockets.map((p) => {
+                  const isSelected = selectedPocketId === p.id;
+                  const pSummary = pocketSummaries?.find((ps) => ps.pocket.id === p.id);
+                  const remainingStr = pSummary ? `${formatSatang(pSummary.remainingSatang)} ฿` : '';
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSelectedPocketId(p.id)}
+                      className={`text-xs px-3 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 ${
+                        isSelected
+                          ? 'bg-emerald-600 text-white border-emerald-600 font-medium shadow-sm'
+                          : 'bg-surface-light dark:bg-surface-dark text-neutral-600 dark:text-neutral-400 border-border-light dark:border-border-dark hover:border-neutral-400'
+                      }`}
+                    >
+                      <span>👛</span>
+                      <span>{p.name}</span>
+                      {remainingStr && (
+                        <span className={`text-[10px] ${isSelected ? 'text-white/80' : 'text-neutral-400'}`}>
+                          ({remainingStr})
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

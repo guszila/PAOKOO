@@ -9,14 +9,18 @@ import {
   saveLocalCategories,
   getLocalHideAmounts,
   saveLocalHideAmounts,
+  getLocalPockets,
+  saveLocalPockets,
 } from '../lib/storage';
-import { calculateSummary } from '../lib/summary';
+import { Pocket } from '../types/pocket';
+import { calculateSummary, sortTransactionsChronological } from '../lib/summary';
 import { MAX_CATEGORIES } from '../config/categories';
 
 export function useTransactions() {
   const [transactions, setTransactions] = useState<Transaction[]>(() => getLocalTransactions());
   const [members, setMembers] = useState<string[]>(() => getLocalMembers());
   const [categories, setCategories] = useState<string[]>(() => getLocalCategories());
+  const [pockets, setPockets] = useState<Pocket[]>(() => getLocalPockets());
   const [isMasked, setIsMasked] = useState<boolean>(() => getLocalHideAmounts());
 
   // Save to localStorage whenever transactions change
@@ -33,6 +37,11 @@ export function useTransactions() {
   useEffect(() => {
     saveLocalCategories(categories);
   }, [categories]);
+
+  // Save to localStorage whenever pockets change
+  useEffect(() => {
+    saveLocalPockets(pockets);
+  }, [pockets]);
 
   // Save to localStorage whenever isMasked changes
   useEffect(() => {
@@ -57,14 +66,16 @@ export function useTransactions() {
       updatedAt: now,
     };
 
-    setTransactions((prev) => [newTx, ...prev]);
+    setTransactions((prev) => sortTransactionsChronological([newTx, ...prev]));
     return newTx;
   }, []);
 
   const updateTransaction = useCallback((id: string, updates: Partial<Omit<Transaction, 'id' | 'createdAt'>>) => {
     const now = new Date().toISOString();
     setTransactions((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...updates, updatedAt: now } : t))
+      sortTransactionsChronological(
+        prev.map((t) => (t.id === id ? { ...t, ...updates, updatedAt: now } : t))
+      )
     );
   }, []);
 
@@ -89,7 +100,7 @@ export function useTransactions() {
   }, []);
 
   const importData = useCallback((importedTxs: Transaction[], newMembers?: string[], newCategories?: string[]) => {
-    setTransactions(importedTxs);
+    setTransactions(sortTransactionsChronological(importedTxs));
     if (newMembers && newMembers.length > 0) {
       setMembers(newMembers);
     }
@@ -105,6 +116,32 @@ export function useTransactions() {
     setCategories(getLocalCategories());
   }, []);
 
+  const addPocket = useCallback((name: string, allocatedSatang: number, color?: string, icon?: string) => {
+    const now = new Date().toISOString();
+    const newPocket: Pocket = {
+      id: `pocket-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      name: name.trim() || 'เงินแบ่งใช้',
+      allocatedSatang: Math.max(0, Math.round(allocatedSatang)),
+      color: color || '#10B981',
+      icon: icon || 'wallet',
+      createdAt: now,
+      updatedAt: now,
+    };
+    setPockets((prev) => [...prev, newPocket]);
+    return newPocket;
+  }, []);
+
+  const updatePocket = useCallback((id: string, updates: Partial<Omit<Pocket, 'id' | 'createdAt'>>) => {
+    const now = new Date().toISOString();
+    setPockets((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, ...updates, updatedAt: now } : p))
+    );
+  }, []);
+
+  const deletePocket = useCallback((id: string) => {
+    setPockets((prev) => prev.filter((p) => p.id !== id));
+  }, []);
+
   return {
     transactions,
     members,
@@ -113,6 +150,11 @@ export function useTransactions() {
     setCategories,
     addCategory,
     deleteCategory,
+    pockets,
+    setPockets,
+    addPocket,
+    updatePocket,
+    deletePocket,
     isMasked,
     toggleMask,
     summary,

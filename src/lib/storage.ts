@@ -1,5 +1,7 @@
 import { Transaction } from '../types/transaction';
+import { Pocket } from '../types/pocket';
 import { DEFAULT_EXPENSE_CATEGORIES, MAX_CATEGORIES } from '../config/categories';
+import { sortTransactionsChronological } from './summary';
 
 const STORAGE_KEYS = {
   TRANSACTIONS: 'paokoo_local_transactions',
@@ -7,6 +9,7 @@ const STORAGE_KEYS = {
   THEME: 'paokoo_theme',
   CATEGORIES: 'paokoo_categories',
   HIDE_AMOUNTS: 'paokoo_hide_amounts',
+  POCKETS: 'paokoo_pockets',
 };
 
 const DEFAULT_MEMBERS = ['โฟกัส', 'ต้นหยง'];
@@ -24,10 +27,11 @@ export function getLocalTransactions(): Transaction[] {
       saveLocalTransactions(cleaned);
     }
     // Safe migration: ensure any old expenses without category default gracefully
-    return cleaned.map((tx) => ({
+    const migrated = cleaned.map((tx) => ({
       ...tx,
       category: tx.type === 'out' ? (tx.category || 'อื่นๆ') : undefined,
     }));
+    return sortTransactionsChronological(migrated);
   } catch (e) {
     console.error('Error reading transactions from localStorage:', e);
     return [];
@@ -112,3 +116,24 @@ export function saveLocalHideAmounts(hide: boolean): void {
     console.error('Error saving hide-amounts:', e);
   }
 }
+
+export function getLocalPockets(): Pocket[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.POCKETS);
+    if (!raw) return [];
+    const list: Pocket[] = JSON.parse(raw);
+    return Array.isArray(list) ? list : [];
+  } catch (e) {
+    console.error('Error reading pockets from localStorage:', e);
+    return [];
+  }
+}
+
+export function saveLocalPockets(pockets: Pocket[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEYS.POCKETS, JSON.stringify(pockets));
+  } catch (e) {
+    console.error('Error saving pockets to localStorage:', e);
+  }
+}
+

@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useTransactions } from './hooks/useTransactions';
 import { useAuth } from './hooks/useAuth';
 import { useHousehold } from './hooks/useHousehold';
+import { useTheme } from './hooks/useTheme';
 import { Header } from './components/layout/Header';
 import { BottomNav, TabType } from './components/layout/BottomNav';
 import { PortfolioHero } from './components/overview/PortfolioHero';
@@ -15,10 +16,23 @@ import { TransactionFormSheet } from './components/form/TransactionFormSheet';
 import { AuthModal } from './components/auth/AuthModal';
 import { HouseholdModal } from './components/household/HouseholdModal';
 import { SlipScannerModal } from './components/scanner/SlipScannerModal';
+import { PocketSection } from './components/pockets/PocketSection';
+import { PocketModal } from './components/pockets/PocketModal';
+import { PocketTopUpModal } from './components/pockets/PocketTopUpModal';
 import { Transaction, TransactionType, OutstandingDebtor } from './types/transaction';
+import { Pocket, PocketSummary } from './types/pocket';
 import { calculateSummary } from './lib/summary';
+import { calculatePocketSummaries, calculateMainSavingsBalance } from './lib/pocket';
+import { useToast } from './context/ToastContext';
+import { formatSatang } from './lib/money';
 
 export function App() {
+  // Toast notification hook
+  const { showToast } = useToast();
+
+  // Theme management at root
+  const { theme, setTheme } = useTheme();
+
   // Local state hook
   const {
     transactions: localTransactions,
@@ -27,6 +41,10 @@ export function App() {
     categories,
     addCategory,
     deleteCategory,
+    pockets: localPockets,
+    addPocket: addLocalPocket,
+    updatePocket: updateLocalPocket,
+    deletePocket: deleteLocalPocket,
     isMasked,
     toggleMask,
     summary: localSummary,
@@ -47,11 +65,72 @@ export function App() {
     saveCloudTransaction,
     deleteCloudTransaction,
     disconnectHousehold,
+    addHouseholdCategory,
+    deleteHouseholdCategory,
+    addHouseholdPocket,
+    updateHouseholdPocket,
+    deleteHouseholdPocket,
+    migrateLocalToCloud,
   } = useHousehold(user);
 
   // Active transactions: cloud if in household, otherwise local
   const isCloudActive = Boolean(user && household);
   const activeTransactions = isCloudActive ? cloudTransactions : localTransactions;
+
+  // Active categories: cloud household categories if connected, else local categories
+  const activeCategories = useMemo(() => {
+    if (isCloudActive && household && household.categories && household.categories.length > 0) {
+      return household.categories;
+    }
+    return categories;
+  }, [isCloudActive, household, categories]);
+
+  // Unified add category handler
+  const handleAddCategory = useCallback(
+    (cat: string) => {
+      if (isCloudActive) {
+        addHouseholdCategory(cat);
+      } else {
+        addCategory(cat);
+      }
+      showToast({
+        type: 'success',
+        title: 'เพิ่มหมวดหมู่สำเร็จ',
+        message: `หมวดหมู่ "${cat}"`,
+      });
+    },
+    [isCloudActive, addHouseholdCategory, addCategory, showToast]
+  );
+
+  // Unified delete category handler
+  const handleDeleteCategory = useCallback(
+    (cat: string) => {
+      if (isCloudActive) {
+        deleteHouseholdCategory(cat);
+      } else {
+        deleteCategory(cat);
+      }
+      showToast({
+        type: 'delete',
+        title: 'ลบหมวดหมู่เรียบร้อยแล้ว',
+        message: `หมวดหมู่ "${cat}"`,
+      });
+    },
+    [isCloudActive, deleteHouseholdCategory, deleteCategory, showToast]
+  );
+
+  // Local to cloud migration handler
+  const handleMigrateLocalToCloud = useCallback(async () => {
+    const result = await migrateLocalToCloud(localTransactions, categories);
+    if (result.count > 0) {
+      showToast({
+        type: 'success',
+        title: 'ย้ายข้อมูลขึ้นระบบคลาวด์สำเร็จ',
+        message: `นำเข้า ${result.count} รายการ เรียบร้อยแล้ว`,
+      });
+    }
+    return result;
+  }, [migrateLocalToCloud, localTransactions, categories, showToast]);
 
   // Active members
   const activeMembers = useMemo(() => {
@@ -68,6 +147,24 @@ export function App() {
     }
     return localSummary;
   }, [isCloudActive, cloudTransactions, localSummary]);
+
+  // Active pockets: cloud household pockets if connected, else local pockets
+  const activePockets = useMemo(() => {
+    if (isCloudActive && household && household.pockets && Array.isArray(household.pockets)) {
+      return household.pockets;
+    }
+    return localPockets;
+  }, [isCloudActive, household, localPockets]);
+
+  // Pocket summaries (spent, remaining, percentage)
+  const pocketSummaries = useMemo(() => {
+    return calculatePocketSummaries(activePockets, activeTransactions);
+  }, [activePockets, activeTransactions]);
+
+  // Main savings balance (total bank balance - remaining in pockets)
+  const mainSavingsBalance = useMemo(() => {
+    return calculateMainSavingsBalance(activeSummary.currentBalance, pocketSummaries);
+  }, [activeSummary.currentBalance, pocketSummaries]);
 
   const [activeTab, setActiveTab] = useState<TabType>('overview');
 
@@ -88,7 +185,93 @@ export function App() {
     refNo?: string;
     slipThumbnail?: string;
     fullSlipBase64?: string;
+    pocketId?: string;
   } | null>(null);
+
+  // Pocket modals state
+  const [isPocketModalOpen, setIsPocketModalOpen] = useState(false);
+  const [selectedPocketForEdit, setSelectedPocketForEdit] = useState<Pocket | null>(null);
+  const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
+  const [selectedSummaryForTopUp, setSelectedSummaryForTopUp] = useState<PocketSummary | null>(null);
+
+  const handleOpenCreatePocket = useCallback(() => {
+    setSelectedPocketForEdit(null);
+    setIsPocketModalOpen(true);
+  }, []);
+
+  const handleOpenEditPocket = useCallback((pocket: Pocket) => {
+    setSelectedPocketForEdit(pocket);
+    setIsPocketModalOpen(true);
+  }, []);
+
+  const handleOpenTopUpPocket = useCallback((summary: PocketSummary) => {
+    setSelectedSummaryForTopUp(summary);
+    setIsTopUpModalOpen(true);
+  }, []);
+
+  const handleSavePocket = useCallback(
+    (data: { name: string; allocatedSatang: number; color: string; icon: string }) => {
+      if (selectedPocketForEdit) {
+        if (isCloudActive) {
+          updateHouseholdPocket(selectedPocketForEdit.id, data);
+        } else {
+          updateLocalPocket(selectedPocketForEdit.id, data);
+        }
+        showToast({
+          type: 'success',
+          title: 'แก้ไขกล่องแบ่งเงินสำเร็จ',
+          message: `กล่อง "${data.name}"`,
+        });
+      } else {
+        if (isCloudActive) {
+          addHouseholdPocket(data.name, data.allocatedSatang, data.color, data.icon);
+        } else {
+          addLocalPocket(data.name, data.allocatedSatang, data.color, data.icon);
+        }
+        showToast({
+          type: 'success',
+          title: 'สร้างกล่องแบ่งเงินสำเร็จ',
+          message: `กล่อง "${data.name}" (${formatSatang(data.allocatedSatang)} ฿)`,
+        });
+      }
+    },
+    [selectedPocketForEdit, isCloudActive, updateHouseholdPocket, updateLocalPocket, addHouseholdPocket, addLocalPocket, showToast]
+  );
+
+  const handleDeletePocket = useCallback(
+    (id: string) => {
+      if (isCloudActive) {
+        deleteHouseholdPocket(id);
+      } else {
+        deleteLocalPocket(id);
+      }
+      showToast({
+        type: 'delete',
+        title: 'ลบกล่องแบ่งเงินเรียบร้อยแล้ว',
+        message: 'กล่องเงินถูกลบออกจากรายการแล้ว',
+      });
+    },
+    [isCloudActive, deleteHouseholdPocket, deleteLocalPocket, showToast]
+  );
+
+  const handleTopUpPocket = useCallback(
+    (pocketId: string, additionalSatang: number) => {
+      const targetPocket = activePockets.find((p) => p.id === pocketId);
+      if (!targetPocket) return;
+      const newAllocated = targetPocket.allocatedSatang + additionalSatang;
+      if (isCloudActive) {
+        updateHouseholdPocket(pocketId, { allocatedSatang: newAllocated });
+      } else {
+        updateLocalPocket(pocketId, { allocatedSatang: newAllocated });
+      }
+      showToast({
+        type: 'success',
+        title: 'เติมเงินเข้ากล่องสำเร็จ',
+        message: `เติมเงิน +${formatSatang(additionalSatang)} ฿ เข้ากล่อง "${targetPocket.name}"`,
+      });
+    },
+    [activePockets, isCloudActive, updateHouseholdPocket, updateLocalPocket, showToast]
+  );
 
   // Filters State for All Transactions tab
   const [selectedType, setSelectedType] = useState<TransactionType | 'all'>('all');
@@ -112,6 +295,7 @@ export function App() {
     note: string;
     slipThumbnail: string;
     fullSlipBase64: string;
+    pocketId?: string;
   }) => {
     setSelectedTxForEdit(null);
     setPrefillData({
@@ -125,6 +309,7 @@ export function App() {
       slipThumbnail: data.slipThumbnail,
       fullSlipBase64: data.fullSlipBase64,
       category: categories[0] || 'อาหาร',
+      pocketId: data.pocketId,
     });
     setIsFormOpen(true);
   };
@@ -159,6 +344,20 @@ export function App() {
     setIsFormOpen(true);
   };
 
+  // Helper for transaction type text in toast
+  const getTxTypeLabel = (txType: TransactionType) => {
+    switch (txType) {
+      case 'in':
+        return 'ฝากเข้า';
+      case 'out':
+        return 'รายจ่าย';
+      case 'lend':
+        return 'ให้ยืม/สำรอง';
+      case 'back':
+        return 'ได้รับคืน';
+    }
+  };
+
   // Save transaction (create or update, routes to cloud if in household)
   const handleSaveTransaction = (
     txData: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>,
@@ -173,6 +372,21 @@ export function App() {
         addLocalTx(txData);
       }
     }
+
+    const typeLabel = getTxTypeLabel(txData.type);
+    if (id) {
+      showToast({
+        type: 'success',
+        title: 'แก้ไขรายการสำเร็จ',
+        message: `${typeLabel} ${formatSatang(txData.amount)} ฿ (${txData.who})`,
+      });
+    } else {
+      showToast({
+        type: 'success',
+        title: 'บันทึกรายการสำเร็จ',
+        message: `${typeLabel} ${formatSatang(txData.amount)} ฿ (${txData.who})`,
+      });
+    }
   };
 
   // Delete transaction
@@ -182,6 +396,11 @@ export function App() {
     } else {
       deleteLocalTx(id);
     }
+    showToast({
+      type: 'delete',
+      title: 'ลบรายการเรียบร้อยแล้ว',
+      message: 'รายการถูกลบออกจากบัญชีแล้ว',
+    });
   };
 
   return (
@@ -209,12 +428,23 @@ export function App() {
               transactions={activeTransactions}
               isMasked={isMasked}
               onToggleMask={toggleMask}
+              pocketSummaries={pocketSummaries}
+              mainSavingsBalance={mainSavingsBalance}
             />
 
             {/* 2. Quick-Action Row (5 actions) */}
             <QuickActions
               onSelectAction={handleQuickAction}
               onOpenScanner={() => setIsScannerOpen(true)}
+            />
+
+            {/* 2.5 Spending Pockets (Model 2: กระเป๋าย่อยแบ่งเงินใช้ แบบ MAKE by KBank) */}
+            <PocketSection
+              pocketSummaries={pocketSummaries}
+              onOpenCreate={handleOpenCreatePocket}
+              onOpenEdit={handleOpenEditPocket}
+              onOpenTopUp={handleOpenTopUpPocket}
+              isMasked={isMasked}
             />
 
             {/* 3. Asset Summary Cards */}
@@ -234,6 +464,7 @@ export function App() {
               transactions={activeTransactions}
               onViewAll={() => setActiveTab('transactions')}
               onSelectTx={handleSelectTx}
+              pockets={activePockets}
               isMasked={isMasked}
             />
           </div>
@@ -250,7 +481,8 @@ export function App() {
               setSearchQuery={setSearchQuery}
               selectedMonth={selectedMonth}
               setSelectedMonth={setSelectedMonth}
-              categories={categories}
+              categories={activeCategories}
+              pockets={activePockets}
               isMasked={isMasked}
             />
           </div>
@@ -268,19 +500,23 @@ export function App() {
         {activeTab === 'settings' && (
           <div className="relative -mt-10 z-20 animate-fade-in">
             <SettingsView
+              theme={theme}
+              onThemeChange={setTheme}
               transactions={activeTransactions}
               members={activeMembers}
-              categories={categories}
+              categories={activeCategories}
               user={user}
               household={household}
               onOpenAuth={() => setIsAuthOpen(true)}
               onOpenHousehold={() => setIsHouseholdOpen(true)}
               onLogout={logout}
               onUpdateMembers={setLocalMembers}
-              onAddCategory={addCategory}
-              onDeleteCategory={deleteCategory}
+              onAddCategory={handleAddCategory}
+              onDeleteCategory={handleDeleteCategory}
               onImportData={importData}
               onResetData={resetData}
+              localTransactionsCount={isCloudActive ? localTransactions.length : 0}
+              onMigrateLocalToCloud={handleMigrateLocalToCloud}
             />
           </div>
         )}
@@ -303,7 +539,9 @@ export function App() {
         prefill={prefillData}
         existingTransactions={activeTransactions}
         memberNames={activeMembers}
-        categories={categories}
+        categories={activeCategories}
+        pockets={activePockets}
+        pocketSummaries={pocketSummaries}
         onOpenScanner={() => setIsScannerOpen(true)}
       />
 
@@ -313,7 +551,26 @@ export function App() {
         onClose={() => setIsScannerOpen(false)}
         existingTransactions={activeTransactions}
         memberNames={activeMembers}
+        pockets={activePockets}
+        pocketSummaries={pocketSummaries}
         onApplySlip={handleApplySlip}
+      />
+
+      {/* Pocket Create / Edit Modal */}
+      <PocketModal
+        isOpen={isPocketModalOpen}
+        onClose={() => setIsPocketModalOpen(false)}
+        pocket={selectedPocketForEdit}
+        onSave={handleSavePocket}
+        onDelete={handleDeletePocket}
+      />
+
+      {/* Pocket Top-Up Modal */}
+      <PocketTopUpModal
+        isOpen={isTopUpModalOpen}
+        onClose={() => setIsTopUpModalOpen(false)}
+        pocketSummary={selectedSummaryForTopUp}
+        onTopUp={handleTopUpPocket}
       />
 
       {/* Auth Modal (Login / Register) */}
@@ -334,6 +591,8 @@ export function App() {
         onCreateHousehold={createHousehold}
         onJoinHousehold={joinHouseholdWithCode}
         onDisconnect={disconnectHousehold}
+        localTransactionsCount={localTransactions.length}
+        onMigrateLocalToCloud={handleMigrateLocalToCloud}
       />
     </div>
   );

@@ -16,6 +16,8 @@ import {
   Clock,
 } from 'lucide-react';
 
+import { PocketSummary } from '../../types/pocket';
+
 interface PortfolioHeroProps {
   currentBalance: number;
   totalLentOut: number;
@@ -25,6 +27,8 @@ interface PortfolioHeroProps {
   transactions: Transaction[];
   isMasked: boolean;
   onToggleMask: () => void;
+  pocketSummaries?: PocketSummary[];
+  mainSavingsBalance?: number;
 }
 
 export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
@@ -36,6 +40,8 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
   transactions,
   isMasked,
   onToggleMask,
+  pocketSummaries,
+  mainSavingsBalance,
 }) => {
   const [isDonutExpanded, setIsDonutExpanded] = useState(true);
   const [donutTab, setDonutTab] = useState<'wealth' | 'expenses'>('wealth');
@@ -155,6 +161,29 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
           </div>
         )}
       </div>
+
+      {/* Pocket Breakdown Pill (Model 2: Sub-Wallet Breakdown) */}
+      {pocketSummaries && pocketSummaries.length > 0 && (
+        <div className="mt-3 p-2.5 rounded-2xl bg-neutral-50 dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-sm">🏦</span>
+            <span className="text-neutral-500 dark:text-neutral-400 truncate">กองกลางหลัก:</span>
+            <span className="font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums">
+              {isMasked ? '••••' : `${formatSatang(mainSavingsBalance ?? currentBalance)} ฿`}
+            </span>
+          </div>
+          <div className="h-3.5 w-px bg-border-light dark:border-border-dark mx-2 shrink-0" />
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-sm">👛</span>
+            <span className="text-neutral-500 dark:text-neutral-400 truncate">ในกล่องแบ่งใช้:</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
+              {isMasked
+                ? '••••'
+                : `${formatSatang(pocketSummaries.reduce((sum, p) => sum + p.remainingSatang, 0))} ฿`}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Subline: Grand Total & Latest Update */}
       <div className="mt-3 pt-3 border-t border-border-light dark:border-border-dark flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400">

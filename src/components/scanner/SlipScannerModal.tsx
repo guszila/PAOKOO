@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { BottomSheet } from '../common/BottomSheet';
 import { Button } from '../common/Button';
-import { Camera, Image as ImageIcon, AlertTriangle, RefreshCw, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Camera, Image as ImageIcon, AlertTriangle, RefreshCw, ArrowRight, ShieldCheck, Wallet } from 'lucide-react';
 import { scanBankSlip, ScanProgressUpdate, ScanSlipResult } from '../../lib/slip/scannerService';
 import { Transaction } from '../../types/transaction';
+import { Pocket, PocketSummary } from '../../types/pocket';
 import { formatSatang } from '../../lib/money';
 import { formatSlipDisplayDate } from '../../lib/slip/slipParser';
 
@@ -12,6 +13,8 @@ interface SlipScannerModalProps {
   onClose: () => void;
   existingTransactions: Transaction[];
   memberNames: string[];
+  pockets?: Pocket[];
+  pocketSummaries?: PocketSummary[];
   onApplySlip: (data: {
     amountSatang: number;
     date: string;
@@ -21,6 +24,7 @@ interface SlipScannerModalProps {
     note: string;
     slipThumbnail: string;
     fullSlipBase64: string;
+    pocketId?: string;
   }) => void;
 }
 
@@ -29,12 +33,15 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
   onClose,
   existingTransactions,
   memberNames,
+  pockets = [],
+  pocketSummaries = [],
   onApplySlip,
 }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [progress, setProgress] = useState<ScanProgressUpdate | null>(null);
   const [scanResult, setScanResult] = useState<ScanSlipResult | null>(null);
+  const [selectedPocketId, setSelectedPocketId] = useState<string | undefined>(undefined);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,6 +52,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
     setIsScanning(false);
     setProgress(null);
     setScanResult(null);
+    setSelectedPocketId(undefined);
     setErrorMsg(null);
   };
 
@@ -105,6 +113,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
       note,
       slipThumbnail: thumbnailBase64,
       fullSlipBase64: fullBase64,
+      pocketId: selectedPocketId,
     });
 
     handleClose();
@@ -285,6 +294,47 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
                   <span className="font-mono text-neutral-700 dark:text-neutral-300 break-all select-all">
                     {scanResult.parsed.refNo}
                   </span>
+                </div>
+              )}
+
+              {/* Pocket Selection in Slip Scanner */}
+              {pockets && pockets.length > 0 && (
+                <div className="pt-2 border-t border-border-light dark:border-border-dark space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                    <Wallet size={12} />
+                    <span>หักเงินจากกล่อง</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPocketId(undefined)}
+                      className={`text-xs px-2.5 py-1 rounded-lg border transition-all ${
+                        !selectedPocketId
+                          ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white font-medium'
+                          : 'bg-surface-light dark:bg-surface-dark text-neutral-600 dark:text-neutral-400 border-border-light dark:border-border-dark'
+                      }`}
+                    >
+                      🏦 กองกลางหลัก
+                    </button>
+                    {pockets.map((p) => {
+                      const isSelected = selectedPocketId === p.id;
+                      const pSummary = pocketSummaries?.find((ps) => ps.pocket.id === p.id);
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setSelectedPocketId(p.id)}
+                          className={`text-xs px-2.5 py-1 rounded-lg border transition-all ${
+                            isSelected
+                              ? 'bg-emerald-600 text-white border-emerald-600 font-medium'
+                              : 'bg-surface-light dark:bg-surface-dark text-neutral-600 dark:text-neutral-400 border-border-light dark:border-border-dark'
+                          }`}
+                        >
+                          👛 {p.name} {pSummary ? `(เหลือ ${formatSatang(pSummary.remainingSatang)} ฿)` : ''}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Transaction } from '../../types/transaction';
+import { Pocket } from '../../types/pocket';
 import { TransactionItem } from '../transactions/TransactionItem';
 import { ChevronRight, Receipt } from 'lucide-react';
 
@@ -7,6 +8,7 @@ interface RecentTransactionsProps {
   transactions: Transaction[];
   onViewAll: () => void;
   onSelectTx: (tx: Transaction) => void;
+  pockets?: Pocket[];
   isMasked?: boolean;
 }
 
@@ -14,9 +16,15 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({
   transactions,
   onViewAll,
   onSelectTx,
+  pockets = [],
   isMasked = false,
 }) => {
   const recent = transactions.slice(0, 4);
+  const pocketMap = useMemo(() => {
+    const map = new Map<string, string>();
+    pockets.forEach((p) => map.set(p.id, p.name));
+    return map;
+  }, [pockets]);
 
   return (
     <div className="space-y-3">
@@ -46,6 +54,7 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({
               transaction={tx}
               onClick={onSelectTx}
               isMasked={isMasked}
+              pocketName={tx.pocketId ? pocketMap.get(tx.pocketId) : undefined}
             />
           ))}
         </div>

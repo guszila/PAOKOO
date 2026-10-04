@@ -187,3 +187,27 @@ export function checkOverRepayment(
     currentDebtSatang,
   };
 }
+
+/**
+ * Sorts transactions chronologically: newest date and time first.
+ * If date and time are identical, falls back to createdAt or id.
+ */
+export function sortTransactionsChronological(txs: Transaction[]): Transaction[] {
+  return [...txs].sort((a, b) => {
+    const aTime = a.time && a.time.trim() ? a.time.trim() : '00:00';
+    const bTime = b.time && b.time.trim() ? b.time.trim() : '00:00';
+    const aKey = `${a.date} ${aTime}`;
+    const bKey = `${b.date} ${bTime}`;
+
+    if (aKey !== bKey) {
+      return bKey.localeCompare(aKey); // Newest date & time first
+    }
+
+    if (a.createdAt && b.createdAt && a.createdAt !== b.createdAt) {
+      return b.createdAt.localeCompare(a.createdAt);
+    }
+
+    return b.id.localeCompare(a.id);
+  });
+}
+

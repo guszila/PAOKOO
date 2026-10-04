@@ -15,6 +15,8 @@ export interface Transaction {
   time?: string;
   /** Expense Category (for type === 'out') e.g. 'อาหาร', 'เดินทาง', etc. */
   category?: string;
+  /** Optional Pocket ID if deducted from a spending pocket */
+  pocketId?: string;
   /** Reference number from bank transfer slip (for duplicate check) */
   refNo?: string;
   /** Slip image thumbnail (<40KB base64 JPEG) embedded in transaction */

@@ -9,11 +9,14 @@ import {
   deleteDoc,
   getDoc,
   serverTimestamp,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { Household } from '../types/household';
 import { Transaction } from '../types/transaction';
-import { DEFAULT_EXPENSE_CATEGORIES } from '../config/categories';
+import { Pocket } from '../types/pocket';
+import { DEFAULT_EXPENSE_CATEGORIES, MAX_CATEGORIES } from '../config/categories';
+import { sortTransactionsChronological } from '../lib/summary';
 
 export function useHousehold(user: User | null) {
   const [household, setHousehold] = useState<Household | null>(null);
@@ -52,7 +55,15 @@ export function useHousehold(user: User | null) {
         setIsSyncing(false);
         if (docSnap.exists()) {
           const data = docSnap.data() as Household;
-          setHousehold({ ...data, id: docSnap.id });
+          setHousehold({
+            ...data,
+            id: docSnap.id,
+            categories:
+              data.categories && Array.isArray(data.categories) && data.categories.length > 0
+                ? data.categories
+                : DEFAULT_EXPENSE_CATEGORIES,
+            pockets: Array.isArray(data.pockets) ? data.pockets : [],
+          });
           setSyncStatus('synced');
           localStorage.setItem('paokoo_household_id', docSnap.id);
         } else {
@@ -100,9 +111,8 @@ export function useHousehold(user: User | null) {
           });
         });
 
-        // Sort newest first
-        list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || b.id.localeCompare(a.id));
-        setTransactions(list);
+        // Sort newest first chronologically (date + time)
+        setTransactions(sortTransactionsChronological(list));
       },
       (error) => {
         console.error('Transactions snapshot error:', error);
@@ -246,6 +256,7 @@ export function useHousehold(user: User | null) {
       };
 
       if (txData.category) payload.category = txData.category;
+      if (txData.pocketId) payload.pocketId = txData.pocketId;
       if (txData.refNo) payload.refNo = txData.refNo;
       if (txData.slipThumbnail) payload.slipThumbnail = txData.slipThumbnail;
       if (txData.hasFullSlip !== undefined) payload.hasFullSlip = txData.hasFullSlip;
@@ -275,6 +286,171 @@ export function useHousehold(user: User | null) {
     setHousehold(null);
   };
 
+  // Add category to household in Firestore
+  const addHouseholdCategory = useCallback(
+    async (cat: string) => {
+      if (!householdId || !user) return;
+      const trimmed = cat.trim();
+      if (!trimmed) return;
+      const current = household?.categories || DEFAULT_EXPENSE_CATEGORIES;
+      if (current.includes(trimmed) || current.length >= MAX_CATEGORIES) return;
+
+      const updated = [...current, trimmed];
+      await updateDoc(doc(db, 'households', householdId), {
+        categories: updated,
+        updatedAt: new Date().toISOString(),
+      });
+    },
+    [householdId, user, household]
+  );
+
+  // Delete category from household in Firestore
+  const deleteHouseholdCategory = useCallback(
+    async (catToDelete: string) => {
+      if (!householdId || !user) return;
+      const current = household?.categories || DEFAULT_EXPENSE_CATEGORIES;
+      if (current.length <= 1) return; // Keep at least 1 category
+
+      const updated = current.filter((c) => c !== catToDelete);
+      await updateDoc(doc(db, 'households', householdId), {
+        categories: updated,
+        updatedAt: new Date().toISOString(),
+      });
+    },
+    [householdId, user, household]
+  );
+
+  // Add pocket to household
+  const addHouseholdPocket = useCallback(
+    async (name: string, allocatedSatang: number, color?: string, icon?: string) => {
+      if (!householdId || !user) return;
+      const now = new Date().toISOString();
+      const newPocket: Pocket = {
+        id: `pocket-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        name: name.trim() || 'เงินแบ่งใช้',
+        allocatedSatang: Math.max(0, Math.round(allocatedSatang)),
+        color: color || '#10B981',
+        icon: icon || 'wallet',
+        createdAt: now,
+        updatedAt: now,
+      };
+      const current = household?.pockets || [];
+      const updated = [...current, newPocket];
+      await updateDoc(doc(db, 'households', householdId), {
+        pockets: updated,
+        updatedAt: now,
+      });
+      return newPocket;
+    },
+    [householdId, user, household]
+  );
+
+  // Update pocket in household
+  const updateHouseholdPocket = useCallback(
+    async (id: string, updates: Partial<Omit<Pocket, 'id' | 'createdAt'>>) => {
+      if (!householdId || !user) return;
+      const now = new Date().toISOString();
+      const current = household?.pockets || [];
+      const updated = current.map((p) =>
+        p.id === id ? { ...p, ...updates, updatedAt: now } : p
+      );
+      await updateDoc(doc(db, 'households', householdId), {
+        pockets: updated,
+        updatedAt: now,
+      });
+    },
+    [householdId, user, household]
+  );
+
+  // Delete pocket from household
+  const deleteHouseholdPocket = useCallback(
+    async (id: string) => {
+      if (!householdId || !user) return;
+      const current = household?.pockets || [];
+      const updated = current.filter((p) => p.id !== id);
+      await updateDoc(doc(db, 'households', householdId), {
+        pockets: updated,
+        updatedAt: new Date().toISOString(),
+      });
+    },
+    [householdId, user, household]
+  );
+
+  // Migrate local transactions to cloud household
+  const migrateLocalToCloud = useCallback(
+    async (
+      localTxs: Transaction[],
+      localCategories?: string[]
+    ): Promise<{ count: number }> => {
+      if (!householdId || !user) {
+        throw new Error('ยังไม่ได้เชื่อมต่อบัญชีคู่');
+      }
+
+      if (!localTxs || localTxs.length === 0) {
+        return { count: 0 };
+      }
+
+      const existingIds = new Set(transactions.map((t) => t.id));
+      const toMigrate = localTxs.filter((tx) => !existingIds.has(tx.id));
+
+      if (toMigrate.length === 0) {
+        return { count: 0 };
+      }
+
+      const now = new Date().toISOString();
+
+      // Chunk in batches of 400 (Firestore limit is 500 per batch)
+      const CHUNK_SIZE = 400;
+      for (let i = 0; i < toMigrate.length; i += CHUNK_SIZE) {
+        const chunk = toMigrate.slice(i, i + CHUNK_SIZE);
+        const batch = writeBatch(db);
+
+        for (const tx of chunk) {
+          const txDocRef = doc(db, 'households', householdId, 'transactions', tx.id);
+          const payload: Record<string, any> = {
+            id: tx.id,
+            type: tx.type,
+            amount: Math.round(tx.amount),
+            who: tx.who.trim(),
+            note: tx.note || '',
+            date: tx.date,
+            createdAt: tx.createdAt || now,
+            createdBy: user.uid,
+            updatedAt: now,
+            updatedBy: user.uid,
+          };
+
+          if (tx.time) payload.time = tx.time;
+          if (tx.category) payload.category = tx.category;
+          if (tx.pocketId) payload.pocketId = tx.pocketId;
+          if (tx.refNo) payload.refNo = tx.refNo;
+          if (tx.slipThumbnail) payload.slipThumbnail = tx.slipThumbnail;
+          if (tx.hasFullSlip !== undefined) payload.hasFullSlip = tx.hasFullSlip;
+
+          batch.set(txDocRef, payload, { merge: true });
+        }
+
+        await batch.commit();
+      }
+
+      // Merge local categories into household if any new ones exist
+      if (localCategories && localCategories.length > 0) {
+        const currentCats = household?.categories || DEFAULT_EXPENSE_CATEGORIES;
+        const mergedSet = new Set([...currentCats, ...localCategories]);
+        const mergedList = Array.from(mergedSet).slice(0, MAX_CATEGORIES);
+        if (mergedList.length > currentCats.length) {
+          await updateDoc(doc(db, 'households', householdId), {
+            categories: mergedList,
+            updatedAt: now,
+          });
+        }
+      }
+
+      return { count: toMigrate.length };
+    },
+    [householdId, user, transactions, household]
+  );
+
   return {
     household,
     householdId,
@@ -287,5 +463,11 @@ export function useHousehold(user: User | null) {
     saveCloudTransaction,
     deleteCloudTransaction,
     disconnectHousehold,
+    addHouseholdCategory,
+    deleteHouseholdCategory,
+    addHouseholdPocket,
+    updateHouseholdPocket,
+    deleteHouseholdPocket,
+    migrateLocalToCloud,
   };
 }
