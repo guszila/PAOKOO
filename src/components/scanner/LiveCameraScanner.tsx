@@ -29,93 +29,154 @@ export const LiveCameraScanner: React.FC<LiveCameraScannerProps> = ({
   const [qrDetected, setQrDetected] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Stop camera tracks cleanly
+  // Stop camera tracks cleanly and release hardware lock
   const stopCamera = useCallback(() => {
     if (animFrameRef.current) {
       cancelAnimationFrame(animFrameRef.current);
       animFrameRef.current = null;
     }
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current.getTracks().forEach((track) => {
+        try {
+          track.enabled = false;
+          track.stop();
+        } catch (e) {
+          console.warn('Error stopping track:', e);
+        }
+      });
       streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.srcObject = null;
     }
     setCameraActive(false);
     setTorchOn(false);
   }, []);
 
-  // Start camera stream
-  const startCamera = useCallback(async () => {
-    stopCamera();
+  // Lifecycle: Start camera ONLY when mounted, and immediately kill if unmounted
+  useEffect(() => {
+    let isCancelled = false;
+    let localStream: MediaStream | null = null;
+    let timeoutId: any = null;
+
     setPermissionError(null);
 
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setPermissionError('เบราว์เซอร์นี้ไม่รองรับการเปิดกล้องแบบสด โปรดใช้การถ่ายรูปแทน');
-      return;
-    }
+    const initCamera = async () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        if (!isCancelled) {
+          setPermissionError('เบราว์เซอร์นี้ไม่รองรับการเปิดกล้องแบบสด โปรดใช้การถ่ายรูปแทน');
+        }
+        return;
+      }
 
-    // Safety timeout in case browser hangs waiting for camera
-    const timeoutId = setTimeout(() => {
-      setPermissionError((prev) => prev || 'ไม่สามารถเปิดกล้องได้ทันเวลา โปรดใช้การถ่ายรูปผ่านกล้องมือถือ');
-    }, 4000);
+      timeoutId = setTimeout(() => {
+        if (!isCancelled) {
+          setPermissionError((prev) => prev || 'ไม่สามารถเปิดกล้องได้ทันเวลา โปรดใช้การถ่ายรูปผ่านกล้องมือถือ');
+        }
+      }, 4000);
 
-    try {
-      const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode: { ideal: facingMode },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-        audio: false,
-      };
-
-      let stream: MediaStream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-      } catch (firstErr) {
-        // Fallback for desktops or virtual environments
-        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-      }
+        const constraints: MediaStreamConstraints = {
+          video: {
+            facingMode: { ideal: facingMode },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+          audio: false,
+        };
 
-      clearTimeout(timeoutId);
-      streamRef.current = stream;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        let stream: MediaStream;
         try {
-          await videoRef.current.play();
-        } catch (e) {
-          console.warn('video.play() deferred to user interaction or loadedmetadata:', e);
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch {
+          // Fallback for desktops or virtual environments
+          stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         }
-        setCameraActive(true);
 
-        // Check torch capability
-        const track = stream.getVideoTracks()[0];
-        const capabilities = track?.getCapabilities?.() as any;
-        if (capabilities && 'torch' in capabilities) {
-          setHasTorch(true);
+        // If user closed modal or switched away before getUserMedia completed, kill stream IMMEDIATELY
+        if (isCancelled) {
+          stream.getTracks().forEach((t) => {
+            try {
+              t.enabled = false;
+              t.stop();
+            } catch (e) {
+              console.warn('Error killing cancelled track:', e);
+            }
+          });
+          return;
+        }
+
+        clearTimeout(timeoutId);
+        localStream = stream;
+        streamRef.current = stream;
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          try {
+            await videoRef.current.play();
+          } catch (e) {
+            console.warn('Video play deferred:', e);
+          }
+          if (!isCancelled) {
+            setCameraActive(true);
+
+            // Check torch capability
+            const track = stream.getVideoTracks()[0];
+            const capabilities = track?.getCapabilities?.() as any;
+            if (capabilities && 'torch' in capabilities) {
+              setHasTorch(true);
+            } else {
+              setHasTorch(false);
+            }
+          }
+        }
+      } catch (err: any) {
+        clearTimeout(timeoutId);
+        if (isCancelled) return;
+        console.warn('Failed to access camera:', err);
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setPermissionError('โปรดอนุญาตสิทธิ์เข้าถึงกล้อง เพื่อใช้งานระบบสแกนสลิปสด');
+        } else if (err.name === 'NotFoundError') {
+          setPermissionError('ไม่พบอุปกรณ์กล้องบนอุปกรณ์นี้');
         } else {
-          setHasTorch(false);
+          setPermissionError('ไม่สามารถเปิดกล้องได้ โปรดใช้การถ่ายรูปผ่านเบราว์เซอร์');
         }
       }
-    } catch (err: any) {
-      clearTimeout(timeoutId);
-      console.warn('Failed to access camera:', err);
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        setPermissionError('โปรดอนุญาตสิทธิ์เข้าถึงกล้อง เพื่อใช้งานระบบสแกนสลิปสด');
-      } else if (err.name === 'NotFoundError') {
-        setPermissionError('ไม่พบอุปกรณ์กล้องบนอุปกรณ์นี้');
-      } else {
-        setPermissionError('ไม่สามารถเปิดกล้องได้ โปรดใช้การถ่ายรูปผ่านเบราว์เซอร์');
-      }
-    }
-  }, [facingMode, stopCamera]);
+    };
 
-  useEffect(() => {
-    startCamera();
+    initCamera();
+
     return () => {
+      isCancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+      if (localStream) {
+        localStream.getTracks().forEach((t) => {
+          try {
+            t.enabled = false;
+            t.stop();
+          } catch (e) {
+            console.warn('Error stopping local track:', e);
+          }
+        });
+      }
       stopCamera();
     };
-  }, [startCamera, stopCamera]);
+  }, [facingMode, stopCamera]);
+
+  // If user locks phone or switches tabs, shut off camera immediately
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        stopCamera();
+        onCancel?.();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [stopCamera, onCancel]);
 
   // Toggle Torch/Flashlight
   const toggleTorch = async () => {

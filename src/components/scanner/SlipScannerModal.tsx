@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { BottomSheet } from '../common/BottomSheet';
 import { Button } from '../common/Button';
 import { Camera, Image as ImageIcon, AlertTriangle, RefreshCw, ArrowRight, ShieldCheck, Wallet, QrCode, Sparkles } from 'lucide-react';
@@ -66,6 +66,13 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
     resetState();
     onClose();
   };
+
+  // Whenever modal closes from outside or backdrop, guarantee state & camera are completely reset
+  useEffect(() => {
+    if (!isOpen) {
+      resetState();
+    }
+  }, [isOpen]);
 
   const applyScanResult = (result: ScanSlipResult) => {
     setScanResult(result);
