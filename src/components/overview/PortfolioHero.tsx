@@ -9,7 +9,6 @@ import {
   TrendingUp,
   TrendingDown,
   ChevronDown,
-  ChevronUp,
   ChevronLeft,
   ChevronRight,
   HandCoins,
@@ -211,25 +210,37 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
         </span>
         <button
           onClick={() => setIsDonutExpanded(!isDonutExpanded)}
-          className="flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 p-1"
+          className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 py-1 px-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-surfaceElevated-dark transition-all active:scale-95"
           aria-label={isDonutExpanded ? 'ย่อกราฟ' : 'ขยายกราฟ'}
         >
           <span>{isDonutExpanded ? 'ซ่อนกราฟ' : 'แสดงกราฟ'}</span>
-          {isDonutExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+          <ChevronDown
+            size={15}
+            className={`transition-transform duration-300 ease-out ${
+              isDonutExpanded ? 'rotate-180' : 'rotate-0'
+            }`}
+          />
         </button>
       </div>
 
       {/* Donut Breakdown Section (Collapsible) */}
       {isDonutExpanded && (
         <div className="mt-3 space-y-3 animate-fade-in">
-          {/* Segmented Control: 2 Tabs */}
-          <div className="grid grid-cols-2 p-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-xl border border-border-light dark:border-border-dark">
+          {/* Segmented Control: 2 Tabs with Butter-Smooth Sliding Indicator */}
+          <div className="relative grid grid-cols-2 p-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-xl border border-border-light dark:border-border-dark select-none">
+            {/* Sliding Pill Indicator */}
+            <div
+              className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-surface-light dark:bg-surface-dark rounded-lg shadow-sm border border-border-light dark:border-border-dark transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]"
+              style={{
+                left: donutTab === 'wealth' ? '4px' : 'calc(50%)',
+              }}
+            />
             <button
               type="button"
               onClick={() => setDonutTab('wealth')}
-              className={`py-1.5 text-xs font-medium rounded-lg transition-all ${
+              className={`relative z-10 py-1.5 text-xs font-medium rounded-lg transition-colors duration-200 active:scale-95 ${
                 donutTab === 'wealth'
-                  ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white shadow-sm border border-border-light dark:border-border-dark'
+                  ? 'text-neutral-900 dark:text-white font-semibold'
                   : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-white'
               }`}
             >
@@ -238,9 +249,9 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
             <button
               type="button"
               onClick={() => setDonutTab('expenses')}
-              className={`py-1.5 text-xs font-medium rounded-lg transition-all ${
+              className={`relative z-10 py-1.5 text-xs font-medium rounded-lg transition-colors duration-200 active:scale-95 ${
                 donutTab === 'expenses'
-                  ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white shadow-sm border border-border-light dark:border-border-dark'
+                  ? 'text-neutral-900 dark:text-white font-semibold'
                   : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-white'
               }`}
             >

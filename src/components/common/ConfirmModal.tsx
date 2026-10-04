@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from './Button';
 import { AlertCircle } from 'lucide-react';
 
@@ -23,12 +23,50 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
-  if (!isOpen) return null;
+  const [isRendered, setIsRendered] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsRendered(true);
+      setIsClosing(false);
+    } else if (isRendered && !isClosing) {
+      setIsClosing(true);
+      const timer = setTimeout(() => {
+        setIsRendered(false);
+        setIsClosing(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, isRendered, isClosing]);
+
+  const handleStartCancel = () => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      onCancel();
+      setIsRendered(false);
+      setIsClosing(false);
+    }, 200);
+  };
+
+  if (!isRendered) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onCancel} />
-      <div className="relative w-full max-w-sm bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-2xl z-10 space-y-4 animate-fade-in">
+      <div
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity ${
+          isClosing ? 'animate-fade-out' : 'animate-fade-in'
+        }`}
+        onClick={handleStartCancel}
+      />
+      <div
+        className={`relative w-full max-w-sm bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-2xl z-10 space-y-4 transition-all duration-200 ${
+          isClosing
+            ? 'opacity-0 scale-95 duration-200'
+            : 'animate-fade-in scale-100'
+        }`}
+      >
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-2xl bg-red-100 dark:bg-red-950/50 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
             <AlertCircle size={22} strokeWidth={1.5} />
@@ -40,7 +78,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         </div>
 
         <div className="flex items-center gap-2 pt-2">
-          <Button variant="secondary" fullWidth onClick={onCancel}>
+          <Button variant="secondary" fullWidth onClick={handleStartCancel}>
             {cancelText}
           </Button>
           <Button

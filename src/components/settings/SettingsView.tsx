@@ -23,6 +23,7 @@ import {
 import { User } from 'firebase/auth';
 import { Household } from '../../types/household';
 import { ThemeMode } from '../../hooks/useTheme';
+import { Switch } from '../common/Switch';
 
 interface SettingsViewProps {
   theme: ThemeMode;
@@ -66,6 +67,27 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [member1, setMember1] = useState(members[0] || 'โฟกัส');
   const [member2, setMember2] = useState(members[1] || 'ต้นหยง');
   const [isSavedMembers, setIsSavedMembers] = useState(false);
+
+  // Preference switches
+  const [coinEnabled, setCoinEnabled] = useState(() => {
+    return localStorage.getItem('paokoo_coin_enabled') !== 'false';
+  });
+  const [hapticEnabled, setHapticEnabled] = useState(() => {
+    return localStorage.getItem('paokoo_haptic_enabled') !== 'false';
+  });
+
+  const handleToggleCoin = (checked: boolean) => {
+    setCoinEnabled(checked);
+    localStorage.setItem('paokoo_coin_enabled', String(checked));
+  };
+
+  const handleToggleHaptic = (checked: boolean) => {
+    setHapticEnabled(checked);
+    localStorage.setItem('paokoo_haptic_enabled', String(checked));
+    if (checked && navigator.vibrate) {
+      navigator.vibrate(30);
+    }
+  };
 
   // Migration state
   const [isMigrating, setIsMigrating] = useState(false);
@@ -181,14 +203,28 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 pt-1">
+        {/* Theme Segmented Switch with Butter-Smooth Sliding Indicator */}
+        <div className="relative grid grid-cols-3 p-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-2xl border border-border-light dark:border-border-dark select-none">
+          {/* Sliding Pill Indicator */}
+          <div
+            className="absolute top-1 bottom-1 w-[calc(33.333%-2.67px)] bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]"
+            style={{
+              left:
+                theme === 'light'
+                  ? '4px'
+                  : theme === 'dark'
+                  ? 'calc(33.333% + 1.33px)'
+                  : 'calc(66.666% - 1.33px)',
+            }}
+          />
+
           <button
             type="button"
             onClick={() => onThemeChange('light')}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl border text-xs font-medium transition-all ${
+            className={`relative z-10 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-medium transition-colors duration-200 active:scale-95 ${
               theme === 'light'
-                ? 'bg-amber-500/15 border-amber-500 text-amber-700 dark:text-amber-300 shadow-sm'
-                : 'bg-surfaceElevated-light dark:bg-surfaceElevated-dark border-border-light dark:border-border-dark text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
+                ? 'text-amber-600 dark:text-amber-400 font-semibold'
+                : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
             }`}
           >
             <Sun size={15} />
@@ -198,10 +234,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <button
             type="button"
             onClick={() => onThemeChange('dark')}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl border text-xs font-medium transition-all ${
+            className={`relative z-10 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-medium transition-colors duration-200 active:scale-95 ${
               theme === 'dark'
-                ? 'bg-emerald-500/15 border-emerald-500 text-emerald-700 dark:text-emerald-300 shadow-sm'
-                : 'bg-surfaceElevated-light dark:bg-surfaceElevated-dark border-border-light dark:border-border-dark text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
+                ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
             }`}
           >
             <Moon size={15} />
@@ -211,15 +247,42 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <button
             type="button"
             onClick={() => onThemeChange('system')}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl border text-xs font-medium transition-all ${
+            className={`relative z-10 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-medium transition-colors duration-200 active:scale-95 ${
               theme === 'system'
-                ? 'bg-blue-500/15 border-blue-500 text-blue-700 dark:text-blue-300 shadow-sm'
-                : 'bg-surfaceElevated-light dark:bg-surfaceElevated-dark border-border-light dark:border-border-dark text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
+                ? 'text-blue-600 dark:text-blue-400 font-semibold'
+                : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
             }`}
           >
             <Laptop size={15} />
             <span>ตามระบบ</span>
           </button>
+        </div>
+      </div>
+
+      {/* Animation & Sound Preferences with Butter-Smooth Switches */}
+      <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-sm space-y-4">
+        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+          ลูกเล่นและการตอบสนอง (Preferences)
+        </h3>
+
+        <div className="space-y-4 divide-y divide-border-light dark:divide-border-dark pt-1">
+          <div className="pt-1">
+            <Switch
+              checked={coinEnabled}
+              onChange={handleToggleCoin}
+              label="แอนิเมชันเหรียญร่วง (Coin Shower)"
+              description="แสดงเหรียญทองโปรยปรายเมื่อบันทึกเงินเข้าหรือได้รับเงินคืน"
+            />
+          </div>
+
+          <div className="pt-3">
+            <Switch
+              checked={hapticEnabled}
+              onChange={handleToggleHaptic}
+              label="การตอบสนองแบบสั่น (Haptic Feedback)"
+              description="สั่นสะเทือนเบาๆ เมื่อแตะปุ่มและบันทึกรายการบนมือถือ"
+            />
+          </div>
         </div>
       </div>
 

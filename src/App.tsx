@@ -389,8 +389,11 @@ export function App() {
         title: 'บันทึกรายการสำเร็จ',
         message: `${typeLabel} ${formatSatang(txData.amount)} ฿ (${txData.who})`,
       });
-      if (txData.type === 'in' || txData.type === 'back') {
+      if ((txData.type === 'in' || txData.type === 'back') && localStorage.getItem('paokoo_coin_enabled') !== 'false') {
         triggerCoinShower();
+      }
+      if (localStorage.getItem('paokoo_haptic_enabled') !== 'false' && typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate([15, 30, 20]);
       }
     }
   };
