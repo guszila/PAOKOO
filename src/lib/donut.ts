@@ -195,6 +195,9 @@ export function calculateWealthDonut(
     });
   }
 
+  // Sort descending by valueSatang (จากมากไปน้อย)
+  rawSegments.sort((a, b) => b.valueSatang - a.valueSatang);
+
   const segments = normalizePercentages(rawSegments, totalDeposited);
 
   return {

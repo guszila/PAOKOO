@@ -167,6 +167,11 @@ describe('calculateWealthDonut with Pockets', () => {
     // Percentages sum cleanly to 100.00%
     const totalPercentage = result.segments.reduce((sum, s) => sum + s.percentage, 0);
     expect(Number(totalPercentage.toFixed(2))).toBe(100);
+
+    // Verify segments are sorted descending by valueSatang (จากมากไปน้อย)
+    for (let i = 0; i < result.segments.length - 1; i++) {
+      expect(result.segments[i].valueSatang).toBeGreaterThanOrEqual(result.segments[i + 1].valueSatang);
+    }
   });
 });
 

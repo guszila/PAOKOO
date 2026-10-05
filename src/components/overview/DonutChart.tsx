@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { DonutSegment } from '../../lib/donut';
 import { formatSatang } from '../../lib/money';
 
@@ -19,16 +19,24 @@ export const DonutChart: React.FC<DonutChartProps> = ({
 }) => {
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
+  // Sort segments descending from highest to lowest amount
+  const sortedSegments = useMemo(() => {
+    return [...segments].sort((a, b) => b.valueSatang - a.valueSatang);
+  }, [segments]);
+
   const radius = 52;
   const strokeWidth = 14;
   const circumference = 2 * Math.PI * radius; // ~326.726
-  const gap = segments.length > 1 ? 4 : 0;
+  const gap = sortedSegments.length > 1 ? 2 : 0;
 
   // Calculate segment offsets
   let cumulativeOffset = 0;
-  const renderedSegments = segments.map((seg) => {
+  const renderedSegments = sortedSegments.map((seg) => {
     const arcLength = (seg.percentage / 100) * circumference;
-    const dashLength = Math.max(0, arcLength - gap);
+    // Reserve space for gap, but ensure small non-zero segments remain visible (min ~1.2px)
+    const dashLength = seg.percentage > 0
+      ? Math.max(arcLength > gap + 1.2 ? arcLength - gap : Math.min(arcLength * 0.7, 1.5), 0.8)
+      : 0;
     const dashOffset = -cumulativeOffset;
     cumulativeOffset += arcLength;
 
@@ -77,7 +85,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
                   strokeWidth={currentStrokeWidth}
                   strokeDasharray={seg.dashArray}
                   strokeDashoffset={seg.dashOffset}
-                  strokeLinecap="round"
+                  strokeLinecap="butt"
                   style={{
                     opacity,
                     transition: 'all 0.3s ease',
@@ -120,7 +128,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
             บันทึกรายการเพื่อดูสัดส่วน
           </div>
         ) : (
-          segments.map((seg) => {
+          sortedSegments.map((seg) => {
             const isHighlight = highlightedId === seg.id;
             return (
               <div
