@@ -10,6 +10,7 @@ import {
   getDoc,
   serverTimestamp,
   writeBatch,
+  deleteField,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { Household } from '../types/household';
@@ -257,8 +258,17 @@ export function useHousehold(user: User | null) {
         updatedBy: user.uid,
       };
 
-      if (txData.category) payload.category = txData.category;
-      if (txData.pocketId) payload.pocketId = txData.pocketId;
+      if (txData.category) {
+        payload.category = txData.category;
+      } else if (id) {
+        payload.category = deleteField();
+      }
+
+      if (txData.pocketId) {
+        payload.pocketId = txData.pocketId;
+      } else if (id) {
+        payload.pocketId = deleteField();
+      }
       if (txData.refNo) payload.refNo = txData.refNo;
       if (txData.slipThumbnail) payload.slipThumbnail = txData.slipThumbnail;
       if (txData.hasFullSlip !== undefined) payload.hasFullSlip = txData.hasFullSlip;

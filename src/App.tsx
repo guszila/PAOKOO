@@ -190,6 +190,7 @@ export function App() {
   const [isHouseholdOpen, setIsHouseholdOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [scannerInitialType, setScannerInitialType] = useState<TransactionType>('out');
   const [selectedTxForEdit, setSelectedTxForEdit] = useState<Transaction | null>(null);
   const [prefillData, setPrefillData] = useState<{
     type?: TransactionType;
@@ -307,8 +308,14 @@ export function App() {
     setIsFormOpen(true);
   };
 
+  const handleOpenScanner = useCallback((preferredType: TransactionType = 'out') => {
+    setScannerInitialType(preferredType);
+    setIsScannerOpen(true);
+  }, []);
+
   // Apply scanned slip data to prefill form
   const handleApplySlip = (data: {
+    type?: TransactionType;
     amountSatang: number;
     date: string;
     time?: string;
@@ -320,8 +327,9 @@ export function App() {
     pocketId?: string;
   }) => {
     setSelectedTxForEdit(null);
+    const resolvedType = data.type || scannerInitialType || 'out';
     setPrefillData({
-      type: 'out',
+      type: resolvedType,
       amount: data.amountSatang,
       who: data.who || currentMemberName || activeMembers[0] || '',
       note: data.note,
@@ -330,7 +338,7 @@ export function App() {
       refNo: data.refNo,
       slipThumbnail: data.slipThumbnail,
       fullSlipBase64: data.fullSlipBase64,
-      category: categories[0] || 'อาหาร',
+      category: resolvedType === 'out' ? (categories[0] || 'อาหาร') : undefined,
       pocketId: data.pocketId,
     });
     setIsFormOpen(true);
@@ -470,7 +478,7 @@ export function App() {
             {/* 2. Quick-Action Row (5 actions) */}
             <QuickActions
               onSelectAction={handleQuickAction}
-              onOpenScanner={() => setIsScannerOpen(true)}
+              onOpenScanner={() => handleOpenScanner('out')}
             />
 
             {/* 2.5 Spending Pockets (Model 2: กระเป๋าย่อยแบ่งเงินใช้ แบบ MAKE by KBank) */}
@@ -582,7 +590,7 @@ export function App() {
         categories={activeCategories}
         pockets={activePockets}
         pocketSummaries={pocketSummaries}
-        onOpenScanner={() => setIsScannerOpen(true)}
+        onOpenScanner={(currentType) => handleOpenScanner(currentType || 'out')}
       />
 
       {/* Slip Scanner Bottom Sheet */}
@@ -593,6 +601,7 @@ export function App() {
         memberNames={activeMembers}
         pockets={activePockets}
         pocketSummaries={pocketSummaries}
+        initialType={scannerInitialType}
         onApplySlip={handleApplySlip}
       />
 

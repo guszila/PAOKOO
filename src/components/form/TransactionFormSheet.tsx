@@ -50,7 +50,7 @@ interface TransactionFormSheetProps {
   categories?: string[];
   pockets?: Pocket[];
   pocketSummaries?: PocketSummary[];
-  onOpenScanner?: () => void;
+  onOpenScanner?: (currentType?: TransactionType) => void;
 }
 
 const getLocalDateString = (offsetDays: number = 0): string => {
@@ -225,7 +225,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
         who: who.trim(),
         note: note.trim(),
         category: type === 'out' ? category : undefined,
-        pocketId: type === 'out' ? selectedPocketId : undefined,
+        pocketId: (type === 'out' || type === 'in') ? selectedPocketId : undefined,
         date,
         time: time.trim() || undefined,
         refNo: refNo.trim() || undefined,
@@ -336,17 +336,17 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
             </div>
           )}
 
-          {/* Spending Pocket Selector (ตัดจากกล่องไหน) */}
-          {type === 'out' && pockets && pockets.length > 0 && (
+          {/* Account / Pocket Selector (ตัดเงินจากบัญชีไหน / เพิ่มเงินเข้าบัญชีไหน) */}
+          {(type === 'out' || type === 'in') && pockets && pockets.length > 0 && (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs font-medium text-neutral-700 dark:text-neutral-300">
                 <div className="flex items-center gap-1.5">
                   <Wallet size={13} />
-                  <span>ตัดเงินจากกล่องไหน</span>
+                  <span>{type === 'in' ? 'เพิ่มเงินเข้าบัญชีไหน' : 'ตัดเงินจากบัญชีไหน'}</span>
                 </div>
                 {selectedPocketId && (
                   <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-                    ตัดจากกล่องแบ่งใช้
+                    {type === 'in' ? 'เข้ากล่องแบ่งเงิน' : 'ตัดจากกล่องแบ่งใช้'}
                   </span>
                 )}
               </div>
@@ -694,7 +694,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                 variant="outline"
                 size="md"
                 fullWidth
-                onClick={() => onOpenScanner?.()}
+                onClick={() => onOpenScanner?.(type)}
                 className="py-2.5 border-dashed hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 text-neutral-700 dark:text-neutral-300"
               >
                 <Camera size={16} strokeWidth={1.5} className="mr-2 text-emerald-600 dark:text-emerald-400" />
