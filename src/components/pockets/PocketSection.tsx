@@ -109,7 +109,7 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
                         ) : null}
                       </h4>
                       <p className="text-[11px] text-neutral-400">
-                        วงเงินที่ตั้งไว้ {isMasked ? '••••' : `${formatSatang(pocket.allocatedSatang)} ฿`}
+                        วงเงินรวม {isMasked ? '••••' : `${formatSatang(summary.totalAllocatedSatang ?? pocket.allocatedSatang)} ฿`}
                       </p>
                     </div>
                   </div>

@@ -34,6 +34,7 @@ export function calculatePocketSummaries(
 
     return {
       pocket,
+      totalAllocatedSatang: totalAllocated,
       spentSatang,
       remainingSatang,
       spentPercentage,
