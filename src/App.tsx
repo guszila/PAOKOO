@@ -19,6 +19,7 @@ import { SlipScannerModal } from './components/scanner/SlipScannerModal';
 import { PocketSection } from './components/pockets/PocketSection';
 import { PocketModal } from './components/pockets/PocketModal';
 import { PocketTopUpModal } from './components/pockets/PocketTopUpModal';
+import { CompletePocketModal } from './components/pockets/CompletePocketModal';
 import { Transaction, TransactionType, OutstandingDebtor } from './types/transaction';
 import { Pocket, PocketSummary } from './types/pocket';
 import { calculateSummary } from './lib/summary';
@@ -211,6 +212,8 @@ export function App() {
   const [selectedPocketForEdit, setSelectedPocketForEdit] = useState<Pocket | null>(null);
   const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
   const [selectedSummaryForTopUp, setSelectedSummaryForTopUp] = useState<PocketSummary | null>(null);
+  const [isCompletePocketOpen, setIsCompletePocketOpen] = useState(false);
+  const [selectedSummaryForComplete, setSelectedSummaryForComplete] = useState<PocketSummary | null>(null);
 
   const handleOpenCreatePocket = useCallback(() => {
     setSelectedPocketForEdit(null);
@@ -225,6 +228,11 @@ export function App() {
   const handleOpenTopUpPocket = useCallback((summary: PocketSummary) => {
     setSelectedSummaryForTopUp(summary);
     setIsTopUpModalOpen(true);
+  }, []);
+
+  const handleOpenCompletePocket = useCallback((summary: PocketSummary) => {
+    setSelectedSummaryForComplete(summary);
+    setIsCompletePocketOpen(true);
   }, []);
 
   const handleSavePocket = useCallback(
@@ -288,6 +296,108 @@ export function App() {
         message: `เติมเงิน +${formatSatang(additionalSatang)} ฿ เข้ากล่อง "${targetPocket.name}"`,
       });
       triggerCoinShower();
+    },
+    [activePockets, isCloudActive, updateHouseholdPocket, updateLocalPocket, showToast]
+  );
+
+  const handleCompletePocket = useCallback(
+    (
+      pocketId: string,
+      action: 'record_expense' | 'refund_to_pool',
+      expenseData?: {
+        amountSatang: number;
+        note: string;
+        who: string;
+        category: string;
+      }
+    ) => {
+      const targetPocket = activePockets.find((p) => p.id === pocketId);
+      const targetName = targetPocket?.name || 'กล่องแบ่งเงิน';
+      const today = new Date().toISOString().split('T')[0];
+      const creator = user?.uid || currentMemberName || 'เรา';
+
+      if (action === 'record_expense' && expenseData && expenseData.amountSatang > 0) {
+        if (isCloudActive) {
+          saveCloudTransaction({
+            type: 'out',
+            amount: expenseData.amountSatang,
+            who: expenseData.who,
+            category: expenseData.category,
+            note: expenseData.note,
+            date: today,
+            pocketId: pocketId,
+            createdBy: creator,
+          });
+        } else {
+          addLocalTx({
+            type: 'out',
+            amount: expenseData.amountSatang,
+            who: expenseData.who,
+            category: expenseData.category,
+            note: expenseData.note,
+            date: today,
+            pocketId: pocketId,
+            createdBy: creator,
+          });
+        }
+      }
+
+      const completedAt = new Date().toISOString();
+      if (isCloudActive) {
+        updateHouseholdPocket(pocketId, {
+          status: 'completed',
+          completedAt,
+        });
+      } else {
+        updateLocalPocket(pocketId, {
+          status: 'completed',
+          completedAt,
+        });
+      }
+
+      showToast({
+        type: 'success',
+        title: 'เคลียร์กล่องสำเร็จ ✨',
+        message:
+          action === 'record_expense' && expenseData
+            ? `บันทึกรายจ่าย ${formatSatang(expenseData.amountSatang)} ฿ ตัดเงินกองกลางแล้ว และย้ายกล่อง "${targetName}" ไปที่ประวัติ`
+            : `กล่อง "${targetName}" ถูกย้ายไปที่ประวัติเรียบร้อยแล้ว`,
+      });
+      triggerCoinShower();
+    },
+    [
+      activePockets,
+      isCloudActive,
+      saveCloudTransaction,
+      addLocalTx,
+      updateHouseholdPocket,
+      updateLocalPocket,
+      showToast,
+    ]
+  );
+
+  const handleReopenPocket = useCallback(
+    (pocketId: string) => {
+      const targetPocket = activePockets.find((p) => p.id === pocketId);
+      const targetName = targetPocket?.name || 'กล่องแบ่งเงิน';
+
+      if (isCloudActive) {
+        updateHouseholdPocket(pocketId, {
+          status: 'active',
+          completedAt: '',
+        });
+      } else {
+        updateLocalPocket(pocketId, {
+          status: 'active',
+          completedAt: undefined,
+        });
+      }
+
+      showToast({
+        type: 'success',
+        title: 'เปิดใช้กล่องอีกครั้งแล้ว ✨',
+        message: `กล่อง "${targetName}" พร้อมให้แบ่งเงินใช้ต่อแล้ว`,
+      });
     },
     [activePockets, isCloudActive, updateHouseholdPocket, updateLocalPocket, showToast]
   );
@@ -494,6 +604,8 @@ export function App() {
               onOpenCreate={handleOpenCreatePocket}
               onOpenEdit={handleOpenEditPocket}
               onOpenTopUp={handleOpenTopUpPocket}
+              onOpenComplete={handleOpenCompletePocket}
+              onReopenPocket={handleReopenPocket}
               isMasked={isMasked}
             />
 
@@ -621,6 +733,13 @@ export function App() {
         pocket={selectedPocketForEdit}
         onSave={handleSavePocket}
         onDelete={handleDeletePocket}
+        onComplete={(pkt) => {
+          setIsPocketModalOpen(false);
+          const s = pocketSummaries.find((ps) => ps.pocket.id === pkt.id);
+          if (s) {
+            handleOpenCompletePocket(s);
+          }
+        }}
       />
 
       {/* Pocket Top-Up Modal */}
@@ -629,6 +748,16 @@ export function App() {
         onClose={() => setIsTopUpModalOpen(false)}
         pocketSummary={selectedSummaryForTopUp}
         onTopUp={handleTopUpPocket}
+      />
+
+      {/* Pocket Complete / Clear Modal */}
+      <CompletePocketModal
+        isOpen={isCompletePocketOpen}
+        onClose={() => setIsCompletePocketOpen(false)}
+        pocketSummary={selectedSummaryForComplete}
+        memberNames={activeMembers}
+        categories={activeCategories}
+        onCompletePocket={handleCompletePocket}
       />
 
       {/* Auth Modal (Login / Register) */}

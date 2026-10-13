@@ -16,6 +16,7 @@ import {
   Gamepad2,
   Gift,
   Trash2,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface PocketModalProps {
@@ -24,6 +25,7 @@ interface PocketModalProps {
   pocket?: Pocket | null; // If null/undefined, create mode. If set, edit mode.
   onSave: (data: { name: string; allocatedSatang: number; color: string; icon: string }) => void;
   onDelete?: (id: string) => void;
+  onComplete?: (pocket: Pocket) => void;
 }
 
 export const POCKET_ICONS: Record<string, React.ElementType> = {
@@ -54,6 +56,7 @@ export const PocketModal: React.FC<PocketModalProps> = ({
   pocket,
   onSave,
   onDelete,
+  onComplete,
 }) => {
   const [name, setName] = useState('');
   const [amountStr, setAmountStr] = useState('');
@@ -274,23 +277,39 @@ export const PocketModal: React.FC<PocketModalProps> = ({
           </div>
 
           {/* Buttons */}
-          <div className="pt-2 flex gap-2">
-            {pocket && onDelete && (
+          <div className="pt-2 flex flex-col gap-2">
+            {pocket && onComplete && pocket.status !== 'completed' && (
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setShowDeleteConfirm(true)}
-                className="text-red-500 hover:text-red-600 border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/30"
+                onClick={() => {
+                  onComplete(pocket);
+                }}
+                className="w-full text-[#306230] dark:text-[#9BBC0F] border-2 border-[#242A20] dark:border-[#3C4A38] bg-surfaceElevated-light dark:bg-surfaceElevated-dark font-bold hover:bg-neutral-100 dark:hover:bg-neutral-800 shadow-[2px_2px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
               >
-                <Trash2 size={16} />
+                <CheckCircle2 size={16} className="mr-1.5" />
+                เคลียร์กล่อง / จบรอบการใช้ (เก็บประวัติ)
               </Button>
             )}
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-              ยกเลิก
-            </Button>
-            <Button type="submit" variant="primary" className="flex-1">
-              {pocket ? 'บันทึกการแก้ไข' : 'สร้างกล่องเงิน'}
-            </Button>
+            <div className="flex gap-2">
+              {pocket && onDelete && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="text-red-500 hover:text-red-600 border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/30"
+                  title="ลบกล่องถาวร"
+                >
+                  <Trash2 size={16} />
+                </Button>
+              )}
+              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+                ยกเลิก
+              </Button>
+              <Button type="submit" variant="primary" className="flex-1 font-bold">
+                {pocket ? 'บันทึกการแก้ไข' : 'สร้างกล่องเงิน'}
+              </Button>
+            </div>
           </div>
         </form>
       </BottomSheet>

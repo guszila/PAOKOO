@@ -50,9 +50,10 @@ export function calculateMainSavingsBalance(
   totalBalanceSatang: number,
   pocketSummaries: PocketSummary[]
 ): number {
-  const totalAllocatedRemaining = pocketSummaries.reduce(
-    (sum, ps) => sum + Math.max(0, ps.remainingSatang),
-    0
-  );
+  const totalAllocatedRemaining = pocketSummaries.reduce((sum, ps) => {
+    // Only active pockets hold/reserve remaining funds from the main pool
+    if (ps.pocket.status === 'completed') return sum;
+    return sum + Math.max(0, ps.remainingSatang);
+  }, 0);
   return Math.max(0, totalBalanceSatang - totalAllocatedRemaining);
 }

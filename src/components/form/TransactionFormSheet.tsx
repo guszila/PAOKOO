@@ -607,7 +607,9 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                         <span>กองกลางหลัก</span>
                       </button>
 
-                      {pockets.map((p) => {
+                      {pockets
+                        .filter((p) => p.status !== 'completed' || p.id === selectedPocketId)
+                        .map((p) => {
                         const isSelected = selectedPocketId === p.id;
                         const pSummary = pocketSummaries?.find((ps) => ps.pocket.id === p.id);
                         const remainingStr = pSummary ? `${formatSatang(pSummary.remainingSatang)} ฿` : '';

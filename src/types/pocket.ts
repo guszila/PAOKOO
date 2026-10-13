@@ -6,6 +6,8 @@ export interface Pocket {
   icon?: string; // icon name: wallet, shopping-bag, coffee, utensils, car, plane
   createdAt: string;
   updatedAt: string;
+  status?: 'active' | 'completed';
+  completedAt?: string;
 }
 
 export interface PocketSummary {

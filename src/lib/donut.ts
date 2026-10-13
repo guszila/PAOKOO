@@ -103,7 +103,7 @@ export function calculateWealthDonut(
   const rawSegments: Array<{ id: string; label: string; valueSatang: number; color: string }> = [];
 
   // Active pockets with remaining balance
-  const activePocketsWithMoney = pocketSummaries?.filter((ps) => ps.remainingSatang > 0) || [];
+  const activePocketsWithMoney = pocketSummaries?.filter((ps) => ps.pocket.status !== 'completed' && ps.remainingSatang > 0) || [];
 
   if (activePocketsWithMoney.length > 0) {
     // 1. กองกลางหลัก
