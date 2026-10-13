@@ -17,6 +17,7 @@ import {
 
 import { PocketSummary } from '../../types/pocket';
 import { triggerCoinShower } from '../../lib/celebration';
+import { PixelMascot } from '../common/PixelMascot';
 
 interface PortfolioHeroProps {
   currentBalance: number;
@@ -113,57 +114,70 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
         {/* Subtle dot matrix pattern overlay */}
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(#0F380F_1px,transparent_1px)] [background-size:5px_5px] opacity-15" />
 
-        {/* Top Screen Bar: Label + Mode + Eye Icon */}
-        <div className="flex items-center justify-between relative z-10 text-[10px] font-silkscreen">
+        {/* Top Screen Bar: Label + Eye Icon */}
+        <div className="flex items-center justify-between relative z-10 text-[10px]">
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 bg-[#0F380F] dark:bg-[#9BBC0F] rounded-full" />
             <span className="font-bold tracking-wider">ยอดเงินคงเหลือ</span>
+            <button
+              onClick={onToggleMask}
+              className="p-1 hover:opacity-75 transition-opacity ml-0.5"
+              title={isMasked ? 'แสดงจำนวนเงิน' : 'ซ่อนจำนวนเงิน'}
+              aria-label={isMasked ? 'แสดงจำนวนเงิน' : 'ซ่อนจำนวนเงิน'}
+            >
+              {isMasked ? <EyeOff size={14} strokeWidth={2.5} /> : <Eye size={14} strokeWidth={2.5} />}
+            </button>
           </div>
-          <button
-            onClick={onToggleMask}
-            className="p-1 hover:opacity-75 transition-opacity"
-            title={isMasked ? 'แสดงจำนวนเงิน' : 'ซ่อนจำนวนเงิน'}
-            aria-label={isMasked ? 'แสดงจำนวนเงิน' : 'ซ่อนจำนวนเงิน'}
-          >
-            {isMasked ? <EyeOff size={15} strokeWidth={2.5} /> : <Eye size={15} strokeWidth={2.5} />}
-          </button>
         </div>
 
-        {/* Big Retro LCD Balance Number */}
-        <div
-          onClick={() => triggerCoinShower()}
-          className="mt-2 flex items-baseline gap-2 cursor-pointer select-none active:scale-[0.98] transition-transform relative z-10"
-          title="แตะเพื่อโปรยเหรียญ! ★"
-        >
-          <span className="text-3xl sm:text-4xl font-black tracking-tight truncate leading-tight">
-            {isMasked ? '••••••••' : formatSatang(currentBalance)}
-          </span>
-          <span className="text-sm font-bold opacity-80">
-            ฿
-          </span>
-        </div>
-
-        {/* Screen Bottom Metrics: Net change & Lent badge */}
-        <div className="mt-2.5 flex items-center gap-2 flex-wrap relative z-10 text-[10px]">
-          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-[#0F380F] dark:border-[#3C4A38] bg-[#8BAC0F]/80 dark:bg-[#2A3E26] text-[10px] font-bold shadow-[1px_1px_0px_#0F380F]">
-            {thisMonthNet >= 0 ? (
-              <TrendingUp size={11} strokeWidth={3} />
-            ) : (
-              <TrendingDown size={11} strokeWidth={3} />
-            )}
-            <span>
-              {thisMonthNet >= 0 ? '+' : ''}
-              {isMasked ? '••••' : `${formatSatang(thisMonthNet)}฿`}
-            </span>
-            <span className="opacity-80">({percentDelta})</span>
-          </div>
-
-          {totalLentOut > 0 && (
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-[#0F380F] dark:border-[#3C4A38] bg-[#8BAC0F]/80 dark:bg-[#2A3E26] text-[10px] font-bold">
-              <HandCoins size={11} strokeWidth={2.5} />
-              <span>ให้ยืม {isMasked ? '••' : `${formatSatang(totalLentOut)}฿`}</span>
+        {/* Middle row: Big Balance Number on Left + Cute Pixel Mascot on Right */}
+        <div className="mt-1 flex items-center justify-between gap-2 relative z-10">
+          <div className="flex-1 min-w-0">
+            {/* Big Retro LCD Balance Number */}
+            <div
+              onClick={() => triggerCoinShower()}
+              className="flex items-baseline gap-2 cursor-pointer select-none active:scale-[0.98] transition-transform"
+              title="แตะเพื่อโปรยเหรียญ! ★"
+            >
+              <span className="text-3xl sm:text-4xl font-black tracking-tight truncate leading-tight">
+                {isMasked ? '••••••••' : formatSatang(currentBalance)}
+              </span>
+              <span className="text-sm font-bold opacity-80">
+                ฿
+              </span>
             </div>
-          )}
+
+            {/* Screen Bottom Metrics: Net change & Lent badge */}
+            <div className="mt-2 flex items-center gap-2 flex-wrap text-[10px]">
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-[#0F380F] dark:border-[#3C4A38] bg-[#8BAC0F]/80 dark:bg-[#2A3E26] text-[10px] font-bold shadow-[1px_1px_0px_#0F380F]">
+                {thisMonthNet >= 0 ? (
+                  <TrendingUp size={11} strokeWidth={3} />
+                ) : (
+                  <TrendingDown size={11} strokeWidth={3} />
+                )}
+                <span>
+                  {thisMonthNet >= 0 ? '+' : ''}
+                  {isMasked ? '••••' : `${formatSatang(thisMonthNet)}฿`}
+                </span>
+                <span className="opacity-80">({percentDelta})</span>
+              </div>
+
+              {totalLentOut > 0 && (
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-[#0F380F] dark:border-[#3C4A38] bg-[#8BAC0F]/80 dark:bg-[#2A3E26] text-[10px] font-bold">
+                  <HandCoins size={11} strokeWidth={2.5} />
+                  <span>ให้ยืม {isMasked ? '••' : `${formatSatang(totalLentOut)}฿`}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Cute 8-Bit Pixel Mascot on the right */}
+          <div className="shrink-0 pl-1 pt-1">
+            <PixelMascot
+              currentBalance={currentBalance}
+              thisMonthNet={thisMonthNet}
+            />
+          </div>
         </div>
       </div>
 
