@@ -1,15 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Transaction } from '../../types/transaction';
 import { Button } from '../common/Button';
-import { exportToJSON, exportToCSV, parseImportJSON } from '../../lib/export';
 import { APP_NAME, APP_SUBTITLE } from '../../config/app';
 import { MAX_CATEGORIES } from '../../config/categories';
 import { getCategoryEmoji } from '../../config/emojis';
 import {
   Users,
-  Download,
-  Upload,
-  FileSpreadsheet,
   Check,
   RefreshCw,
   Tag,
@@ -23,12 +19,14 @@ import {
 
 import { User } from 'firebase/auth';
 import { Household } from '../../types/household';
-import { ThemeMode } from '../../hooks/useTheme';
+import { ThemeMode, ColorTheme, COLOR_THEMES } from '../../hooks/useTheme';
 import { Switch } from '../common/Switch';
 
 interface SettingsViewProps {
   theme: ThemeMode;
   onThemeChange: (theme: ThemeMode) => void;
+  colorTheme?: ColorTheme;
+  onColorThemeChange?: (color: ColorTheme) => void;
   transactions: Transaction[];
   members: string[];
   categories: string[];
@@ -49,6 +47,8 @@ interface SettingsViewProps {
 export const SettingsView: React.FC<SettingsViewProps> = ({
   theme,
   onThemeChange,
+  colorTheme = 'dmg',
+  onColorThemeChange,
   transactions,
   members,
   categories,
@@ -122,8 +122,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [showResetModal, setShowResetModal] = useState(false);
   const [confirmInput, setConfirmInput] = useState('');
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const handleSaveMembers = (e: React.FormEvent) => {
     e.preventDefault();
     if (!member1.trim() || !member2.trim()) return;
@@ -138,27 +136,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     if (!trimmed) return;
     onAddCategory(trimmed);
     setNewCatInput('');
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      try {
-        const text = evt.target?.result as string;
-        const result = parseImportJSON(text);
-        if (confirm(`พบ ${result.transactions.length} รายการ ต้องการนำเข้าข้อมูลใช่หรือไม่?`)) {
-          onImportData(result.transactions, result.members, result.categories);
-          alert('นำเข้าข้อมูลสำเร็จแล้ว!');
-        }
-      } catch (err: any) {
-        alert('เกิดข้อผิดพลาดในการอ่านไฟล์: ' + err.message);
-      }
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    };
-    reader.readAsText(file);
   };
 
   const handleExecuteReset = () => {
@@ -187,28 +164,28 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       {/* Theme & Appearance Section */}
-      <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-sm space-y-3">
+      <div className="bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-2xl p-4 sm:p-5 shadow-[3px_3px_0px_#242A20] dark:shadow-[3px_3px_0px_#0A0F0A] space-y-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-950/40 flex items-center justify-center text-amber-600 dark:text-amber-400">
-              <Sun size={16} strokeWidth={1.75} />
+            <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-950/40 flex items-center justify-center text-amber-600 dark:text-amber-400 border border-[#242A20]">
+              <Sun size={15} strokeWidth={2} />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                ธีมและการแสดงผล
+              <h3 className="font-silkscreen text-xs font-bold text-neutral-900 dark:text-neutral-100">
+                THEME / ธีมและการแสดงผล
               </h3>
               <p className="text-[11px] text-neutral-500">
-                เลือกโหมดสว่าง โหมดมืด หรือปรับตามระบบ
+                เลือกโหมดสว่าง-มืด และสีตัวเครื่อง Game Boy
               </p>
             </div>
           </div>
         </div>
 
         {/* Theme Segmented Switch with Butter-Smooth Sliding Indicator */}
-        <div className="relative grid grid-cols-3 p-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-2xl border border-border-light dark:border-border-dark select-none">
+        <div className="relative grid grid-cols-3 p-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-xl border-2 border-[#242A20] dark:border-[#3C4A38] select-none">
           {/* Sliding Pill Indicator */}
           <div
-            className="absolute top-1 bottom-1 w-[calc(33.333%-2.67px)] bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]"
+            className="absolute top-1 bottom-1 w-[calc(33.333%-2.67px)] bg-surface-light dark:bg-surface-dark rounded-lg shadow-sm border border-[#242A20] dark:border-[#3C4A38] transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]"
             style={{
               left:
                 theme === 'light'
@@ -222,41 +199,91 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <button
             type="button"
             onClick={() => onThemeChange('light')}
-            className={`relative z-10 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-medium transition-colors duration-200 active:scale-95 ${
+            className={`relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-silkscreen font-bold transition-colors duration-200 active:scale-95 ${
               theme === 'light'
-                ? 'text-amber-600 dark:text-amber-400 font-semibold'
+                ? 'text-amber-600 dark:text-amber-400'
                 : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
             }`}
           >
-            <Sun size={15} />
+            <Sun size={14} />
             <span>สว่าง</span>
           </button>
 
           <button
             type="button"
             onClick={() => onThemeChange('dark')}
-            className={`relative z-10 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-medium transition-colors duration-200 active:scale-95 ${
+            className={`relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-silkscreen font-bold transition-colors duration-200 active:scale-95 ${
               theme === 'dark'
-                ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                ? 'text-emerald-600 dark:text-emerald-400'
                 : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
             }`}
           >
-            <Moon size={15} />
+            <Moon size={14} />
             <span>มืด</span>
           </button>
 
           <button
             type="button"
             onClick={() => onThemeChange('system')}
-            className={`relative z-10 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-medium transition-colors duration-200 active:scale-95 ${
+            className={`relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-silkscreen font-bold transition-colors duration-200 active:scale-95 ${
               theme === 'system'
-                ? 'text-blue-600 dark:text-blue-400 font-semibold'
+                ? 'text-blue-600 dark:text-blue-400'
                 : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
             }`}
           >
-            <Laptop size={15} />
-            <span>ตามระบบ</span>
+            <Laptop size={14} />
+            <span>ระบบ</span>
           </button>
+        </div>
+
+        {/* Color Palette (Game Boy Edition) */}
+        <div className="pt-3 border-t-2 border-dashed border-[#242A20]/20 dark:border-[#3C4A38]/50 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="font-silkscreen text-[11px] font-bold text-neutral-800 dark:text-neutral-200">
+              COLOR EDITIONS / สีธีม Game Boy
+            </span>
+            <span className="font-pixel text-[8px] px-1.5 py-0.5 rounded bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-[#242A20] dark:border-[#3C4A38] text-neutral-700 dark:text-neutral-300">
+              {COLOR_THEMES.find((c) => c.id === colorTheme)?.name || 'DMG Classic'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {COLOR_THEMES.map((item) => {
+              const isSelected = colorTheme === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onColorThemeChange?.(item.id)}
+                  className={`flex items-center gap-2 p-2 rounded-xl border-2 transition-all select-none active:translate-x-[1px] active:translate-y-[1px] ${
+                    isSelected
+                      ? 'border-[#242A20] dark:border-white bg-surfaceElevated-light dark:bg-surfaceElevated-dark shadow-[2px_2px_0px_#242A20] dark:shadow-[2px_2px_0px_#fff]'
+                      : 'border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:border-neutral-400 opacity-80 hover:opacity-100 shadow-[1px_1px_0px_#242A20]/40'
+                  }`}
+                >
+                  {/* Color Swatch Icon */}
+                  <div
+                    className="w-5 h-5 rounded-md border border-[#242A20] shadow-[1px_1px_0px_#242A20] flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: item.screenColor }}
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: item.accentColor }}
+                    />
+                  </div>
+
+                  <div className="text-left min-w-0">
+                    <div className="font-silkscreen text-[10px] font-bold text-neutral-900 dark:text-neutral-100 truncate">
+                      {item.name}
+                    </div>
+                    <div className="text-[9px] text-neutral-500 truncate">
+                      {item.nameTh}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -464,64 +491,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </Button>
           </form>
         )}
-      </div>
-
-      {/* Backup & Export Options */}
-      <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-sm space-y-3">
-        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-          สำรองข้อมูลและการส่งออก
-        </h3>
-
-        <div className="space-y-2">
-          {/* Export JSON */}
-          <Button
-            variant="outline"
-            fullWidth
-            onClick={() => exportToJSON(transactions, members, categories)}
-            className="justify-between"
-          >
-            <div className="flex items-center gap-2">
-              <Download size={16} strokeWidth={1.5} />
-              <span>สำรองข้อมูลเป็นไฟล์ JSON</span>
-            </div>
-            <span className="text-[11px] text-neutral-400">.json</span>
-          </Button>
-
-          {/* Import JSON */}
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept=".json"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-          <Button
-            variant="outline"
-            fullWidth
-            onClick={() => fileInputRef.current?.click()}
-            className="justify-between"
-          >
-            <div className="flex items-center gap-2">
-              <Upload size={16} strokeWidth={1.5} />
-              <span>นำเข้าข้อมูลสำรอง (Restore JSON)</span>
-            </div>
-            <span className="text-[11px] text-neutral-400">เลือกไฟล์</span>
-          </Button>
-
-          {/* Export CSV */}
-          <Button
-            variant="outline"
-            fullWidth
-            onClick={() => exportToCSV(transactions)}
-            className="justify-between"
-          >
-            <div className="flex items-center gap-2">
-              <FileSpreadsheet size={16} strokeWidth={1.5} />
-              <span>ส่งออกไฟล์ตาราง Excel / CSV</span>
-            </div>
-            <span className="text-[11px] text-neutral-400">.csv</span>
-          </Button>
-        </div>
       </div>
 
       {/* Danger Zone: Reset with Type to Confirm Modal */}

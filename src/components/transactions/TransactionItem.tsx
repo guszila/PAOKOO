@@ -9,6 +9,7 @@ interface TransactionItemProps {
   onClick?: (transaction: Transaction) => void;
   isMasked?: boolean;
   pocketName?: string;
+  hideDate?: boolean;
 }
 
 export const TransactionItem: React.FC<TransactionItemProps> = ({
@@ -16,43 +17,48 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
   onClick,
   isMasked = false,
   pocketName,
+  hideDate = false,
 }) => {
   const getTypeConfig = () => {
     switch (transaction.type) {
       case 'in':
         return {
           label: 'ฝากเข้า',
+          code: 'IN',
           icon: ArrowDownLeft,
-          iconColor: 'text-emerald-600 dark:text-emerald-400',
-          bgColor: 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40',
-          amountColor: 'text-emerald-600 dark:text-emerald-400',
+          iconColor: 'text-[#0F380F]',
+          bgColor: 'bg-[#9BBC0F]',
+          amountColor: 'text-[#306230] dark:text-[#9BBC0F]',
           sign: '+',
         };
       case 'out':
         return {
           label: 'รายจ่าย',
+          code: 'OUT',
           icon: ArrowUpRight,
-          iconColor: 'text-red-600 dark:text-red-400',
-          bgColor: 'bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40',
-          amountColor: 'text-red-600 dark:text-red-400',
+          iconColor: 'text-white',
+          bgColor: 'bg-[#8B1E43]',
+          amountColor: 'text-[#8B1E43] dark:text-red-400',
           sign: '-',
         };
       case 'lend':
         return {
-          label: 'ให้ยืม/สำรอง',
+          label: 'ให้ยืม',
+          code: 'LEND',
           icon: HandCoins,
-          iconColor: 'text-amber-600 dark:text-amber-400',
-          bgColor: 'bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40',
-          amountColor: 'text-amber-600 dark:text-amber-400',
+          iconColor: 'text-amber-950',
+          bgColor: 'bg-[#F59E0B]',
+          amountColor: 'text-amber-700 dark:text-amber-400',
           sign: '-',
         };
       case 'back':
         return {
           label: 'ได้รับคืน',
+          code: 'BACK',
           icon: CornerDownLeft,
-          iconColor: 'text-teal-600 dark:text-teal-400',
-          bgColor: 'bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900/40',
-          amountColor: 'text-teal-600 dark:text-teal-400',
+          iconColor: 'text-white',
+          bgColor: 'bg-[#047857]',
+          amountColor: 'text-[#047857] dark:text-emerald-400',
           sign: '+',
         };
     }
@@ -65,10 +71,6 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
     ? (transaction.category?.trim() || 'อื่นๆ')
     : null;
 
-  // Determine icon emoji:
-  // 1. If note has an emoji, use it (e.g. "☕ กาแฟ", "🚗 เติมน้ำมัน")
-  // 2. If it's an expense ('out'), fallback to category emoji (e.g. 🍜 for อาหาร)
-  // 3. Otherwise null (uses standard SVG arrow/hand icon)
   const txEmoji = useMemo(() => {
     const noteEmoji = extractEmoji(transaction.note);
     if (noteEmoji) return noteEmoji;
@@ -81,60 +83,65 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
   return (
     <div
       onClick={() => onClick?.(transaction)}
-      className="group relative flex items-center justify-between p-3.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl hover:bg-neutral-50 dark:hover:bg-surfaceElevated-dark transition-all cursor-pointer active:scale-[0.99] select-none shadow-sm"
+      className="group relative flex items-center justify-between p-3 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl hover:bg-neutral-100 dark:hover:bg-surfaceElevated-dark transition-all cursor-pointer active:translate-x-[1px] active:translate-y-[1px] select-none shadow-[2.5px_2.5px_0px_#242A20] dark:shadow-[2.5px_2.5px_0px_#0A0F0A] active:shadow-none"
     >
-      <div className="flex items-center gap-3 min-w-0">
-        <div className={`w-10 h-10 rounded-2xl ${config.bgColor} flex items-center justify-center shrink-0 transition-transform group-hover:scale-105`}>
+      <div className="flex items-center gap-2.5 min-w-0">
+        <div className={`w-9 h-9 rounded-lg ${config.bgColor} border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[1px_1px_0px_#242A20] flex items-center justify-center shrink-0`}>
           {txEmoji ? (
-            <span className="text-xl leading-none select-none filter drop-shadow-sm">
+            <span className="text-base leading-none select-none">
               {txEmoji}
             </span>
           ) : (
-            <Icon size={18} strokeWidth={1.5} className={config.iconColor} />
+            <Icon size={16} strokeWidth={2.75} className={config.iconColor} />
           )}
         </div>
 
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
+            <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate">
               {transaction.who}
             </span>
-            <span className="text-[11px] px-1.5 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-              {config.label}
+            <span className="font-pixel text-[8px] px-1 py-0.2 rounded border border-[#242A20] dark:border-[#3C4A38] bg-surfaceElevated-light dark:bg-surfaceElevated-dark text-neutral-800 dark:text-neutral-200">
+              {config.code}
             </span>
 
             {/* Expense Category Badge with Emoji */}
             {displayCategory && (
-              <span className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+              <span className="flex items-center gap-1 text-[10px] px-1.5 py-0.2 rounded bg-neutral-200/80 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-[#242A20]/40">
                 <span>{getCategoryEmoji(displayCategory)}</span>
-                <span>{displayCategory}</span>
+                <span className="font-medium">{displayCategory}</span>
               </span>
             )}
 
             {/* Pocket Badge */}
             {pocketName && (
-              <span className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40">
-                <Wallet size={9} />
+              <span className="flex items-center gap-0.5 text-[9px] font-pixel px-1 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-[#242A20]">
+                <Wallet size={8} />
                 <span>{pocketName}</span>
               </span>
             )}
 
             {transaction.slipThumbnail && (
-              <span className="flex items-center text-[10px] text-blue-500 bg-blue-50 dark:bg-blue-950/50 px-1 rounded" title="มีสลิป">
-                <ReceiptText size={11} className="mr-0.5" />
-                สลิป
+              <span className="flex items-center text-[9px] font-pixel text-blue-600 bg-blue-100 dark:bg-blue-950 px-1 rounded border border-[#242A20]" title="มีสลิป">
+                <ReceiptText size={9} className="mr-0.5" />
+                SLIP
               </span>
             )}
           </div>
-          <div className="text-xs text-neutral-500 truncate mt-0.5">
-            {transaction.note ? transaction.note : 'ไม่มีบันทึก'} · {transaction.date}{transaction.time ? ` (${transaction.time} น.)` : ''}
+          <div className="text-[11px] text-neutral-600 dark:text-neutral-400 truncate mt-0.5">
+            {transaction.note ? transaction.note : 'ไม่มีบันทึก'}
+            {hideDate ? (
+              transaction.time ? ` · ${transaction.time} น.` : ''
+            ) : (
+              ` · ${transaction.date}${transaction.time ? ` (${transaction.time})` : ''}`
+            )}
           </div>
         </div>
       </div>
 
-      <div className="text-right shrink-0 ml-3">
-        <div className={`text-sm font-semibold tabular-nums ${config.amountColor}`}>
-          {isMasked ? '••••' : `${config.sign}${formatSatang(transaction.amount)} ฿`}
+      <div className="text-right shrink-0 ml-2">
+        <div className={`font-silkscreen text-xs font-bold tabular-nums ${config.amountColor}`}>
+          {isMasked ? '••••' : `${config.sign}${formatSatang(transaction.amount)}฿`}
         </div>
       </div>
     </div>

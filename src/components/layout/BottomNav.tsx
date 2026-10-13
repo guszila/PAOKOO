@@ -15,79 +15,111 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onOpenAdd,
 }) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-lg border-t border-border-light dark:border-border-dark pb-safe shadow-[0_-4px_25px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.3)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[var(--theme-chassis-light,#EAE5D9)] dark:bg-[var(--theme-chassis-dark,#141814)] border-t-2 border-[#242A20] dark:border-[#3C4A38] pb-safe shadow-[0_-4px_0px_rgba(0,0,0,0.15)] transition-colors">
       <div className="max-w-md mx-auto grid grid-cols-5 h-16 items-center px-1 relative">
         {/* Tab 1: Overview */}
         <button
           onClick={() => onTabChange('overview')}
-          className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors select-none ${
+          className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-all select-none ${
             activeTab === 'overview'
-              ? 'text-emerald-600 dark:text-emerald-400 font-medium'
-              : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+              ? 'text-[#0F380F] dark:text-[#9BBC0F] font-bold'
+              : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
           }`}
         >
-          <Home size={19} strokeWidth={activeTab === 'overview' ? 2 : 1.5} />
-          <span className="text-[10px] mt-1">ภาพรวม</span>
+          <div
+            className={`p-1 rounded ${
+              activeTab === 'overview'
+                ? 'bg-[#9BBC0F] dark:bg-[#283824] border border-[#242A20] shadow-[1.5px_1.5px_0px_#242A20]'
+                : ''
+            }`}
+          >
+            <Home size={18} strokeWidth={activeTab === 'overview' ? 2.5 : 2} />
+          </div>
+          <span className="font-silkscreen text-[9px] mt-0.5">ภาพรวม</span>
         </button>
 
-        {/* Tab 2: Transactions (Sapphire Blue) */}
+        {/* Tab 2: Transactions (Log) */}
         <button
           onClick={() => onTabChange('transactions')}
-          className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors select-none ${
+          className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-all select-none ${
             activeTab === 'transactions'
-              ? 'text-blue-600 dark:text-blue-400 font-semibold'
-              : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+              ? 'text-[#0F380F] dark:text-[#9BBC0F] font-bold'
+              : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
           }`}
         >
-          <Receipt size={19} strokeWidth={activeTab === 'transactions' ? 2 : 1.5} />
-          <span className="text-[10px] mt-1">รายการ</span>
+          <div
+            className={`p-1 rounded ${
+              activeTab === 'transactions'
+                ? 'bg-[#9BBC0F] dark:bg-[#283824] border border-[#242A20] shadow-[1.5px_1.5px_0px_#242A20]'
+                : ''
+            }`}
+          >
+            <Receipt size={18} strokeWidth={activeTab === 'transactions' ? 2.5 : 2} />
+          </div>
+          <span className="font-silkscreen text-[9px] mt-0.5">รายการ</span>
         </button>
 
-        {/* Slot 3: Exact Center Floating Action Button (+) - Prominent Elevated Design */}
+        {/* Slot 3: Exact Center Floating Action Button (+) - Iconic Game Boy A-Button */}
         <div className="flex items-center justify-center h-full relative">
-          <div className="relative -top-5">
-            {/* Ambient Glow Behind Button */}
-            <div className="absolute inset-0 rounded-full bg-emerald-500/30 blur-md transform scale-110 pointer-events-none" />
-
+          <div className="relative -top-4 flex flex-col items-center">
             <button
               onClick={onOpenAdd}
-              className="relative w-[58px] h-[58px] rounded-full bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-[0_10px_25px_-3px_rgba(16,185,129,0.5),0_4px_12px_rgba(0,0,0,0.12)] hover:shadow-[0_14px_30px_-3px_rgba(16,185,129,0.65)] hover:scale-105 active:scale-95 transition-all duration-200 border-[4px] border-surface-light dark:border-surface-dark select-none group"
-              aria-label="เพิ่มรายการ"
-              title="เพิ่มรายการ"
+              className="relative w-[54px] h-[54px] rounded-full gb-btn-a text-white flex items-center justify-center border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[3px_3px_0px_#242A20] dark:shadow-[3px_3px_0px_#0A0F0A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all select-none group"
+              aria-label="เพิ่มรายการ (A Button)"
+              title="A BUTTON / บันทึกรายการใหม่"
             >
               <Plus
-                size={28}
-                strokeWidth={2.75}
-                className="transition-transform duration-300 group-hover:rotate-90 group-active:scale-90"
+                size={26}
+                strokeWidth={3}
+                className="transition-transform duration-200 group-hover:rotate-90 group-active:scale-90"
               />
             </button>
+            <span className="font-pixel text-[8px] font-bold gb-accent-text mt-1">
+              A-BTN
+            </span>
           </div>
         </div>
 
-        {/* Tab 4: Analytics (Royal Violet) */}
+        {/* Tab 4: Analytics (Stats) */}
         <button
           onClick={() => onTabChange('analytics')}
-          className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors select-none ${
+          className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-all select-none ${
             activeTab === 'analytics'
-              ? 'text-purple-600 dark:text-purple-400 font-semibold'
-              : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+              ? 'text-[#0F380F] dark:text-[#9BBC0F] font-bold'
+              : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
           }`}
         >
-          <PieChart size={19} strokeWidth={activeTab === 'analytics' ? 2 : 1.5} />
-          <span className="text-[10px] mt-1">วิเคราะห์</span>
+          <div
+            className={`p-1 rounded ${
+              activeTab === 'analytics'
+                ? 'bg-[#9BBC0F] dark:bg-[#283824] border border-[#242A20] shadow-[1.5px_1.5px_0px_#242A20]'
+                : ''
+            }`}
+          >
+            <PieChart size={18} strokeWidth={activeTab === 'analytics' ? 2.5 : 2} />
+          </div>
+          <span className="font-silkscreen text-[9px] mt-0.5">สถิติ</span>
         </button>
 
-        {/* Tab 5: Settings (Titanium Slate) */}
+        {/* Tab 5: Settings (Options) */}
         <button
           onClick={() => onTabChange('settings')}
-          className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors select-none ${
+          className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-all select-none ${
             activeTab === 'settings'
-              ? 'text-neutral-900 dark:text-neutral-100 font-semibold'
-              : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+              ? 'text-[#0F380F] dark:text-[#9BBC0F] font-bold'
+              : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
           }`}
         >
-          <Settings size={19} strokeWidth={activeTab === 'settings' ? 2 : 1.5} />
-          <span className="text-[10px] mt-1">ตั้งค่า</span>
+          <div
+            className={`p-1 rounded ${
+              activeTab === 'settings'
+                ? 'bg-[#9BBC0F] dark:bg-[#283824] border border-[#242A20] shadow-[1.5px_1.5px_0px_#242A20]'
+                : ''
+            }`}
+          >
+            <Settings size={18} strokeWidth={activeTab === 'settings' ? 2.5 : 2} />
+          </div>
+          <span className="font-silkscreen text-[9px] mt-0.5">ตั้งค่า</span>
         </button>
       </div>
     </nav>

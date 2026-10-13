@@ -13,6 +13,7 @@ import {
   ChevronRight,
   HandCoins,
   Clock,
+  Sparkles,
 } from 'lucide-react';
 
 import { PocketSummary } from '../../types/pocket';
@@ -107,80 +108,81 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
   };
 
   return (
-    <div className="relative -mt-12 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-lg shadow-emerald-950/5 dark:shadow-none transition-all z-20">
-      {/* Top Header: Label & Eye Icon */}
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
-          ยอดเงินในบัญชีตอนนี้
-        </span>
-        <button
-          onClick={onToggleMask}
-          className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors p-1"
-          title={isMasked ? 'แสดงจำนวนเงิน' : 'ซ่อนจำนวนเงิน'}
-          aria-label={isMasked ? 'แสดงจำนวนเงิน' : 'ซ่อนจำนวนเงิน'}
-        >
-          {isMasked ? <EyeOff size={16} strokeWidth={1.5} /> : <Eye size={16} strokeWidth={1.5} />}
-        </button>
-      </div>
+    <div className="relative -mt-8 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_#242A20] dark:shadow-[4px_4px_0px_#0A0F0A] transition-all z-20">
+      {/* Game Boy DMG LCD Screen Display Box */}
+      <div className="dmg-screen rounded-xl p-3.5 relative overflow-hidden">
+        {/* Subtle dot matrix pattern overlay */}
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(#0F380F_1px,transparent_1px)] [background-size:5px_5px] opacity-15" />
 
-      {/* Large Balance Number */}
-      <div
-        onClick={() => triggerCoinShower()}
-        className="mt-1 flex items-baseline gap-2 cursor-pointer select-none active:scale-[0.98] transition-transform"
-        title="แตะเพื่อโปรยเหรียญ!"
-      >
-        <span className="text-4xl sm:text-[42px] font-light tracking-tight text-neutral-900 dark:text-neutral-50 tabular-nums">
-          {isMasked ? '••••••••' : formatSatang(currentBalance)}
-        </span>
-        <span className="text-base font-light text-neutral-400 dark:text-neutral-500">
-          บาท
-        </span>
-      </div>
-
-      {/* Delta Row: Net change this month vs last month */}
-      <div className="mt-2.5 flex items-center gap-2 flex-wrap">
-        <div
-          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            thisMonthNet >= 0
-              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/40'
-              : 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/40'
-          }`}
-        >
-          {thisMonthNet >= 0 ? (
-            <TrendingUp size={13} strokeWidth={2} />
-          ) : (
-            <TrendingDown size={13} strokeWidth={2} />
-          )}
-          <span>
-            {thisMonthNet >= 0 ? '+' : ''}
-            {isMasked ? '••••' : `${formatSatang(thisMonthNet)} ฿`} เดือนนี้
-          </span>
-          <span className="opacity-75 text-[10px]">({percentDelta})</span>
+        {/* Top Screen Bar: Label + Mode + Eye Icon */}
+        <div className="flex items-center justify-between relative z-10 text-[10px] font-silkscreen">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 bg-[#0F380F] dark:bg-[#9BBC0F] rounded-full" />
+            <span className="font-bold tracking-wider">TOTAL ASSETS / ยอดเงินคงเหลือ</span>
+          </div>
+          <button
+            onClick={onToggleMask}
+            className="p-1 hover:opacity-75 transition-opacity"
+            title={isMasked ? 'แสดงจำนวนเงิน' : 'ซ่อนจำนวนเงิน'}
+            aria-label={isMasked ? 'แสดงจำนวนเงิน' : 'ซ่อนจำนวนเงิน'}
+          >
+            {isMasked ? <EyeOff size={15} strokeWidth={2.5} /> : <Eye size={15} strokeWidth={2.5} />}
+          </button>
         </div>
 
-        {totalLentOut > 0 && (
-          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40">
-            <HandCoins size={12} strokeWidth={1.5} />
-            <span>มีคนยืม {isMasked ? '••••' : `${formatSatang(totalLentOut)} ฿`}</span>
+        {/* Big Retro LCD Balance Number */}
+        <div
+          onClick={() => triggerCoinShower()}
+          className="mt-2 flex items-baseline gap-2 cursor-pointer select-none active:scale-[0.98] transition-transform relative z-10"
+          title="แตะเพื่อโปรยเหรียญ! ★"
+        >
+          <span className="font-silkscreen text-3xl sm:text-4xl font-bold tracking-tight truncate leading-tight">
+            {isMasked ? '••••••••' : formatSatang(currentBalance)}
+          </span>
+          <span className="font-pixel text-xs opacity-80">
+            ฿
+          </span>
+        </div>
+
+        {/* Screen Bottom Metrics: Net change & Lent badge */}
+        <div className="mt-2.5 flex items-center gap-2 flex-wrap relative z-10 text-[10px]">
+          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-[#0F380F] dark:border-[#3C4A38] bg-[#8BAC0F]/80 dark:bg-[#2A3E26] font-pixel text-[9px] shadow-[1px_1px_0px_#0F380F]">
+            {thisMonthNet >= 0 ? (
+              <TrendingUp size={11} strokeWidth={3} />
+            ) : (
+              <TrendingDown size={11} strokeWidth={3} />
+            )}
+            <span>
+              {thisMonthNet >= 0 ? '+' : ''}
+              {isMasked ? '••••' : `${formatSatang(thisMonthNet)}฿`}
+            </span>
+            <span className="opacity-80">({percentDelta})</span>
           </div>
-        )}
+
+          {totalLentOut > 0 && (
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-[#0F380F] dark:border-[#3C4A38] bg-[#8BAC0F]/80 dark:bg-[#2A3E26] font-pixel text-[9px]">
+              <HandCoins size={11} strokeWidth={2.5} />
+              <span>LENT {isMasked ? '••' : `${formatSatang(totalLentOut)}฿`}</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Pocket Breakdown Pill (Model 2: Sub-Wallet Breakdown) */}
+      {/* Pocket Breakdown (Sub-Wallet Breakdown) */}
       {pocketSummaries && pocketSummaries.length > 0 && (
-        <div className="mt-3 p-2.5 rounded-2xl bg-neutral-50 dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark flex items-center justify-between text-xs">
+        <div className="mt-3 p-2 rounded-xl bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-[#242A20] dark:border-[#3C4A38] flex items-center justify-between text-xs">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-sm">🏦</span>
-            <span className="text-neutral-500 dark:text-neutral-400 truncate">กองกลางหลัก:</span>
-            <span className="font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums">
+            <span className="text-xs">🏦</span>
+            <span className="text-neutral-600 dark:text-neutral-400 truncate text-[11px]">กองกลาง:</span>
+            <span className="font-silkscreen font-bold text-neutral-900 dark:text-neutral-100 text-[11px] tabular-nums">
               {isMasked ? '••••' : `${formatSatang(mainSavingsBalance ?? currentBalance)} ฿`}
             </span>
           </div>
-          <div className="h-3.5 w-px bg-border-light dark:border-border-dark mx-2 shrink-0" />
+          <div className="h-3.5 w-px bg-[#242A20]/20 dark:bg-[#3C4A38] mx-2 shrink-0" />
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-sm">👛</span>
-            <span className="text-neutral-500 dark:text-neutral-400 truncate">ในกล่องแบ่งใช้:</span>
-            <span className="font-semibold text-purple-600 dark:text-purple-400 tabular-nums">
+            <span className="text-xs">👛</span>
+            <span className="text-neutral-600 dark:text-neutral-400 truncate text-[11px]">กล่องแบ่ง:</span>
+            <span className="font-silkscreen font-bold text-neutral-900 dark:text-neutral-100 text-[11px] tabular-nums">
               {isMasked
                 ? '••••'
                 : `${formatSatang(pocketSummaries.reduce((sum, p) => sum + p.remainingSatang, 0))} ฿`}
@@ -190,33 +192,36 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
       )}
 
       {/* Subline: Grand Total & Latest Update */}
-      <div className="mt-3 pt-3 border-t border-border-light dark:border-border-dark flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400">
+      <div className="mt-2.5 pt-2 border-t-2 border-dashed border-[#242A20]/20 dark:border-[#3C4A38]/50 flex items-center justify-between text-[11px] text-neutral-600 dark:text-neutral-400">
         <div className="flex items-center gap-1">
-          <span>รวมเงินที่ให้ยืม:</span>
-          <span className="font-semibold text-neutral-700 dark:text-neutral-300 tabular-nums">
+          <span className="font-silkscreen text-[9px]">GRAND TOTAL:</span>
+          <span className="font-silkscreen font-bold text-neutral-800 dark:text-neutral-200">
             {isMasked ? '••••' : `${formatSatang(grandTotal)} ฿`}
           </span>
         </div>
-        <div className="flex items-center gap-1 text-neutral-400">
-          <Clock size={11} strokeWidth={1.5} />
-          <span>ข้อมูลล่าสุด: {latestUpdateTime}</span>
+        <div className="flex items-center gap-1 text-[10px]">
+          <Clock size={10} />
+          <span>{latestUpdateTime}</span>
         </div>
       </div>
 
       {/* Donut Toggle Header */}
-      <div className="mt-4 pt-3 border-t border-border-light dark:border-border-dark flex items-center justify-between">
-        <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-          สัดส่วนการเงิน (Breakdown)
-        </span>
+      <div className="mt-3 pt-2 border-t-2 border-[#242A20] dark:border-[#3C4A38] flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 bg-[#8B1E43] rounded-full" />
+          <span className="font-silkscreen text-[10px] font-bold text-neutral-800 dark:text-neutral-200">
+            CHART / สัดส่วนการเงิน
+          </span>
+        </div>
         <button
           onClick={() => setIsDonutExpanded(!isDonutExpanded)}
-          className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 py-1 px-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-surfaceElevated-dark transition-all active:scale-95"
+          className="flex items-center gap-1 font-pixel text-[9px] text-neutral-700 dark:text-neutral-300 py-1 px-2 rounded border border-[#242A20] dark:border-[#3C4A38] bg-surfaceElevated-light dark:bg-surfaceElevated-dark shadow-[1px_1px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
           aria-label={isDonutExpanded ? 'ย่อกราฟ' : 'ขยายกราฟ'}
         >
-          <span>{isDonutExpanded ? 'ซ่อนกราฟ' : 'แสดงกราฟ'}</span>
+          <span>{isDonutExpanded ? 'HIDE' : 'SHOW'}</span>
           <ChevronDown
-            size={15}
-            className={`transition-transform duration-300 ease-out ${
+            size={12}
+            className={`transition-transform duration-200 ${
               isDonutExpanded ? 'rotate-180' : 'rotate-0'
             }`}
           />
@@ -225,37 +230,30 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
 
       {/* Donut Breakdown Section (Collapsible) */}
       {isDonutExpanded && (
-        <div className="mt-3 space-y-3 animate-fade-in">
-          {/* Segmented Control: 2 Tabs with Butter-Smooth Sliding Indicator */}
-          <div className="relative grid grid-cols-2 p-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-xl border border-border-light dark:border-border-dark select-none">
-            {/* Sliding Pill Indicator */}
-            <div
-              className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-surface-light dark:bg-surface-dark rounded-lg shadow-sm border border-border-light dark:border-border-dark transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]"
-              style={{
-                left: donutTab === 'wealth' ? '4px' : 'calc(50%)',
-              }}
-            />
+        <div className="mt-2.5 space-y-2.5 animate-fade-in">
+          {/* Retro Segmented Control: [A] & [B] Mode Select */}
+          <div className="grid grid-cols-2 p-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-xl border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[2px_2px_0px_#242A20] dark:shadow-[2px_2px_0px_#0A0F0A] gap-1 select-none">
             <button
               type="button"
               onClick={() => setDonutTab('wealth')}
-              className={`relative z-10 py-1.5 text-xs font-medium rounded-lg transition-colors duration-200 active:scale-95 ${
+              className={`py-1.5 text-xs font-silkscreen font-bold rounded-lg transition-all ${
                 donutTab === 'wealth'
-                  ? 'text-neutral-900 dark:text-white font-semibold'
-                  : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-white'
+                  ? 'bg-[#9BBC0F] text-[#0F380F] border border-[#242A20] shadow-[1px_1px_0px_#242A20]'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
               }`}
             >
-              เงินของเรา
+              [A] เงินของเรา
             </button>
             <button
               type="button"
               onClick={() => setDonutTab('expenses')}
-              className={`relative z-10 py-1.5 text-xs font-medium rounded-lg transition-colors duration-200 active:scale-95 ${
+              className={`py-1.5 text-xs font-silkscreen font-bold rounded-lg transition-all ${
                 donutTab === 'expenses'
-                  ? 'text-neutral-900 dark:text-white font-semibold'
-                  : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-white'
+                  ? 'bg-[#8B1E43] text-white border border-[#242A20] shadow-[1px_1px_0px_#242A20]'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
               }`}
             >
-              ค่าใช้จ่าย
+              [B] ค่าใช้จ่าย
             </button>
           </div>
 
@@ -274,23 +272,23 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
           {donutTab === 'expenses' && (
             <div className="space-y-2">
               {/* Month Picker */}
-              <div className="flex items-center justify-between px-2 py-1 bg-surfaceElevated-light/60 dark:bg-surfaceElevated-dark/60 rounded-xl text-xs">
+              <div className="flex items-center justify-between px-2 py-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-[#242A20] dark:border-[#3C4A38] rounded-lg text-xs">
                 <button
                   onClick={handlePrevMonth}
-                  className="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg text-neutral-600 dark:text-neutral-300"
+                  className="p-1 hover:bg-[#242A20]/10 dark:hover:bg-white/10 rounded text-neutral-800 dark:text-neutral-200"
                   aria-label="เดือนก่อนหน้า"
                 >
-                  <ChevronLeft size={16} strokeWidth={1.5} />
+                  <ChevronLeft size={16} strokeWidth={2} />
                 </button>
-                <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+                <span className="font-silkscreen font-bold text-neutral-800 dark:text-neutral-200">
                   {formattedExpenseMonth}
                 </span>
                 <button
                   onClick={handleNextMonth}
-                  className="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg text-neutral-600 dark:text-neutral-300"
+                  className="p-1 hover:bg-[#242A20]/10 dark:hover:bg-white/10 rounded text-neutral-800 dark:text-neutral-200"
                   aria-label="เดือนถัดไป"
                 >
-                  <ChevronRight size={16} strokeWidth={1.5} />
+                  <ChevronRight size={16} strokeWidth={2} />
                 </button>
               </div>
 

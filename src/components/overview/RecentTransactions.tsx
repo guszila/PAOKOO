@@ -27,24 +27,27 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({
   }, [pockets]);
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-          รายการล่าสุด
-        </h3>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 bg-[#8B1E43] border border-[#242A20] shadow-[1px_1px_0px_#242A20]" />
+          <h3 className="font-silkscreen text-[11px] font-bold text-neutral-800 dark:text-neutral-200 tracking-wider">
+            LOGS / รายการล่าสุด
+          </h3>
+        </div>
         <button
           onClick={onViewAll}
-          className="text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white flex items-center gap-0.5 transition-colors"
+          className="font-pixel text-[9px] text-neutral-700 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white flex items-center gap-0.5 transition-colors"
         >
-          <span>ดูทั้งหมด ({transactions.length})</span>
-          <ChevronRight size={14} strokeWidth={1.5} />
+          <span>VIEW ALL ({transactions.length})</span>
+          <ChevronRight size={12} strokeWidth={2.5} />
         </button>
       </div>
 
       {recent.length === 0 ? (
-        <div className="py-8 text-center text-xs text-neutral-500 dark:text-neutral-400 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl flex flex-col items-center gap-2">
-          <Receipt size={24} strokeWidth={1.5} className="text-neutral-400" />
-          <span>ยังไม่มีรายการในขณะนี้</span>
+        <div className="py-6 text-center text-xs text-neutral-500 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl flex flex-col items-center gap-2 shadow-[2px_2px_0px_#242A20]">
+          <Receipt size={22} strokeWidth={2} className="text-neutral-400" />
+          <span className="font-silkscreen text-[11px]">NO RECORDS YET / ยังไม่มีรายการ</span>
         </div>
       ) : (
         <div className="space-y-2">

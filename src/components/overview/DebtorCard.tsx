@@ -6,7 +6,7 @@ import { Button } from '../common/Button';
 
 interface DebtorCardProps {
   debtors: OutstandingDebtor[];
-  onRepayClick: (debtor: OutstandingDebtor) => void;
+  onRepayClick: (debtor: OutstandingDebtor, amount?: number) => void;
 }
 
 export const DebtorCard: React.FC<DebtorCardProps> = ({
@@ -59,14 +59,26 @@ export const DebtorCard: React.FC<DebtorCardProps> = ({
                   <div className="text-[10px] text-neutral-400">ค้างชำระ</div>
                 </div>
 
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onRepayClick(debtor)}
-                  className="text-xs px-3 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
-                >
-                  คืนแล้ว
-                </Button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onRepayClick(debtor, Math.round(debtor.balance / 2))}
+                    className="text-xs px-2.5 py-1 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40"
+                    title="บันทึกคืน 50%"
+                  >
+                    50%
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onRepayClick(debtor, debtor.balance)}
+                    className="text-xs px-2.5 py-1 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                    title="บันทึกคืนครบจำนวน"
+                  >
+                    คืนเต็ม
+                  </Button>
+                </div>
               </div>
             </div>
           ))}

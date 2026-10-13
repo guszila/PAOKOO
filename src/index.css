@@ -7,11 +7,11 @@
 }
 
 html {
-  background-color: #047857; /* Matches top header emerald gradient start to eliminate black status bar gap */
+  background-color: #363842; /* Matches Game Boy DMG top bezel dark slate */
 }
 
 html.dark {
-  background-color: #022c22; /* Matches dark header emerald gradient start */
+  background-color: #141814; /* Matches Game Boy Pocket dark matrix */
 }
 
 /* Hide scrollbars globally across all browsers while preserving scrollability */
@@ -324,4 +324,190 @@ input[type='number'] {
   will-change: transform, opacity;
 }
 
+/* ==========================================================================
+   Game Boy DMG-01 8-Bit Retro Aesthetic Utilities & Color Themes
+   ========================================================================== */
 
+:root {
+  --theme-accent: #8B1E43;
+  --theme-accent-hover: #9B234C;
+  --theme-screen-bg: #9BBC0F;
+  --theme-screen-text: #0F380F;
+  --theme-screen-dark-bg: #21321D;
+  --theme-screen-dark-text: #9BBC0F;
+  --theme-header-bg: #353842;
+  --theme-chassis-light: #EAE5D9; /* Warm vintage DMG-01 console shell */
+  --theme-chassis-dark: #141814;
+}
+
+[data-color-theme="berry"] {
+  --theme-accent: #BE185D;
+  --theme-accent-hover: #DB2777;
+  --theme-screen-bg: #FBCFE8;
+  --theme-screen-text: #831843;
+  --theme-screen-dark-bg: #3D1224;
+  --theme-screen-dark-text: #FBCFE8;
+  --theme-header-bg: #38232F;
+  --theme-chassis-light: #FCE7F3; /* Pastel strawberry blush shell */
+  --theme-chassis-dark: #1E1219;
+}
+
+[data-color-theme="kiwi"] {
+  --theme-accent: #059669;
+  --theme-accent-hover: #10B981;
+  --theme-screen-bg: #A7F3D0;
+  --theme-screen-text: #064E3B;
+  --theme-screen-dark-bg: #123320;
+  --theme-screen-dark-text: #A7F3D0;
+  --theme-header-bg: #1E3526;
+  --theme-chassis-light: #DCFCE7; /* Pastel mint / fresh matcha shell */
+  --theme-chassis-dark: #101B14;
+}
+
+[data-color-theme="teal"] {
+  --theme-accent: #0284C7;
+  --theme-accent-hover: #0EA5E9;
+  --theme-screen-bg: #BAE6FD;
+  --theme-screen-text: #0C4A6E;
+  --theme-screen-dark-bg: #102B3B;
+  --theme-screen-dark-text: #BAE6FD;
+  --theme-header-bg: #1E2D3D;
+  --theme-chassis-light: #E0F2FE; /* Pastel retro ocean ice-blue shell */
+  --theme-chassis-dark: #0E1720;
+}
+
+[data-color-theme="dandelion"] {
+  --theme-accent: #D97706;
+  --theme-accent-hover: #F59E0B;
+  --theme-screen-bg: #FEF08A;
+  --theme-screen-text: #713F12;
+  --theme-screen-dark-bg: #362E12;
+  --theme-screen-dark-text: #FEF08A;
+  --theme-header-bg: #383020;
+  --theme-chassis-light: #FEF9C3; /* Warm pastel cream sunshine shell */
+  --theme-chassis-dark: #1A1710;
+}
+
+[data-color-theme="atomic"] {
+  --theme-accent: #7C3AED;
+  --theme-accent-hover: #8B5CF6;
+  --theme-screen-bg: #DDD6FE;
+  --theme-screen-text: #4C1D95;
+  --theme-screen-dark-bg: #281545;
+  --theme-screen-dark-text: #DDD6FE;
+  --theme-header-bg: #2B213B;
+  --theme-chassis-light: #F3E8FF; /* Pastel lavender 90s console shell */
+  --theme-chassis-dark: #171120;
+}
+
+/* Retro pixel card with hard shadow */
+.pixel-card {
+  border: 2px solid #242A20;
+  box-shadow: 3px 3px 0px #242A20;
+}
+
+.dark .pixel-card {
+  border-color: #3C4A38;
+  box-shadow: 3px 3px 0px #0A0F0A;
+}
+
+.pixel-card-sm {
+  border: 2px solid #242A20;
+  box-shadow: 2px 2px 0px #242A20;
+}
+
+.dark .pixel-card-sm {
+  border-color: #3C4A38;
+  box-shadow: 2px 2px 0px #0A0F0A;
+}
+
+/* Tactile 8-bit button with click depression */
+.pixel-btn {
+  border: 2px solid #242A20;
+  box-shadow: 2.5px 2.5px 0px #242A20;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  user-select: none;
+}
+
+.pixel-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0.5px 0.5px 0px #242A20 !important;
+}
+
+.dark .pixel-btn {
+  border-color: #3C4A38;
+  box-shadow: 2.5px 2.5px 0px #0A0F0A;
+}
+
+.dark .pixel-btn:active {
+  box-shadow: 0.5px 0.5px 0px #0A0F0A !important;
+}
+
+/* Game Boy DMG-01 LCD Screen Effect (Dynamic) */
+.dmg-screen {
+  background-color: var(--theme-screen-bg, #9BBC0F);
+  color: var(--theme-screen-text, #0F380F);
+  border: 2px solid #242A20;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25), 3px 3px 0px #242A20;
+}
+
+.dark .dmg-screen {
+  background-color: var(--theme-screen-dark-bg, #21321D);
+  color: var(--theme-screen-dark-text, #9BBC0F);
+  border-color: #3C4A38;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 3px 3px 0px #0A0F0A;
+}
+
+.gb-header-bg {
+  background-color: var(--theme-header-bg, #353842);
+}
+
+.gb-btn-a {
+  background-color: var(--theme-accent, #8B1E43);
+}
+
+.gb-btn-a:hover {
+  background-color: var(--theme-accent-hover, #9B234C);
+}
+
+.gb-accent-bg {
+  background-color: var(--theme-accent, #8B1E43);
+}
+
+.gb-accent-text {
+  color: var(--theme-accent, #8B1E43);
+}
+
+/* Speaker grill diagonal vents */
+.gb-speaker-grill {
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 5px,
+    rgba(36, 42, 32, 0.4) 5px,
+    rgba(36, 42, 32, 0.4) 8px
+  );
+}
+
+.dark .gb-speaker-grill {
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 5px,
+    rgba(60, 74, 56, 0.45) 5px,
+    rgba(60, 74, 56, 0.45) 8px
+  );
+}
+
+/* Tactile console shell background with subtle micro-dots */
+.gb-shell-bg {
+  background-color: var(--theme-chassis-light, #EAE5D9);
+  background-image: radial-gradient(rgba(36, 42, 32, 0.055) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+
+.dark .gb-shell-bg {
+  background-color: var(--theme-chassis-dark, #141814);
+  background-image: radial-gradient(rgba(155, 188, 15, 0.035) 1px, transparent 1px);
+  background-size: 14px 14px;
+}

@@ -37,7 +37,7 @@ export function App() {
   const { showToast } = useToast();
 
   // Theme management at root
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, colorTheme, setColorTheme } = useTheme();
 
   // Local state hook
   const {
@@ -354,14 +354,21 @@ export function App() {
     setIsFormOpen(true);
   };
 
-  // Repaid button clicked on Debtor Card
-  const handleRepayClick = (debtor: OutstandingDebtor) => {
+  // Repaid button clicked on Debtor Card (supports partial repayment like 50%)
+  const handleRepayClick = (debtor: OutstandingDebtor, customAmountSatang?: number) => {
+    const repayAmount = customAmountSatang ?? debtor.balance;
+    const isFull = repayAmount >= debtor.balance;
+    const isHalf = repayAmount === Math.round(debtor.balance / 2);
     setSelectedTxForEdit(null);
     setPrefillData({
       type: 'back',
       who: debtor.who,
-      amount: debtor.balance,
-      note: `คืนเงินยืมครบจำนวน (${debtor.who})`,
+      amount: repayAmount,
+      note: isFull
+        ? `คืนเงินยืมครบจำนวน (${debtor.who})`
+        : isHalf
+        ? `คืนเงินยืม 50% (${debtor.who})`
+        : `คืนเงินยืมบางส่วน (${debtor.who})`,
     });
     setIsFormOpen(true);
   };
@@ -439,7 +446,7 @@ export function App() {
           onFinish={() => setShowSplash(false)}
         />
       )}
-      <div className="min-h-screen bg-background-light dark:bg-background-dark text-neutral-900 dark:text-neutral-100 flex flex-col font-sans transition-colors overflow-x-hidden">
+      <div className="min-h-screen gb-shell-bg text-neutral-900 dark:text-neutral-100 flex flex-col font-sans transition-colors overflow-x-hidden">
       <Header
         user={user}
         household={household}
@@ -541,6 +548,8 @@ export function App() {
             <SettingsView
               theme={theme}
               onThemeChange={setTheme}
+              colorTheme={colorTheme}
+              onColorThemeChange={setColorTheme}
               transactions={activeTransactions}
               members={activeMembers}
               categories={activeCategories}

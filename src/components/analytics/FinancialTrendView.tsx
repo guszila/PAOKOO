@@ -228,30 +228,30 @@ export const FinancialTrendView: React.FC<FinancialTrendViewProps> = ({
   return (
     <div className="space-y-4">
       {/* 1. Main Interactive Trend Card */}
-      <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-4 sm:p-5 shadow-sm space-y-4">
+      <div className="bg-surface-light dark:bg-surface-dark pixel-card rounded-2xl p-4 sm:p-5 space-y-4">
         {/* Top Header: Mode Toggles & Scrubber Inspection Info */}
         <div className="space-y-3">
           {/* Dual vs Net Curve Mode Toggle */}
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="relative flex items-center p-0.5 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-xl border border-border-light dark:border-border-dark text-xs">
+            <div className="relative flex items-center p-0.5 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-xl pixel-card-sm text-xs">
               <button
                 type="button"
                 onClick={() => setChartMode('dual')}
-                className={`py-1 px-2.5 rounded-lg font-medium transition-colors select-none ${
+                className={`py-1 px-2.5 rounded-lg font-silkscreen text-[11px] transition-colors select-none ${
                   chartMode === 'dual'
-                    ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white font-semibold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                    ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white font-bold border border-[#242A20] shadow-[1px_1px_0px_#242A20]'
+                    : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
                 }`}
               >
-                รายรับ-รายจ่าย
+                รับ-จ่าย
               </button>
               <button
                 type="button"
                 onClick={() => setChartMode('net')}
-                className={`py-1 px-2.5 rounded-lg font-medium transition-colors select-none ${
+                className={`py-1 px-2.5 rounded-lg font-silkscreen text-[11px] transition-colors select-none ${
                   chartMode === 'net'
-                    ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white font-semibold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                    ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white font-bold border border-[#242A20] shadow-[1px_1px_0px_#242A20]'
+                    : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
                 }`}
               >
                 สุทธิสะสม
@@ -259,14 +259,14 @@ export const FinancialTrendView: React.FC<FinancialTrendViewProps> = ({
             </div>
 
             {/* Cumulative vs Daily Toggle */}
-            <div className="relative flex items-center p-0.5 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-xl border border-border-light dark:border-border-dark text-xs">
+            <div className="relative flex items-center p-0.5 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-xl pixel-card-sm text-xs">
               <button
                 type="button"
                 onClick={() => setCalcMode('cumulative')}
-                className={`py-1 px-2 rounded-lg font-medium transition-colors select-none text-[11px] ${
+                className={`py-1 px-2 rounded-lg font-silkscreen text-[10px] transition-colors select-none ${
                   calcMode === 'cumulative'
-                    ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white font-semibold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                    ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white font-bold border border-[#242A20] shadow-[1px_1px_0px_#242A20]'
+                    : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
                 }`}
               >
                 ยอดสะสม
@@ -274,10 +274,10 @@ export const FinancialTrendView: React.FC<FinancialTrendViewProps> = ({
               <button
                 type="button"
                 onClick={() => setCalcMode('daily')}
-                className={`py-1 px-2 rounded-lg font-medium transition-colors select-none text-[11px] ${
+                className={`py-1 px-2 rounded-lg font-silkscreen text-[10px] transition-colors select-none ${
                   calcMode === 'daily'
-                    ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white font-semibold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                    ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white font-bold border border-[#242A20] shadow-[1px_1px_0px_#242A20]'
+                    : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
                 }`}
               >
                 รายวัน
@@ -606,86 +606,86 @@ export const FinancialTrendView: React.FC<FinancialTrendViewProps> = ({
       {/* 2. Four Smart Financial Insights Cards (Mobile-friendly Grid) */}
       <div className="grid grid-cols-2 gap-2.5">
         {/* Peak Expense Day */}
-        <div className="p-3.5 rounded-2xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark space-y-1">
-          <div className="flex items-center gap-1 text-[11px] text-neutral-500">
+        <div className="p-3 rounded-xl bg-surface-light dark:bg-surface-dark pixel-card-sm space-y-1">
+          <div className="flex items-center gap-1 text-[11px] font-bold text-neutral-600 dark:text-neutral-400">
             <Award size={13} className="text-amber-500" />
             <span>วันจ่ายสูงสุด</span>
           </div>
-          <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+          <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
             {trend.peakExpenseDay ? `${trend.peakExpenseDay.dayNumber} ${yearMonth.slice(5)}` : '-'}
           </div>
-          <div className="text-xs font-semibold text-red-600 dark:text-red-400 tabular-nums">
+          <div className="font-silkscreen text-xs font-bold text-[#8B1E43] dark:text-red-400 tabular-nums">
             {trend.peakExpenseDay
               ? isMasked
                 ? '••••'
-                : `-${formatSatang(trend.peakExpenseDay.amount)} ฿`
+                : `-${formatSatang(trend.peakExpenseDay.amount)}฿`
               : '0 ฿'}
           </div>
         </div>
 
         {/* Daily Average Expense */}
-        <div className="p-3.5 rounded-2xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark space-y-1">
-          <div className="flex items-center gap-1 text-[11px] text-neutral-500">
+        <div className="p-3 rounded-xl bg-surface-light dark:bg-surface-dark pixel-card-sm space-y-1">
+          <div className="flex items-center gap-1 text-[11px] font-bold text-neutral-600 dark:text-neutral-400">
             <Activity size={13} className="text-sky-500" />
             <span>เฉลี่ยจ่ายต่อวัน</span>
           </div>
-          <div className="text-sm font-semibold text-red-600 dark:text-red-400 tabular-nums">
-            {isMasked ? '••••' : `~${formatSatang(trend.dailyAvgExpense)} ฿`}
+          <div className="font-silkscreen text-xs font-bold text-[#8B1E43] dark:text-red-400 tabular-nums">
+            {isMasked ? '••••' : `~${formatSatang(trend.dailyAvgExpense)}฿`}
           </div>
-          <div className="text-[10px] text-neutral-400">คำนวณตามจำนวนวันในเดือน</div>
+          <div className="font-pixel text-[8px] text-neutral-500">คำนวณตามจำนวนวัน</div>
         </div>
 
         {/* Savings Rate */}
-        <div className="p-3.5 rounded-2xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark space-y-1">
-          <div className="flex items-center gap-1 text-[11px] text-neutral-500">
+        <div className="p-3 rounded-xl bg-surface-light dark:bg-surface-dark pixel-card-sm space-y-1">
+          <div className="flex items-center gap-1 text-[11px] font-bold text-neutral-600 dark:text-neutral-400">
             <Scale size={13} className="text-emerald-500" />
             <span>อัตราการออม</span>
           </div>
           <div
-            className={`text-sm font-semibold tabular-nums ${
+            className={`font-silkscreen text-xs font-bold tabular-nums ${
               trend.savingsRate >= 0
-                ? 'text-emerald-600 dark:text-emerald-400'
-                : 'text-red-600 dark:text-red-400'
+                ? 'text-[#306230] dark:text-emerald-400'
+                : 'text-[#8B1E43] dark:text-red-400'
             }`}
           >
             {isMasked ? '•••' : `${trend.savingsRate >= 0 ? '+' : ''}${trend.savingsRate}%`}
           </div>
-          <div className="text-[10px] text-neutral-400">สัดส่วนเงินเก็บเทียบรายรับ</div>
+          <div className="font-pixel text-[8px] text-neutral-500">เงินเก็บเทียบรายรับ</div>
         </div>
 
         {/* Previous Month Expense Comparison */}
-        <div className="p-3.5 rounded-2xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark space-y-1">
-          <div className="flex items-center gap-1 text-[11px] text-neutral-500">
+        <div className="p-3 rounded-xl bg-surface-light dark:bg-surface-dark pixel-card-sm space-y-1">
+          <div className="flex items-center gap-1 text-[11px] font-bold text-neutral-600 dark:text-neutral-400">
             <TrendingDown size={13} className="text-purple-500" />
             <span>เทียบเดือนก่อน</span>
           </div>
-          <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 tabular-nums">
+          <div className="font-silkscreen text-xs font-bold text-neutral-900 dark:text-neutral-100 tabular-nums">
             {trend.prevMonthExpenseChangePct !== null ? (
               <span
                 className={
                   trend.prevMonthExpenseChangePct <= 0
-                    ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-red-600 dark:text-red-400'
+                    ? 'text-[#306230] dark:text-emerald-400'
+                    : 'text-[#8B1E43] dark:text-red-400'
                 }
               >
                 {trend.prevMonthExpenseChangePct <= 0 ? 'ประหยัด ' : 'เพิ่มขึ้น '}
                 {Math.abs(trend.prevMonthExpenseChangePct)}%
               </span>
             ) : (
-              <span className="text-neutral-400 text-xs">ยังไม่มีข้อมูลก่อนหน้า</span>
+              <span className="text-neutral-500 text-[10px]">ไม่มีข้อมูล</span>
             )}
           </div>
-          <div className="text-[10px] text-neutral-400">เทียบยอดจ่ายสุทธิ</div>
+          <div className="font-pixel text-[8px] text-neutral-500">เทียบยอดจ่ายสุทธิ</div>
         </div>
       </div>
 
-      {/* 3. Daily Breakdown Table (Matching User's Reference Screenshots) */}
-      <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between pb-2 border-b border-border-light/60 dark:border-border-dark/60">
-          <h4 className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-            บันทึกการเคลื่อนไหวรายวัน ({activeDaysList.length} วันที่มีรายการ)
+      {/* 3. Daily Breakdown Table */}
+      <div className="bg-surface-light dark:bg-surface-dark pixel-card rounded-2xl p-4 space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b-2 border-dashed border-[#242A20]/20 dark:border-[#3C4A38]/50">
+          <h4 className="font-silkscreen text-xs font-bold text-neutral-800 dark:text-neutral-200">
+            LOGS / การเคลื่อนไหวรายวัน ({activeDaysList.length})
           </h4>
-          <span className="text-[11px] text-neutral-400">แตะเพื่อดูรายการย่อย</span>
+          <span className="font-pixel text-[8px] text-neutral-500">SELECT TO VIEW</span>
         </div>
 
         {activeDaysList.length === 0 ? (

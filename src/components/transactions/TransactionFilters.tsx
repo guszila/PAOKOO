@@ -29,12 +29,12 @@ export const TransactionFilters: React.FC<TransactionFiltersProps> = ({
   onCategoryChange,
   categories = DEFAULT_EXPENSE_CATEGORIES,
 }) => {
-  const types: { key: TransactionType | 'all'; label: string }[] = [
-    { key: 'all', label: 'ทั้งหมด' },
-    { key: 'in', label: 'ฝากเข้า' },
-    { key: 'out', label: 'รายจ่าย' },
-    { key: 'lend', label: 'ให้ยืม' },
-    { key: 'back', label: 'คืนเงิน' },
+  const types: { key: TransactionType | 'all'; label: string; code: string }[] = [
+    { key: 'all', label: 'ทั้งหมด', code: 'ALL' },
+    { key: 'in', label: 'ฝากเข้า', code: 'IN' },
+    { key: 'out', label: 'รายจ่าย', code: 'OUT' },
+    { key: 'lend', label: 'ให้ยืม', code: 'LEND' },
+    { key: 'back', label: 'คืนเงิน', code: 'RECV' },
   ];
 
   return (
@@ -43,13 +43,13 @@ export const TransactionFilters: React.FC<TransactionFiltersProps> = ({
       <div className="flex items-center gap-2 flex-wrap">
         {/* Search Input */}
         <div className="relative flex-1 min-w-[160px]">
-          <Search size={15} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+          <Search size={14} strokeWidth={2} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="ค้นหาชื่อผู้ทำรายการ หรือบันทึก..."
-            className="w-full pl-8 pr-3 py-2 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100"
+            placeholder="ค้นหาชื่อ หรือบันทึก..."
+            className="w-full pl-8 pr-3 py-2 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl text-xs text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-500 shadow-[1.5px_1.5px_0px_#242A20] focus:outline-none"
           />
         </div>
 
@@ -58,16 +58,16 @@ export const TransactionFilters: React.FC<TransactionFiltersProps> = ({
           <select
             value={selectedMonth}
             onChange={(e) => onMonthChange(e.target.value)}
-            className="appearance-none pl-7 pr-6 py-2 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-800 dark:text-neutral-200 focus:outline-none cursor-pointer"
+            className="appearance-none pl-7 pr-6 py-2 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl text-xs font-silkscreen text-neutral-800 dark:text-neutral-200 shadow-[1.5px_1.5px_0px_#242A20] focus:outline-none cursor-pointer"
           >
-            <option value="all">ทุกเดือน</option>
+            <option value="all">ALL MONTH</option>
             {availableMonths.map((m) => (
               <option key={m} value={m}>
                 {m}
               </option>
             ))}
           </select>
-          <Calendar size={13} strokeWidth={1.5} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
+          <Calendar size={13} strokeWidth={2} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
         </div>
 
         {/* Category Dropdown (Shown for all or out) */}
@@ -76,35 +76,38 @@ export const TransactionFilters: React.FC<TransactionFiltersProps> = ({
             <select
               value={selectedCategory}
               onChange={(e) => onCategoryChange(e.target.value)}
-              className="appearance-none pl-7 pr-6 py-2 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-800 dark:text-neutral-200 focus:outline-none cursor-pointer"
+              className="appearance-none pl-7 pr-6 py-2 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl text-xs font-silkscreen text-neutral-800 dark:text-neutral-200 shadow-[1.5px_1.5px_0px_#242A20] focus:outline-none cursor-pointer"
             >
-              <option value="all">🏷️ ทุกหมวดหมู่</option>
+              <option value="all">ALL CATEGORIES</option>
               {categories.map((c) => (
                 <option key={c} value={c}>
                   {getCategoryEmoji(c)} {c}
                 </option>
               ))}
             </select>
-            <Tag size={12} strokeWidth={1.5} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
+            <Tag size={12} strokeWidth={2} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
           </div>
         )}
       </div>
 
-      {/* Type Filter Pills (Horizontal scrollable) */}
+      {/* Type Filter Pills (Horizontal scrollable with Game Boy buttons) */}
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-        {types.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => onTypeChange(t.key)}
-            className={`min-h-[34px] px-3.5 text-xs rounded-xl transition-all shrink-0 border ${
-              selectedType === t.key
-                ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white font-medium'
-                : 'bg-surface-light dark:bg-surface-dark text-neutral-600 dark:text-neutral-400 border-border-light dark:border-border-dark hover:border-neutral-400'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+        {types.map((t) => {
+          const isActive = selectedType === t.key;
+          return (
+            <button
+              key={t.key}
+              onClick={() => onTypeChange(t.key)}
+              className={`min-h-[32px] px-3 text-xs font-silkscreen font-bold rounded-lg transition-all shrink-0 border-2 border-[#242A20] dark:border-[#3C4A38] active:translate-x-[1px] active:translate-y-[1px] ${
+                isActive
+                  ? 'bg-[#8B1E43] text-white shadow-[2px_2px_0px_#242A20] dark:shadow-[2px_2px_0px_#0A0F0A]'
+                  : 'bg-surfaceElevated-light dark:bg-surfaceElevated-dark text-neutral-700 dark:text-neutral-300 shadow-[1.5px_1.5px_0px_#242A20] hover:bg-neutral-200 dark:hover:bg-neutral-800'
+              }`}
+            >
+              {t.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

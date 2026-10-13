@@ -300,11 +300,59 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
 
             {/* Quick Helper if repayment */}
             {type === 'back' && who.trim() && (
-              <div className="mt-2 text-xs text-neutral-500">
-                ยอดค้างชำระปัจจุบันของ {who}:{' '}
-                <span className="font-semibold text-amber-500">
-                  {formatSatang(currentDebtorDebt)} ฿
-                </span>
+              <div className="mt-3 pt-2.5 border-t border-border-light dark:border-border-dark space-y-2">
+                <div className="flex items-center justify-between text-xs text-neutral-600 dark:text-neutral-400">
+                  <span>ยอดค้างชำระของ {who}:</span>
+                  <span className="font-silkscreen font-bold text-amber-600 dark:text-amber-400">
+                    {formatSatang(currentDebtorDebt)} ฿
+                  </span>
+                </div>
+
+                {currentDebtorDebt > 0 && (
+                  <div className="flex items-center justify-center gap-1.5 flex-wrap pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const halfSatang = Math.round(currentDebtorDebt / 2);
+                        setAmountStr(satangToBaht(halfSatang).toString());
+                        setNote(`คืนเงินยืม 50% (${who})`);
+                        setErrorMsg(null);
+                      }}
+                      className="px-2.5 py-1 text-xs font-silkscreen font-bold rounded-lg border-2 border-[#242A20] dark:border-[#3C4A38] bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 shadow-[1.5px_1.5px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] select-none transition-transform"
+                      title="คืนเงินครึ่งหนึ่ง (50%)"
+                    >
+                      คืน 50% ({formatSatang(Math.round(currentDebtorDebt / 2))}฿)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAmountStr(satangToBaht(currentDebtorDebt).toString());
+                        setNote(`คืนเงินยืมครบจำนวน (${who})`);
+                        setErrorMsg(null);
+                      }}
+                      className="px-2.5 py-1 text-xs font-silkscreen font-bold rounded-lg border-2 border-[#242A20] dark:border-[#3C4A38] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 shadow-[1.5px_1.5px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] select-none transition-transform"
+                      title="คืนเงินเต็มจำนวน (100%)"
+                    >
+                      คืนเต็ม 100% ({formatSatang(currentDebtorDebt)}฿)
+                    </button>
+                  </div>
+                )}
+
+                {/* Remaining calculation preview if partial repayment */}
+                {(() => {
+                  const inputSatang = parseToSatang(amountStr);
+                  if (inputSatang > 0 && currentDebtorDebt > 0 && inputSatang < currentDebtorDebt) {
+                    return (
+                      <div className="text-[11px] text-neutral-500 text-center font-medium">
+                        หลังคืนยอดนี้ จะยังคงค้างอีก{' '}
+                        <span className="font-semibold text-amber-600 dark:text-amber-400">
+                          {formatSatang(currentDebtorDebt - inputSatang)} ฿
+                        </span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             )}
           </div>

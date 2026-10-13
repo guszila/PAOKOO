@@ -62,11 +62,11 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
   return (
     <div className="space-y-4 animate-fade-in">
 
-      {/* Segmented Control Tabs (4 Tabs) - Mobile Optimized with Smooth Sliding Pill */}
-      <div className="relative flex items-center p-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-2xl border border-border-light dark:border-border-dark">
+      {/* Segmented Control Tabs (4 Tabs) - Retro Game Boy Console Switcher */}
+      <div className="relative flex items-center p-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-xl pixel-card">
         {/* Sliding Pill Indicator */}
         <div
-          className="absolute top-1 bottom-1 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-xs transition-transform duration-250 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
+          className="absolute top-1 bottom-1 rounded-lg bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[1.5px_1.5px_0px_#242A20] dark:shadow-[1.5px_1.5px_0px_#0A0F0A] transition-transform duration-250 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
           style={{
             left: '4px',
             width: 'calc((100% - 8px) / 4)',
@@ -85,10 +85,10 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
         <button
           type="button"
           onClick={() => setAnalyticsTab('calendar')}
-          className={`relative z-10 flex-1 py-2 text-xs text-center select-none rounded-xl transition-colors duration-150 ${
+          className={`relative z-10 flex-1 py-2 text-xs text-center select-none rounded-lg transition-colors duration-150 font-silkscreen ${
             analyticsTab === 'calendar'
-              ? 'text-neutral-900 dark:text-white font-semibold'
-              : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 font-medium'
+              ? 'text-neutral-900 dark:text-white font-bold'
+              : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
           }`}
         >
           ปฏิทิน
@@ -96,10 +96,10 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
         <button
           type="button"
           onClick={() => setAnalyticsTab('expenses')}
-          className={`relative z-10 flex-1 py-2 text-xs text-center select-none rounded-xl transition-colors duration-150 ${
+          className={`relative z-10 flex-1 py-2 text-xs text-center select-none rounded-lg transition-colors duration-150 font-silkscreen ${
             analyticsTab === 'expenses'
-              ? 'text-neutral-900 dark:text-white font-semibold'
-              : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 font-medium'
+              ? 'text-neutral-900 dark:text-white font-bold'
+              : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
           }`}
         >
           ตามหมวด
@@ -107,10 +107,10 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
         <button
           type="button"
           onClick={() => setAnalyticsTab('trends')}
-          className={`relative z-10 flex-1 py-2 text-xs text-center select-none rounded-xl transition-colors duration-150 ${
+          className={`relative z-10 flex-1 py-2 text-xs text-center select-none rounded-lg transition-colors duration-150 font-silkscreen ${
             analyticsTab === 'trends'
-              ? 'text-neutral-900 dark:text-white font-semibold'
-              : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 font-medium'
+              ? 'text-neutral-900 dark:text-white font-bold'
+              : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
           }`}
         >
           แนวโน้ม
@@ -118,10 +118,10 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
         <button
           type="button"
           onClick={() => setAnalyticsTab('wealth')}
-          className={`relative z-10 flex-1 py-2 text-xs text-center select-none rounded-xl transition-colors duration-150 ${
+          className={`relative z-10 flex-1 py-2 text-xs text-center select-none rounded-lg transition-colors duration-150 font-silkscreen ${
             analyticsTab === 'wealth'
-              ? 'text-neutral-900 dark:text-white font-semibold'
-              : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 font-medium'
+              ? 'text-neutral-900 dark:text-white font-bold'
+              : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
           }`}
         >
           สัดส่วน
@@ -144,23 +144,23 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
       {analyticsTab === 'expenses' && (
         <div className="space-y-3">
           {/* Month Selector */}
-          <div className="flex items-center justify-between px-3 py-2 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl text-xs">
+          <div className="flex items-center justify-between px-3 py-2 bg-surface-light dark:bg-surface-dark pixel-card rounded-xl text-xs">
             <button
               onClick={handlePrevMonth}
-              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-600 dark:text-neutral-300"
+              className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-300 pixel-btn"
               aria-label="เดือนก่อนหน้า"
             >
-              <ChevronLeft size={18} strokeWidth={1.5} />
+              <ChevronLeft size={16} strokeWidth={2.5} />
             </button>
-            <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+            <span className="font-silkscreen font-bold text-neutral-800 dark:text-neutral-200 text-xs">
               {formattedExpenseMonth}
             </span>
             <button
               onClick={handleNextMonth}
-              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-600 dark:text-neutral-300"
+              className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-300 pixel-btn"
               aria-label="เดือนถัดไป"
             >
-              <ChevronRight size={18} strokeWidth={1.5} />
+              <ChevronRight size={16} strokeWidth={2.5} />
             </button>
           </div>
 
@@ -179,23 +179,23 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
       {analyticsTab === 'trends' && (
         <div className="space-y-3">
           {/* Month Selector */}
-          <div className="flex items-center justify-between px-3 py-2 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl text-xs">
+          <div className="flex items-center justify-between px-3 py-2 bg-surface-light dark:bg-surface-dark pixel-card rounded-xl text-xs">
             <button
               onClick={handlePrevMonth}
-              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-600 dark:text-neutral-300"
+              className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-300 pixel-btn"
               aria-label="เดือนก่อนหน้า"
             >
-              <ChevronLeft size={18} strokeWidth={1.5} />
+              <ChevronLeft size={16} strokeWidth={2.5} />
             </button>
-            <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+            <span className="font-silkscreen font-bold text-neutral-800 dark:text-neutral-200 text-xs">
               {formattedExpenseMonth}
             </span>
             <button
               onClick={handleNextMonth}
-              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-600 dark:text-neutral-300"
+              className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-300 pixel-btn"
               aria-label="เดือนถัดไป"
             >
-              <ChevronRight size={18} strokeWidth={1.5} />
+              <ChevronRight size={16} strokeWidth={2.5} />
             </button>
           </div>
 
@@ -212,9 +212,9 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
       {/* Tab: Wealth Allocation */}
       {analyticsTab === 'wealth' && (
         <div className="space-y-3">
-          <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-sm">
-            <h3 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-              สัดส่วนเงินของเราทั้งหมด (All-time Wealth)
+          <div className="bg-surface-light dark:bg-surface-dark pixel-card rounded-2xl p-4 sm:p-5">
+            <h3 className="font-silkscreen text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-2">
+              WEALTH / สัดส่วนเงินของเราทั้งหมด
             </h3>
             <DonutChart
               segments={wealthData.segments}
@@ -227,32 +227,32 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 
           {/* Allocation Breakdown Details */}
           <div className="space-y-2">
-            <div className="p-3.5 rounded-2xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-surface-light dark:bg-surface-dark pixel-card-sm flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40 flex items-center justify-center text-emerald-600">
-                  <Wallet size={16} />
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 border border-[#242A20] flex items-center justify-center text-[#306230] dark:text-emerald-400 shadow-[1px_1px_0px_#242A20]">
+                  <Wallet size={16} strokeWidth={2} />
                 </div>
                 <div>
-                  <div className="text-xs font-medium text-neutral-800 dark:text-neutral-200">เงินเก็บคงเหลือ</div>
-                  <div className="text-[11px] text-neutral-500">พร้อมใช้งานในบัญชี</div>
+                  <div className="text-xs font-bold text-neutral-800 dark:text-neutral-200">เงินเก็บคงเหลือ</div>
+                  <div className="text-[10px] text-neutral-500">พร้อมใช้งานในบัญชี</div>
                 </div>
               </div>
-              <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
+              <div className="font-silkscreen text-xs font-bold text-[#306230] dark:text-emerald-400 tabular-nums">
                 {isMasked ? '••••' : `${formatSatang(wealthData.segments.find(s => s.id === 'balance')?.valueSatang || 0)} ฿`}
               </div>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-surface-light dark:bg-surface-dark pixel-card-sm flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40 flex items-center justify-center text-amber-600">
-                  <HandCoins size={16} />
+                <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/60 border border-[#242A20] flex items-center justify-center text-amber-700 dark:text-amber-400 shadow-[1px_1px_0px_#242A20]">
+                  <HandCoins size={16} strokeWidth={2} />
                 </div>
                 <div>
-                  <div className="text-xs font-medium text-neutral-800 dark:text-neutral-200">เงินที่ถูกยืมค้าง</div>
-                  <div className="text-[11px] text-neutral-500">รอการชำระคืน</div>
+                  <div className="text-xs font-bold text-neutral-800 dark:text-neutral-200">เงินที่ถูกยืมค้าง</div>
+                  <div className="text-[10px] text-neutral-500">รอการชำระคืน</div>
                 </div>
               </div>
-              <div className="text-sm font-semibold text-amber-600 dark:text-amber-400 tabular-nums">
+              <div className="font-silkscreen text-xs font-bold text-amber-700 dark:text-amber-400 tabular-nums">
                 {isMasked ? '••••' : `${formatSatang(wealthData.segments.find(s => s.id === 'lent')?.valueSatang || 0)} ฿`}
               </div>
             </div>

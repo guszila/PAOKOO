@@ -155,18 +155,18 @@ export const CategoryExpenseView: React.FC<CategoryExpenseViewProps> = ({
   return (
     <div className="space-y-4">
       {/* Main Reference Card: Donut Hero + Category Details List */}
-      <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-4 sm:p-5 shadow-sm space-y-4">
+      <div className="bg-surface-light dark:bg-surface-dark pixel-card rounded-2xl p-4 sm:p-5 space-y-4">
         {/* Top Header Pill matching Image 2 */}
         <div className="flex items-center justify-between pb-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark text-xs font-semibold text-neutral-800 dark:text-neutral-200 select-none shadow-xs">
-            <span>ตามหมวดหมู่</span>
-            <ChevronDown size={13} className="text-neutral-400" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-[#242A20] dark:border-[#3C4A38] text-xs font-silkscreen font-bold text-neutral-800 dark:text-neutral-200 select-none shadow-[1px_1px_0px_#242A20]">
+            <span>หมวดหมู่</span>
+            <ChevronDown size={12} className="text-neutral-500" />
           </div>
 
-          <div className="text-[11px] text-neutral-400">
+          <div className="font-pixel text-[9px] text-neutral-500">
             {categoryGroups.length > 0
-              ? `${categoryGroups.length} หมวดหมู่`
-              : 'ไม่มีรายการ'}
+              ? `${categoryGroups.length} CATEGORIES`
+              : 'EMPTY'}
           </div>
         </div>
 
@@ -337,7 +337,7 @@ export const CategoryExpenseView: React.FC<CategoryExpenseViewProps> = ({
               y={cy + 12}
               textAnchor="middle"
               dominantBaseline="central"
-              className="text-base font-bold fill-neutral-900 dark:fill-neutral-100 tabular-nums select-none"
+              className="font-silkscreen text-sm sm:text-base font-bold fill-neutral-900 dark:fill-neutral-100 tabular-nums select-none"
             >
               {isMasked ? '••••' : `฿${formatSatang(totalSpentSatang)}`}
             </text>
@@ -345,15 +345,15 @@ export const CategoryExpenseView: React.FC<CategoryExpenseViewProps> = ({
         </div>
 
         {/* Category Details Breakdown List matching Image 2 */}
-        <div className="pt-2 border-t border-border-light/60 dark:border-border-dark/60">
+        <div className="pt-2 border-t-2 border-dashed border-[#242A20]/20 dark:border-[#3C4A38]/50">
           {isEmpty ? (
             <div className="py-8 text-center text-neutral-400 text-xs space-y-1.5">
-              <Inbox size={28} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-1" />
-              <p className="font-medium text-neutral-600 dark:text-neutral-400">ยังไม่มีรายจ่ายในเดือนนี้</p>
-              <p className="text-[11px] text-neutral-400">บันทึกค่าใช้จ่ายเพื่อดูสัดส่วนตามหมวดหมู่</p>
+              <Inbox size={28} className="mx-auto text-neutral-400 dark:text-neutral-500 mb-1" />
+              <p className="font-silkscreen font-bold text-neutral-600 dark:text-neutral-400 text-xs">NO EXPENSES / ยังไม่มีรายจ่าย</p>
+              <p className="font-pixel text-[9px] text-neutral-400">บันทึกค่าใช้จ่ายเพื่อดูสัดส่วนตามหมวดหมู่</p>
             </div>
           ) : (
-            <div className="divide-y divide-border-light/40 dark:divide-border-dark/40">
+            <div className="divide-y-2 divide-dashed divide-[#242A20]/20 dark:divide-[#3C4A38]/40">
               {categoryGroups.map((cat) => {
                 const isExpanded = expandedCatName === cat.name;
                 const isHighlight = highlightedCatId === cat.id;
@@ -361,53 +361,52 @@ export const CategoryExpenseView: React.FC<CategoryExpenseViewProps> = ({
                 return (
                   <div
                     key={cat.id}
-                    className={`transition-colors duration-150 rounded-2xl ${
+                    className={`transition-colors duration-150 rounded-xl ${
                       isHighlight
-                        ? 'bg-neutral-100/70 dark:bg-neutral-800/60'
-                        : 'hover:bg-neutral-50/60 dark:hover:bg-neutral-800/30'
+                        ? 'bg-neutral-100/80 dark:bg-neutral-800/60'
+                        : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/30'
                     }`}
                   >
-                    {/* Row Item: Emoji + Category | Percentage % | Amount ฿ (Matching Image 2) */}
+                    {/* Row Item: Emoji + Category | Percentage % | Amount ฿ */}
                     <button
                       type="button"
                       onClick={() => handleToggleExpand(cat.name, cat.id)}
-                      className="w-full flex items-center justify-between py-3 px-2 text-left cursor-pointer select-none"
+                      className="w-full flex items-center justify-between py-2.5 px-2 text-left cursor-pointer select-none"
                     >
                       {/* Left Column: Emoji in bubble + Category Name */}
-                      <div className="flex items-center gap-3 min-w-0 pr-2">
+                      <div className="flex items-center gap-2.5 min-w-0 pr-2">
                         <div
-                          className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0 shadow-xs border transition-transform group-hover:scale-105"
+                          className="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0 border border-[#242A20] shadow-[1px_1px_0px_#242A20] transition-transform group-hover:scale-105"
                           style={{
-                            backgroundColor: `${cat.color}18`,
-                            borderColor: `${cat.color}40`,
+                            backgroundColor: `${cat.color}25`,
                           }}
                         >
                           <span className="leading-none">{cat.emoji}</span>
                         </div>
                         <div className="min-w-0">
-                          <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 block truncate">
+                          <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100 block truncate">
                             {cat.name}
                           </span>
-                          <span className="text-[11px] text-neutral-400 block">
-                            {cat.txCount} รายการ
+                          <span className="font-pixel text-[8px] text-neutral-500 block">
+                            {cat.txCount} ITEMS
                           </span>
                         </div>
                       </div>
 
                       {/* Middle Column: Percentage % */}
-                      <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 tabular-nums px-2 text-center shrink-0">
-                        {cat.percentage.toFixed(2)}%
+                      <div className="font-silkscreen text-xs font-bold text-neutral-600 dark:text-neutral-300 tabular-nums px-2 text-center shrink-0">
+                        {cat.percentage.toFixed(1)}%
                       </div>
 
                       {/* Right Column: Amount ฿ */}
                       <div className="flex items-center gap-1.5 shrink-0 text-right">
-                        <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 tabular-nums">
-                          {isMasked ? '••••' : `฿${formatSatang(cat.totalSatang)}`}
+                        <span className="font-silkscreen text-xs font-bold text-[#8B1E43] dark:text-red-400 tabular-nums">
+                          {isMasked ? '••••' : `-${formatSatang(cat.totalSatang)}฿`}
                         </span>
                         <ChevronRight
                           size={14}
                           className={`text-neutral-400 transition-transform duration-200 ${
-                            isExpanded ? 'rotate-90 text-neutral-700 dark:text-neutral-200' : ''
+                            isExpanded ? 'rotate-90 text-neutral-800 dark:text-neutral-200' : ''
                           }`}
                         />
                       </div>
@@ -416,21 +415,21 @@ export const CategoryExpenseView: React.FC<CategoryExpenseViewProps> = ({
                     {/* Expandable Transaction Details for this category */}
                     {isExpanded && (
                       <div className="px-3 pb-3 pt-1 space-y-1.5 animate-fade-in">
-                        <div className="text-[11px] font-semibold text-neutral-400 px-1 pb-1 border-b border-border-light/40 dark:border-border-dark/40">
-                          รายการในหมวด {cat.name} ({cat.transactions.length} รายการ)
+                        <div className="font-silkscreen text-[10px] font-bold text-neutral-500 px-1 pb-1 border-b border-[#242A20]/20 dark:border-[#3C4A38]/40">
+                          LIST / รายการในหมวด {cat.name} ({cat.transactions.length})
                         </div>
-                        <div className="space-y-1 max-h-60 overflow-y-auto pr-1">
+                        <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
                           {cat.transactions.map((tx) => (
                             <div
                               key={tx.id}
                               onClick={() => onSelectTx?.(tx)}
-                              className="flex items-center justify-between p-2 rounded-xl text-xs bg-surface-light dark:bg-card-dark border border-border-light/60 dark:border-border-dark/60 hover:border-neutral-400 dark:hover:border-neutral-600 cursor-pointer transition-colors"
+                              className="flex items-center justify-between p-2 rounded-xl text-xs bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[1.5px_1.5px_0px_#242A20] hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer transition-transform"
                             >
                               <div className="min-w-0 pr-2">
-                                <div className="text-neutral-800 dark:text-neutral-200 font-medium truncate">
+                                <div className="text-neutral-800 dark:text-neutral-200 font-bold truncate text-xs">
                                   {tx.note?.trim() || tx.category || 'ไม่มีบันทึก'}
                                 </div>
-                                <div className="text-[10px] text-neutral-400">
+                                <div className="text-[10px] text-neutral-500">
                                   {formatThaiFullDate(tx.date)}
                                   {tx.who ? ` • ${tx.who}` : ''}
                                   {tx.pocketId && pocketMap.has(tx.pocketId)
@@ -438,8 +437,8 @@ export const CategoryExpenseView: React.FC<CategoryExpenseViewProps> = ({
                                     : ''}
                                 </div>
                               </div>
-                              <div className="text-xs font-semibold text-red-600 dark:text-red-400 tabular-nums shrink-0">
-                                {isMasked ? '••••' : `-${formatSatang(tx.amount)} ฿`}
+                              <div className="font-silkscreen text-xs font-bold text-[#8B1E43] dark:text-red-400 tabular-nums shrink-0">
+                                {isMasked ? '••••' : `-${formatSatang(tx.amount)}฿`}
                               </div>
                             </div>
                           ))}

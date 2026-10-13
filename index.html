@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="PAOKOO" />
     <meta name="application-name" content="PAOKOO" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#047857" />
+    <meta name="theme-color" content="#353842" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -22,6 +22,8 @@
       (function() {
         try {
           var saved = localStorage.getItem('paokoo_theme') || 'system';
+          var savedColor = localStorage.getItem('paokoo_color_theme') || 'dmg';
+          document.documentElement.setAttribute('data-color-theme', savedColor);
           var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
           var isDark = saved === 'dark' || (saved === 'system' && prefersDark);
           if (isDark) {
@@ -29,17 +31,25 @@
           } else {
             document.documentElement.classList.remove('dark');
           }
+          var headerBgs = {
+            dmg: '#353842',
+            berry: '#38232F',
+            kiwi: '#1E3526',
+            teal: '#1E2D3D',
+            dandelion: '#383020',
+            atomic: '#2B213B'
+          };
           var meta = document.querySelector('meta[name="theme-color"]');
           if (meta) {
-            meta.setAttribute('content', isDark ? '#022c22' : '#047857');
+            meta.setAttribute('content', isDark ? '#141814' : (headerBgs[savedColor] || '#353842'));
           }
         } catch (e) {}
       })();
     </script>
-    <!-- Google Fonts: Outfit & Noto Sans Thai -->
+    <!-- Google Fonts: Press Start 2P, Silkscreen, Outfit & Noto Sans Thai -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800;900&family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
   </head>
   <body class="bg-background-light dark:bg-background-dark text-neutral-900 dark:text-neutral-100 font-sans antialiased min-h-screen selection:bg-neutral-200 dark:selection:bg-neutral-800">
     <div id="root">

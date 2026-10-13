@@ -21,52 +21,52 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
   isMasked = false,
 }) => {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Header */}
       <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-            กล่องแบ่งเงินใช้
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 bg-[#F59E0B] border border-[#242A20] shadow-[1px_1px_0px_#242A20]" />
+          <span className="font-silkscreen text-[11px] font-bold text-neutral-800 dark:text-neutral-200 tracking-wider">
+            ITEM SLOTS / กล่องแบ่งเงินใช้
           </span>
-          <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-medium">
-            {pocketSummaries.length} กล่อง
+          <span className="font-pixel text-[8px] px-1.5 py-0.5 rounded bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-[#242A20] dark:border-[#3C4A38] text-neutral-800 dark:text-neutral-200">
+            {pocketSummaries.length} SLOTS
           </span>
         </div>
         <button
           onClick={onOpenCreate}
-          className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors p-1"
+          className="inline-flex items-center gap-1 font-silkscreen text-[10px] font-bold text-[#306230] dark:text-[#9BBC0F] hover:underline p-1"
         >
-          <Plus size={14} strokeWidth={2} />
-          <span>สร้างกล่อง</span>
+          <Plus size={12} strokeWidth={3} />
+          <span>+ NEW</span>
         </button>
       </div>
 
       {/* Empty State */}
       {pocketSummaries.length === 0 ? (
-        <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 text-center space-y-3 shadow-sm">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto">
-            <Sparkles size={22} strokeWidth={1.5} />
+        <div className="bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl p-4 text-center space-y-2 shadow-[3px_3px_0px_#242A20] dark:shadow-[3px_3px_0px_#0A0F0A]">
+          <div className="w-10 h-10 rounded-lg bg-[#9BBC0F] border-2 border-[#242A20] flex items-center justify-center text-[#0F380F] mx-auto shadow-[1.5px_1.5px_0px_#242A20]">
+            <Sparkles size={18} strokeWidth={2.5} />
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-              อยากแบ่งเงินมาใช้ เช่น 2,000 ฿?
+            <h4 className="font-silkscreen text-xs font-bold text-neutral-900 dark:text-neutral-100">
+              NO POCKETS YET / สร้างกล่องแบ่งเงิน
             </h4>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 max-w-xs mx-auto">
-              สร้างกล่องเงินแบ่งใช้ไว้ เมื่อเพิ่มสลิปหรือรายจ่าย สามารถเลือกตัดจากกล่องนี้ได้
-              เงินจะค่อยๆ ลดลงทีละนิด โดยไม่กระทบยอดเงินจริงในบัญชี
+            <p className="text-[11px] text-neutral-600 dark:text-neutral-400 mt-1 max-w-xs mx-auto">
+              แบ่งงบกิน เที่ยว ช้อปปิ้ง ตัดเงินแยกจากกองกลางได้ตามใจชอบ
             </p>
           </div>
           <button
             onClick={onOpenCreate}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-xl shadow-sm transition-all active:scale-95"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B1E43] text-white font-silkscreen text-[10px] font-bold rounded-lg border-2 border-[#242A20] shadow-[2px_2px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-transform"
           >
-            <Plus size={14} strokeWidth={2} />
-            <span>สร้างกล่องแบ่งเงินแรก</span>
+            <Plus size={12} strokeWidth={3} />
+            <span>CREATE POCKET</span>
           </button>
         </div>
       ) : (
         /* Pockets Grid */
-        <div className="grid grid-cols-1 gap-3">
+        <div className="grid grid-cols-1 gap-2.5">
           {pocketSummaries.map((summary, idx) => {
             const { pocket, spentSatang, remainingSatang, spentPercentage } = summary;
             const IconComp = (pocket.icon && POCKET_ICONS[pocket.icon]) || Wallet;
@@ -78,38 +78,38 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
             return (
               <div
                 key={pocket.id}
-                className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-4 shadow-sm hover:shadow-md transition-all relative overflow-hidden"
+                className="bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl p-3 shadow-[3px_3px_0px_#242A20] dark:shadow-[3px_3px_0px_#0A0F0A] relative overflow-hidden"
               >
-                {/* Accent top stripe */}
+                {/* Top Cartridge Notch Stripe */}
                 <div
-                  className="absolute top-0 left-0 right-0 h-1.5 opacity-80"
-                  style={{ backgroundColor: isOverspent ? '#EF4444' : themeColor }}
+                  className="absolute top-0 left-0 right-0 h-1.5"
+                  style={{ backgroundColor: isOverspent ? '#8B1E43' : themeColor }}
                 />
 
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between pt-1">
                   {/* Left: Icon & Pocket Name */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <div
-                      className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-sm shrink-0"
-                      style={{ backgroundColor: isOverspent ? '#EF4444' : themeColor }}
+                      className="w-9 h-9 rounded-lg flex items-center justify-center text-white border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[1.5px_1.5px_0px_#242A20] shrink-0"
+                      style={{ backgroundColor: isOverspent ? '#8B1E43' : themeColor }}
                     >
-                      <IconComp size={18} strokeWidth={2} />
+                      <IconComp size={16} strokeWidth={2.5} />
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
                         {pocket.name}
                         {isOverspent ? (
-                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 font-normal">
-                            เกินงบ
+                          <span className="font-pixel text-[8px] px-1 py-0.2 rounded bg-red-100 text-red-600 border border-red-500 font-bold">
+                            OVER
                           </span>
                         ) : isExhausted ? (
-                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 font-normal">
-                            หมดงบ
+                          <span className="font-pixel text-[8px] px-1 py-0.2 rounded bg-amber-100 text-amber-700 border border-amber-500 font-bold">
+                            EMPTY
                           </span>
                         ) : null}
                       </h4>
-                      <p className="text-[11px] text-neutral-400">
-                        วงเงินที่ตั้งไว้ {isMasked ? '••••' : `${formatSatang(pocket.allocatedSatang)} ฿`}
+                      <p className="font-pixel text-[9px] text-neutral-500 dark:text-neutral-400">
+                        MAX: {isMasked ? '••••' : `${formatSatang(pocket.allocatedSatang)}฿`}
                       </p>
                     </div>
                   </div>
@@ -118,50 +118,50 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => onOpenTopUp(summary)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-xl bg-neutral-100 dark:bg-surfaceElevated-dark hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-silkscreen font-bold rounded-md bg-[#9BBC0F] text-[#0F380F] border border-[#242A20] shadow-[1px_1px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
                       title="เติมเงินเข้ากล่อง"
                     >
-                      <PlusCircle size={13} className="text-emerald-500" />
-                      <span>เติมเงิน</span>
+                      <PlusCircle size={11} strokeWidth={2.5} />
+                      <span>TOP-UP</span>
                     </button>
                     <button
                       onClick={() => onOpenEdit(pocket)}
-                      className="p-1.5 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
+                      className="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 transition-colors"
                       title="ตั้งค่ากล่องเงิน"
                     >
-                      <MoreHorizontal size={16} />
+                      <MoreHorizontal size={15} />
                     </button>
                   </div>
                 </div>
 
                 {/* Remaining Amount */}
-                <div className="mt-3.5 flex items-baseline justify-between">
-                  <div className="flex items-baseline gap-1.5">
+                <div className="mt-2.5 flex items-baseline justify-between">
+                  <div className="flex items-baseline gap-1">
                     <span
-                      className={`text-2xl font-semibold tracking-tight tabular-nums ${
+                      className={`font-silkscreen text-xl font-bold tracking-tight tabular-nums ${
                         isOverspent
-                          ? 'text-red-600 dark:text-red-400'
-                          : 'text-neutral-900 dark:text-neutral-50'
+                          ? 'text-[#8B1E43] dark:text-red-400'
+                          : 'text-neutral-900 dark:text-neutral-100'
                       }`}
                     >
                       {isMasked ? '••••' : formatSatang(remainingSatang)}
                     </span>
-                    <span className="text-xs text-neutral-400">
-                      {isOverspent ? '฿ (เกินงบ)' : '฿ คงเหลือ'}
+                    <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
+                      {isOverspent ? '฿ (เกิน)' : '฿ คงเหลือ'}
                     </span>
                   </div>
-                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                    ใช้ไป {isMasked ? '••••' : `${formatSatang(spentSatang)} ฿`} ({spentPercentage.toFixed(0)}%)
+                  <div className="font-pixel text-[9px] text-neutral-600 dark:text-neutral-400">
+                    SPENT: {isMasked ? '••••' : `${formatSatang(spentSatang)}฿`} ({spentPercentage.toFixed(0)}%)
                   </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="mt-2 w-full h-2 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                {/* Retro HP-style Progress Bar */}
+                <div className="mt-1.5 w-full h-2.5 rounded-sm bg-neutral-200 dark:bg-neutral-800 border border-[#242A20] dark:border-[#3C4A38] overflow-hidden p-[1px]">
                   <div
-                    className="h-full rounded-full transition-all duration-500"
+                    className="h-full rounded-none transition-all duration-300"
                     style={{
-                      width: `${spentPercentage}%`,
-                      backgroundColor: isExhausted ? '#EF4444' : themeColor,
+                      width: `${Math.min(spentPercentage, 100)}%`,
+                      backgroundColor: isExhausted ? '#8B1E43' : themeColor,
                     }}
                   />
                 </div>

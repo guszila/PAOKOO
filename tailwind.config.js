@@ -9,43 +9,66 @@ export default {
     extend: {
       colors: {
         background: {
-          light: '#F8F9FA',
-          dark: '#121316',
+          light: 'var(--theme-chassis-light, #D6D1C2)', // Game Boy DMG-01 classic grey/cream casing
+          dark: 'var(--theme-chassis-dark, #141814)',  // Game Boy Pocket Dark matrix casing
         },
         surface: {
-          light: '#FFFFFF',
-          dark: '#1C1D22',
+          light: '#FFFFFF', // Game Boy crisp white cartridge / card face
+          dark: '#1C231C',
         },
         surfaceElevated: {
-          light: '#F4F5F7',
-          dark: '#24262E',
+          light: '#F8F7F3',
+          dark: '#242C24',
         },
         border: {
-          light: '#E5E7EB',
-          dark: '#2E313A',
+          light: '#242A20', // Solid retro pixel contour
+          dark: '#3C4A38',
+        },
+        gameboy: {
+          shell: '#D6D1C2',
+          shellDark: '#141814',
+          bezel: '#363842',
+          screenLight: '#9BBC0F',
+          screenMid: '#8BAC0F',
+          screenDark: '#306230',
+          screenBlack: '#0F380F',
+          btnA: '#8B1E43',
+          btnB: '#8B1E43',
+          dpad: '#282A36',
+          battery: '#DC2626',
+          stripeRed: '#8B1E43',
+          stripeBlue: '#243C78',
         },
         moneyIn: {
-          DEFAULT: '#16A34A',
+          DEFAULT: '#306230',
+          light: '#9BBC0F',
+          dark: '#0F380F',
+        },
+        moneyOut: {
+          DEFAULT: '#8B1E43',
+          light: '#F8D7DF',
+          dark: '#4A0D21',
+        },
+        moneyLend: {
+          DEFAULT: '#B45309',
+          light: '#FEF3C7',
+          dark: '#78350F',
+        },
+        moneyBack: {
+          DEFAULT: '#15803D',
           light: '#DCFCE7',
           dark: '#14532D',
         },
-        moneyOut: {
-          DEFAULT: '#DC2626',
-          light: '#FEE2E2',
-          dark: '#7F1D1D',
-        },
-        moneyLend: {
-          DEFAULT: '#E11D48',
-          light: '#FFE4E6',
-          dark: '#881337',
-        },
-        moneyBack: {
-          DEFAULT: '#059669',
-          light: '#D1FAE5',
-          dark: '#064E3B',
-        },
       },
       fontFamily: {
+        pixel: [
+          '"Press Start 2P"',
+          'monospace',
+        ],
+        silkscreen: [
+          '"Silkscreen"',
+          'monospace',
+        ],
         sans: [
           '"Noto Sans Thai"',
           '-apple-system',
@@ -55,15 +78,16 @@ export default {
           'sans-serif',
         ],
         brand: [
+          '"Silkscreen"',
           '"Outfit"',
           '"Noto Sans Thai"',
-          '-apple-system',
-          'BlinkMacSystemFont',
           'sans-serif',
         ],
       },
       borderWidth: {
         '1': '1px',
+        '2': '2px',
+        '3': '3px',
       },
     },
   },
