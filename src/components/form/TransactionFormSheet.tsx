@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Transaction, TransactionType } from '../../types/transaction';
 import { BottomSheet } from '../common/BottomSheet';
-import { Button } from '../common/Button';
 import { ConfirmModal } from '../common/ConfirmModal';
 import { parseToSatang, satangToBaht, formatSatang } from '../../lib/money';
 import { checkOverRepayment, getOutstandingForPerson } from '../../lib/summary';
@@ -114,6 +113,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [showCustomWho, setShowCustomWho] = useState(false);
+  const [showMoreDetails, setShowMoreDetails] = useState(false);
 
   const [showOverRepaymentWarning, setShowOverRepaymentWarning] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -122,6 +122,21 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
   const todayStr = useMemo(() => getLocalDateString(), []);
   const yesterdayStr = useMemo(() => getLocalDateString(-1), []);
   const isFutureDate = date > todayStr;
+
+  const handleAddPreset = (value: number) => {
+    const current = parseFloat(amountStr) || 0;
+    const next = current + value;
+    setAmountStr(next.toString());
+    setErrorMsg(null);
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  };
+
+  const handleClearAmount = () => {
+    setAmountStr('');
+    setErrorMsg(null);
+  };
 
   // Sync form state when opened or changed
   useEffect(() => {
@@ -140,6 +155,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
       setRefNo(initialTransaction.refNo || '');
       setSlipThumbnail(initialTransaction.slipThumbnail);
       setFullSlipBase64(undefined);
+      setShowMoreDetails(Boolean(initialTransaction.note || initialTransaction.pocketId || initialTransaction.slipThumbnail));
     } else if (prefill) {
       setType(prefill.type || 'out');
       setAmountStr(prefill.amount ? satangToBaht(prefill.amount).toString() : '');
@@ -154,6 +170,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
       setRefNo(prefill.refNo || '');
       setSlipThumbnail(prefill.slipThumbnail);
       setFullSlipBase64(prefill.fullSlipBase64);
+      setShowMoreDetails(Boolean(prefill.note || prefill.pocketId || prefill.slipThumbnail));
     } else {
       setType('out');
       setAmountStr('');
@@ -167,6 +184,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
       setRefNo('');
       setSlipThumbnail(undefined);
       setFullSlipBase64(undefined);
+      setShowMoreDetails(false);
     }
 
     setErrorMsg(null);
@@ -245,16 +263,62 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
     { key: 'back', label: 'ได้รับคืน', icon: CornerDownLeft, color: 'text-teal-500' },
   ];
 
+  const hasExtraDetails = Boolean(
+    note.trim() ||
+    selectedPocketId ||
+    date !== todayStr ||
+    time !== getLocalTimeString() ||
+    slipThumbnail
+  );
+
+  const footerAction = (
+    <div className="flex items-center gap-2">
+      {initialTransaction && onDelete && (
+        <button
+          type="button"
+          onClick={() => setShowDeleteConfirm(true)}
+          className="w-12 h-12 flex items-center justify-center rounded-xl border-2 border-[#242A20] dark:border-[#3C4A38] bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 shadow-[2px_2px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none shrink-0 transition-transform"
+          title="ลบรายการ"
+        >
+          <Trash2 size={18} strokeWidth={2} />
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={() => handleSubmit(false)}
+        className="flex-1 h-12 flex items-center justify-center gap-2 rounded-xl border-2 border-[#242A20] dark:border-[#3C4A38] bg-[#9BBC0F] text-[#0F380F] font-silkscreen text-xs font-bold tracking-wider shadow-[3px_3px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none select-none transition-all"
+      >
+        <span>
+          {initialTransaction
+            ? 'บันทึกการแก้ไข'
+            : type === 'out'
+            ? 'บันทึกรายจ่าย'
+            : type === 'in'
+            ? 'บันทึกเงินเข้า'
+            : type === 'lend'
+            ? 'บันทึกให้ยืม'
+            : 'บันทึกรับคืน'}
+        </span>
+        {amountStr && parseFloat(amountStr) > 0 && (
+          <span className="bg-[#0F380F] text-[#9BBC0F] px-2 py-0.5 rounded text-[11px] tabular-nums font-bold">
+            {formatSatang(parseToSatang(amountStr))}฿
+          </span>
+        )}
+      </button>
+    </div>
+  );
+
   return (
     <>
       <BottomSheet
         isOpen={isOpen}
         onClose={onClose}
         title={initialTransaction ? 'แก้ไขรายการ' : 'บันทึกรายการใหม่'}
+        footer={footerAction}
       >
-        <div className="space-y-4">
-          {/* Type Selector (4 Segmented Tabs) */}
-          <div className="grid grid-cols-4 gap-1 p-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-2xl border border-border-light dark:border-border-dark">
+        <div className="space-y-3.5">
+          {/* 1. Type Selector (4 Segmented Tabs) */}
+          <div className="grid grid-cols-4 gap-1 p-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-xl border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[1.5px_1.5px_0px_#242A20]">
             {typesList.map((t) => {
               const Icon = t.icon;
               const isSelected = type === t.key;
@@ -263,26 +327,26 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                   key={t.key}
                   type="button"
                   onClick={() => setType(t.key)}
-                  className={`min-h-[44px] flex flex-col items-center justify-center rounded-xl text-xs transition-all select-none ${
+                  className={`min-h-[42px] flex flex-col items-center justify-center rounded-lg text-xs transition-all select-none font-silkscreen ${
                     isSelected
-                      ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white font-medium shadow-sm border border-border-light dark:border-border-dark'
+                      ? 'bg-[#242A20] text-white dark:bg-white dark:text-[#242A20] font-bold shadow-[1px_1px_0px_#0A0F0A]'
                       : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
-                  <Icon size={16} strokeWidth={1.5} className={`mb-0.5 ${isSelected ? t.color : ''}`} />
-                  <span>{t.label}</span>
+                  <Icon size={15} strokeWidth={2.5} className={`mb-0.5 ${isSelected ? (type === 'out' ? 'text-red-400' : type === 'in' ? 'text-emerald-400' : type === 'lend' ? 'text-amber-400' : 'text-teal-400') : ''}`} />
+                  <span className="text-[11px]">{t.label}</span>
                 </button>
               );
             })}
           </div>
 
-          {/* Large Amount Input */}
-          <div className="bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark rounded-2xl p-4 text-center">
-            <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider block mb-1">
-              จำนวนเงิน (บาท)
+          {/* 2. Large Amount Input with Quick Amount Pills */}
+          <div className="bg-surfaceElevated-light dark:bg-surfaceElevated-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl p-3 text-center shadow-[2px_2px_0px_#242A20]">
+            <label className="text-[10px] font-silkscreen font-bold text-neutral-500 uppercase tracking-wider block mb-1">
+              AMOUNT / จำนวนเงิน (บาท)
             </label>
             <div className="flex items-center justify-center gap-1">
-              <span className="text-2xl text-neutral-400 font-light">฿</span>
+              <span className="text-2xl text-neutral-400 font-light font-silkscreen">฿</span>
               <input
                 type="number"
                 step="any"
@@ -293,14 +357,38 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                   setErrorMsg(null);
                 }}
                 placeholder="0.00"
-                className="w-full text-center text-4xl font-light tracking-tight bg-transparent text-neutral-900 dark:text-neutral-50 focus:outline-none tabular-nums placeholder:text-neutral-300 dark:placeholder:text-neutral-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0"
+                className="w-full text-center text-4xl font-silkscreen font-bold tracking-tight bg-transparent text-neutral-900 dark:text-neutral-50 focus:outline-none tabular-nums placeholder:text-neutral-300 dark:placeholder:text-neutral-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0"
                 autoFocus={!initialTransaction && !prefill}
               />
             </div>
 
+            {/* Quick Amount Pills */}
+            <div className="flex items-center justify-center gap-1.5 flex-wrap pt-2 border-t border-[#242A20]/15 dark:border-[#3C4A38]/50 mt-2">
+              {[20, 50, 100, 500, 1000].map((val) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => handleAddPreset(val)}
+                  className="px-2 py-0.5 text-[11px] font-silkscreen font-bold rounded-lg border border-[#242A20] dark:border-[#3C4A38] bg-surface-light dark:bg-surface-dark hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 shadow-[1px_1px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] select-none transition-all"
+                >
+                  +{val}
+                </button>
+              ))}
+              {amountStr && (
+                <button
+                  type="button"
+                  onClick={handleClearAmount}
+                  className="px-2 py-0.5 text-[11px] font-silkscreen font-bold rounded-lg border border-[#242A20] dark:border-[#3C4A38] bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 shadow-[1px_1px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] select-none transition-all"
+                  title="ล้างจำนวนเงิน"
+                >
+                  C
+                </button>
+              )}
+            </div>
+
             {/* Quick Helper if repayment */}
             {type === 'back' && who.trim() && (
-              <div className="mt-3 pt-2.5 border-t border-border-light dark:border-border-dark space-y-2">
+              <div className="mt-2.5 pt-2 border-t border-[#242A20]/20 dark:border-[#3C4A38] space-y-1.5">
                 <div className="flex items-center justify-between text-xs text-neutral-600 dark:text-neutral-400">
                   <span>ยอดค้างชำระของ {who}:</span>
                   <span className="font-silkscreen font-bold text-amber-600 dark:text-amber-400">
@@ -319,7 +407,6 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                         setErrorMsg(null);
                       }}
                       className="px-2.5 py-1 text-xs font-silkscreen font-bold rounded-lg border-2 border-[#242A20] dark:border-[#3C4A38] bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 shadow-[1.5px_1.5px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] select-none transition-transform"
-                      title="คืนเงินครึ่งหนึ่ง (50%)"
                     >
                       คืน 50% ({formatSatang(Math.round(currentDebtorDebt / 2))}฿)
                     </button>
@@ -331,36 +418,19 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                         setErrorMsg(null);
                       }}
                       className="px-2.5 py-1 text-xs font-silkscreen font-bold rounded-lg border-2 border-[#242A20] dark:border-[#3C4A38] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 shadow-[1.5px_1.5px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] select-none transition-transform"
-                      title="คืนเงินเต็มจำนวน (100%)"
                     >
                       คืนเต็ม 100% ({formatSatang(currentDebtorDebt)}฿)
                     </button>
                   </div>
                 )}
-
-                {/* Remaining calculation preview if partial repayment */}
-                {(() => {
-                  const inputSatang = parseToSatang(amountStr);
-                  if (inputSatang > 0 && currentDebtorDebt > 0 && inputSatang < currentDebtorDebt) {
-                    return (
-                      <div className="text-[11px] text-neutral-500 text-center font-medium">
-                        หลังคืนยอดนี้ จะยังคงค้างอีก{' '}
-                        <span className="font-semibold text-amber-600 dark:text-amber-400">
-                          {formatSatang(currentDebtorDebt - inputSatang)} ฿
-                        </span>
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
               </div>
             )}
           </div>
 
-          {/* Expense Category Chips (Shown ONLY when type === 'out') */}
+          {/* 3. Expense Category Chips (Shown ONLY when type === 'out') */}
           {type === 'out' && (
             <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-800 dark:text-neutral-200">
                 <Tag size={13} />
                 <span>หมวดหมู่รายจ่าย</span>
               </div>
@@ -370,10 +440,10 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                     key={cat}
                     type="button"
                     onClick={() => setCategory(cat)}
-                    className={`text-xs px-3 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 ${
+                    className={`text-xs px-2.5 py-1 rounded-xl border-2 transition-all flex items-center gap-1.5 select-none ${
                       category === cat
-                        ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white font-medium shadow-sm'
-                        : 'bg-surface-light dark:bg-surface-dark text-neutral-600 dark:text-neutral-400 border-border-light dark:border-border-dark hover:border-neutral-400'
+                        ? 'bg-[#242A20] text-white dark:bg-white dark:text-[#242A20] border-[#242A20] dark:border-white font-bold shadow-[2px_2px_0px_#242A20]'
+                        : 'bg-surface-light dark:bg-surface-dark text-neutral-700 dark:text-neutral-300 border-[#242A20]/30 dark:border-[#3C4A38] hover:border-[#242A20]'
                     }`}
                   >
                     <span>{getCategoryEmoji(cat)}</span>
@@ -384,76 +454,17 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
             </div>
           )}
 
-          {/* Account / Pocket Selector (ตัดเงินจากบัญชีไหน / เพิ่มเงินเข้าบัญชีไหน) */}
-          {(type === 'out' || type === 'in') && pockets && pockets.length > 0 && (
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                <div className="flex items-center gap-1.5">
-                  <Wallet size={13} />
-                  <span>{type === 'in' ? 'เพิ่มเงินเข้าบัญชีไหน' : 'ตัดเงินจากบัญชีไหน'}</span>
-                </div>
-                {selectedPocketId && (
-                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-                    {type === 'in' ? 'เข้ากล่องแบ่งเงิน' : 'ตัดจากกล่องแบ่งใช้'}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {/* Option 1: เงินกองกลางหลัก */}
-                <button
-                  type="button"
-                  onClick={() => setSelectedPocketId(undefined)}
-                  className={`text-xs px-3 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 ${
-                    !selectedPocketId
-                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white font-medium shadow-sm'
-                      : 'bg-surface-light dark:bg-surface-dark text-neutral-600 dark:text-neutral-400 border-border-light dark:border-border-dark hover:border-neutral-400'
-                  }`}
-                >
-                  <span>🏦</span>
-                  <span>กองกลางหลัก</span>
-                </button>
-
-                {/* Option 2..N: Pockets */}
-                {pockets.map((p) => {
-                  const isSelected = selectedPocketId === p.id;
-                  const pSummary = pocketSummaries?.find((ps) => ps.pocket.id === p.id);
-                  const remainingStr = pSummary ? `${formatSatang(pSummary.remainingSatang)} ฿` : '';
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setSelectedPocketId(p.id)}
-                      className={`text-xs px-3 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 ${
-                        isSelected
-                          ? 'bg-emerald-600 text-white border-emerald-600 font-medium shadow-sm'
-                          : 'bg-surface-light dark:bg-surface-dark text-neutral-600 dark:text-neutral-400 border-border-light dark:border-border-dark hover:border-neutral-400'
-                      }`}
-                    >
-                      <span>👛</span>
-                      <span>{p.name}</span>
-                      {remainingStr && (
-                        <span className={`text-[10px] ${isSelected ? 'text-white/80' : 'text-neutral-400'}`}>
-                          ({remainingStr})
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Who Section: 1-Tap Member Switch for in/out, Debtor input for lend/back */}
+          {/* 4. Who Section: 1-Tap Member Switch */}
           {(type === 'out' || type === 'in') ? (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                   {type === 'in' ? 'ใครเป็นคนฝากเงิน' : 'ใครเป็นคนจ่ายเงิน'}
                 </label>
                 <button
                   type="button"
                   onClick={() => setShowCustomWho(!showCustomWho)}
-                  className="text-[11px] text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
+                  className="text-[11px] text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors"
                 >
                   {showCustomWho ? '← เลือกจากสมาชิก' : 'พิมพ์ชื่ออื่น...'}
                 </button>
@@ -468,7 +479,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                     setErrorMsg(null);
                   }}
                   placeholder="พิมพ์ชื่อ..."
-                  className="w-full px-3.5 py-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100"
+                  className="w-full px-3.5 py-2.5 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none"
                 />
               ) : (
                 <div className="grid grid-cols-2 gap-2">
@@ -483,19 +494,19 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                           setWho(name);
                           setErrorMsg(null);
                         }}
-                        className={`h-11 px-3 rounded-xl border text-xs font-medium transition-all flex items-center justify-center gap-1.5 active:scale-95 ${
+                        className={`h-11 px-3 rounded-xl border-2 text-xs transition-all flex items-center justify-center gap-1.5 active:translate-x-[1px] active:translate-y-[1px] select-none ${
                           isSelected
-                            ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white shadow-sm font-semibold'
-                            : 'bg-surface-light dark:bg-surface-dark text-neutral-600 dark:text-neutral-400 border-border-light dark:border-border-dark hover:border-neutral-400'
+                            ? 'bg-[#242A20] text-white dark:bg-white dark:text-[#242A20] border-[#242A20] dark:border-white font-bold shadow-[2px_2px_0px_#242A20]'
+                            : 'bg-surface-light dark:bg-surface-dark text-neutral-700 dark:text-neutral-300 border-[#242A20]/30 dark:border-[#3C4A38] hover:border-[#242A20]'
                         }`}
                       >
                         <span className="truncate">{name}</span>
                         {isYou && (
                           <span
-                            className={`text-[10px] px-1.5 py-0.5 rounded-md font-normal ${
+                            className={`text-[10px] px-1.5 py-0.2 rounded font-normal ${
                               isSelected
-                                ? 'bg-white/20 text-white dark:bg-neutral-900/20 dark:text-neutral-900'
-                                : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40'
+                                ? 'bg-white/20 text-white dark:bg-black/20 dark:text-[#242A20]'
+                                : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                             }`}
                           >
                             คุณ
@@ -510,7 +521,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
           ) : (
             /* Debtor Input for lend / back */
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+              <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                 {type === 'lend' ? 'ให้ใครยืม / จ่ายแทนใคร' : 'ใครโอนเงินคืน'}
               </label>
               <input
@@ -521,12 +532,12 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                   setErrorMsg(null);
                 }}
                 placeholder="พิมพ์ชื่อคนยืม เช่น เพื่อน, แม่..."
-                className="w-full px-3.5 py-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100"
+                className="w-full px-3.5 py-2.5 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none"
               />
 
               {/* Quick chips */}
               <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                <span className="text-[11px] text-neutral-400">ชื่อด่วน:</span>
+                <span className="text-[11px] text-neutral-500 font-pixel">ชื่อด่วน:</span>
                 {quickPickNames.map((name) => (
                   <button
                     key={name}
@@ -535,10 +546,10 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                       setWho(name);
                       setErrorMsg(null);
                     }}
-                    className={`text-xs px-2.5 py-1 rounded-lg border transition-all ${
+                    className={`text-xs px-2.5 py-1 rounded-lg border-2 transition-all ${
                       who === name
-                        ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white font-medium'
-                        : 'bg-surface-light dark:bg-surface-dark text-neutral-600 dark:text-neutral-400 border-border-light dark:border-border-dark hover:border-neutral-400'
+                        ? 'bg-[#242A20] text-white dark:bg-white dark:text-[#242A20] border-[#242A20] font-bold shadow-[1px_1px_0px_#242A20]'
+                        : 'bg-surface-light dark:bg-surface-dark text-neutral-700 dark:text-neutral-300 border-[#242A20]/30 hover:border-[#242A20]'
                     }`}
                   >
                     {name}
@@ -548,249 +559,273 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
             </div>
           )}
 
-          {/* Note Input with Emoji Picker & Quick Emojis */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                บันทึกช่วยจำ (หมายเหตุ)
-              </label>
-              <button
-                type="button"
-                onClick={() => setIsEmojiPickerOpen(true)}
-                className="inline-flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-medium transition-colors"
-              >
-                <Smile size={13} />
-                <span>เลือก Emoji</span>
-              </button>
-            </div>
-            <div className="relative">
-              <input
-                type="text"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="เช่น ซื้อของ Lotus, ค่าตั๋วหนัง..."
-                className="w-full px-3.5 py-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100 pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setIsEmojiPickerOpen(true)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 p-1"
-                title="เลือก Emoji"
-              >
-                <Smile size={17} />
-              </button>
-            </div>
-
-            {/* Quick Emoji Bar */}
-            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-0.5 pb-1">
-              <span className="text-[11px] text-neutral-400 shrink-0 select-none">Emoji ด่วน:</span>
-              {POPULAR_EXPENSE_EMOJIS.slice(0, 10).map((emoji) => (
-                <button
-                  key={emoji}
-                  type="button"
-                  onClick={() => {
-                    setNote((prev) => setLeadingEmoji(prev, emoji));
-                    if (localStorage.getItem('paokoo_haptic_enabled') !== 'false' && typeof navigator !== 'undefined' && navigator.vibrate) {
-                      navigator.vibrate(10);
-                    }
-                  }}
-                  className="w-7 h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-base flex items-center justify-center shrink-0 active:scale-90 transition-transform select-none"
-                  title={`ใส่ ${emoji}`}
-                >
-                  {emoji}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => setIsEmojiPickerOpen(true)}
-                className="text-[11px] px-2 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0 transition-colors select-none font-medium"
-              >
-                + ทั้งหมด
-              </button>
-            </div>
-          </div>
-
-          {/* Date & Time Section (50/50 split on the same row) */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                วันที่และเวลาทำรายการ
-              </label>
-              {/* Quick Date & Time Shortcut Chips */}
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => setDate(todayStr)}
-                  className={`text-[11px] px-2 py-0.5 rounded-lg transition-colors font-medium select-none ${
-                    date === todayStr
-                      ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 shadow-xs'
-                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-                  }`}
-                >
-                  วันนี้
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDate(yesterdayStr)}
-                  className={`text-[11px] px-2 py-0.5 rounded-lg transition-colors font-medium select-none ${
-                    date === yesterdayStr
-                      ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 shadow-xs'
-                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-                  }`}
-                >
-                  เมื่อวาน
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTime(getLocalTimeString())}
-                  className="text-[11px] px-2 py-0.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors font-medium select-none"
-                  title="ตั้งเวลาปัจจุบัน"
-                >
-                  ตอนนี้
-                </button>
-              </div>
-            </div>
-
-            {/* Same Row 50/50 Layout - Sized identically to Member buttons */}
-            <div className="grid grid-cols-2 gap-2">
-              {/* Date Box (Left 50%) */}
-              <div className="relative h-11 px-3 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark flex items-center justify-center transition-all hover:border-neutral-400 active:scale-95 cursor-pointer overflow-hidden shadow-xs">
-                <span className="text-xs font-medium text-neutral-900 dark:text-neutral-100 select-none truncate">
-                  {formatDisplayDate(date)}
+          {/* 5. More Details Collapsible Accordion (โน้ต, บัญชีย่อย, วันที่, สลิป) */}
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={() => setShowMoreDetails(!showMoreDetails)}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border-2 border-dashed border-[#242A20]/30 dark:border-[#3C4A38]/70 bg-surfaceElevated-light/60 dark:bg-surfaceElevated-dark/60 text-xs text-neutral-700 dark:text-neutral-300 font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors select-none"
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-silkscreen text-[11px] font-bold text-[#8B1E43]">
+                  {showMoreDetails ? '▼' : '►'}
                 </span>
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  onClick={(e) => {
-                    try {
-                      (e.currentTarget as HTMLInputElement).showPicker?.();
-                    } catch {}
-                  }}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  aria-label="เลือกวันที่"
-                />
+                <span className="font-bold">รายละเอียดเพิ่มเติม</span>
+                {hasExtraDetails && (
+                  <span className="font-pixel text-[9px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 border border-[#242A20]">
+                    มีข้อมูลแนบ
+                  </span>
+                )}
               </div>
+              <span className="text-[10px] text-neutral-500 font-pixel">
+                {showMoreDetails ? 'ซ่อน' : 'โน้ต · วันที่ · สลิป · กล่อง'}
+              </span>
+            </button>
 
-              {/* Time Box (Right 50%) */}
-              <div className="relative h-11 px-3 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark flex items-center justify-center transition-all hover:border-neutral-400 active:scale-95 cursor-pointer overflow-hidden shadow-xs">
-                <span className="text-xs font-medium text-neutral-900 dark:text-neutral-100 font-mono select-none truncate">
-                  {time ? `${time} น.` : 'ระบุเวลา'}
-                </span>
-                <input
-                  type="time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  onClick={(e) => {
-                    try {
-                      (e.currentTarget as HTMLInputElement).showPicker?.();
-                    } catch {}
-                  }}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  aria-label="เลือกเวลา"
-                />
-              </div>
-            </div>
-          </div>
+            {showMoreDetails && (
+              <div className="space-y-3.5 pt-3 animate-fade-in">
+                {/* Pocket Selector */}
+                {(type === 'out' || type === 'in') && pockets && pockets.length > 0 && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                      <div className="flex items-center gap-1.5">
+                        <Wallet size={13} />
+                        <span>{type === 'in' ? 'เพิ่มเงินเข้าบัญชีไหน' : 'ตัดเงินจากบัญชีไหน'}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPocketId(undefined)}
+                        className={`text-xs px-2.5 py-1 rounded-xl border-2 transition-all flex items-center gap-1.5 ${
+                          !selectedPocketId
+                            ? 'bg-[#242A20] text-white dark:bg-white dark:text-[#242A20] border-[#242A20] font-bold shadow-[1px_1px_0px_#242A20]'
+                            : 'bg-surface-light dark:bg-surface-dark text-neutral-700 dark:text-neutral-300 border-[#242A20]/30 hover:border-[#242A20]'
+                        }`}
+                      >
+                        <span>🏦</span>
+                        <span>กองกลางหลัก</span>
+                      </button>
 
-          {/* Slip Attachment (Full Width) */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300 block">
-              สลิปโอนเงิน (หลักฐาน)
-            </label>
-            {slipThumbnail ? (
-              <div className="p-3 rounded-2xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark flex items-center justify-between gap-3 shadow-sm">
-                <div
-                  className="flex items-center gap-3 min-w-0 cursor-pointer group"
-                  onClick={() => setIsViewerOpen(true)}
-                >
-                  <img
-                    src={slipThumbnail}
-                    alt="สลิป"
-                    className="w-11 h-14 object-cover rounded-xl border border-border-light dark:border-border-dark shadow-sm group-hover:opacity-90 transition-opacity"
-                  />
-                  <div className="min-w-0">
-                    <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 block truncate">
-                      แนบสลิปเรียบร้อย
-                    </span>
-                    {refNo && (
-                      <span className="text-[10px] text-neutral-500 font-mono block truncate">
-                        Ref: {refNo}
-                      </span>
-                    )}
-                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium inline-block mt-0.5 group-hover:underline">
-                      แตะเพื่อดูสลิปขนาดเต็ม
-                    </span>
+                      {pockets.map((p) => {
+                        const isSelected = selectedPocketId === p.id;
+                        const pSummary = pocketSummaries?.find((ps) => ps.pocket.id === p.id);
+                        const remainingStr = pSummary ? `${formatSatang(pSummary.remainingSatang)} ฿` : '';
+                        return (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => setSelectedPocketId(p.id)}
+                            className={`text-xs px-2.5 py-1 rounded-xl border-2 transition-all flex items-center gap-1.5 ${
+                              isSelected
+                                ? 'bg-emerald-600 text-white border-[#242A20] font-bold shadow-[1px_1px_0px_#242A20]'
+                                : 'bg-surface-light dark:bg-surface-dark text-neutral-700 dark:text-neutral-300 border-[#242A20]/30 hover:border-[#242A20]'
+                            }`}
+                          >
+                            <span>👛</span>
+                            <span>{p.name}</span>
+                            {remainingStr && (
+                              <span className={`text-[10px] ${isSelected ? 'text-white/80' : 'text-neutral-400'}`}>
+                                ({remainingStr})
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Note Input with Emoji */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                      บันทึกช่วยจำ (หมายเหตุ)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsEmojiPickerOpen(true)}
+                      className="inline-flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400 font-bold hover:underline"
+                    >
+                      <Smile size={13} />
+                      <span>เลือก Emoji</span>
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      placeholder="เช่น ข้าวเที่ยง, ค่าตั๋วหนัง..."
+                      className="w-full px-3.5 py-2.5 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setIsEmojiPickerOpen(true)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 p-1"
+                      title="เลือก Emoji"
+                    >
+                      <Smile size={17} />
+                    </button>
+                  </div>
+
+                  {/* Quick Emoji Bar */}
+                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-0.5 pb-1">
+                    <span className="text-[11px] text-neutral-400 shrink-0 select-none">ด่วน:</span>
+                    {POPULAR_EXPENSE_EMOJIS.slice(0, 8).map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => {
+                          setNote((prev) => setLeadingEmoji(prev, emoji));
+                        }}
+                        className="w-7 h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-base flex items-center justify-center shrink-0 active:scale-90 transition-transform select-none"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setIsEmojiPickerOpen(true)}
+                      className="text-[11px] px-2 py-0.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 shrink-0 font-medium"
+                    >
+                      + เพิ่ม
+                    </button>
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSlipThumbnail(undefined);
-                    setFullSlipBase64(undefined);
-                  }}
-                  className="p-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-red-500 transition-colors"
-                  title="ลบสลิปออก"
-                >
-                  <X size={16} />
-                </button>
+                {/* Date & Time */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                      วันที่และเวลา
+                    </label>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setDate(todayStr)}
+                        className={`text-[10px] px-2 py-0.5 rounded-md font-bold select-none ${
+                          date === todayStr
+                            ? 'bg-[#242A20] text-white dark:bg-white dark:text-[#242A20]'
+                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600'
+                        }`}
+                      >
+                        วันนี้
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDate(yesterdayStr)}
+                        className={`text-[10px] px-2 py-0.5 rounded-md font-bold select-none ${
+                          date === yesterdayStr
+                            ? 'bg-[#242A20] text-white dark:bg-white dark:text-[#242A20]'
+                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600'
+                        }`}
+                      >
+                        เมื่อวาน
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTime(getLocalTimeString())}
+                        className="text-[10px] px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-600 font-bold select-none"
+                      >
+                        ตอนนี้
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="relative h-11 px-3 rounded-xl border-2 border-[#242A20] dark:border-[#3C4A38] bg-surface-light dark:bg-surface-dark flex items-center justify-center cursor-pointer shadow-[1px_1px_0px_#242A20]">
+                      <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate">
+                        {formatDisplayDate(date)}
+                      </span>
+                      <input
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                    </div>
+                    <div className="relative h-11 px-3 rounded-xl border-2 border-[#242A20] dark:border-[#3C4A38] bg-surface-light dark:bg-surface-dark flex items-center justify-center cursor-pointer shadow-[1px_1px_0px_#242A20]">
+                      <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100 font-mono truncate">
+                        {time ? `${time} น.` : 'ระบุเวลา'}
+                      </span>
+                      <input
+                        type="time"
+                        value={time}
+                        onChange={(e) => setTime(e.target.value)}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Slip Scanner */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 block">
+                    สลิปโอนเงิน
+                  </label>
+                  {slipThumbnail ? (
+                    <div className="p-3 rounded-xl bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] flex items-center justify-between gap-3 shadow-[1px_1px_0px_#242A20]">
+                      <div
+                        className="flex items-center gap-2.5 min-w-0 cursor-pointer"
+                        onClick={() => setIsViewerOpen(true)}
+                      >
+                        <img
+                          src={slipThumbnail}
+                          alt="สลิป"
+                          className="w-10 h-12 object-cover rounded-lg border border-[#242A20]"
+                        />
+                        <div className="min-w-0">
+                          <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block truncate">
+                            แนบสลิปแล้ว
+                          </span>
+                          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium underline">
+                            แตะเพื่อดูสลิปเต็ม
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSlipThumbnail(undefined);
+                          setFullSlipBase64(undefined);
+                        }}
+                        className="p-1.5 text-neutral-400 hover:text-red-500"
+                        title="ลบสลิป"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => onOpenScanner?.(type)}
+                      className="w-full py-2.5 px-3 rounded-xl border-2 border-dashed border-[#242A20]/40 dark:border-[#3C4A38] text-xs font-bold flex items-center justify-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                    >
+                      <Camera size={15} strokeWidth={2} className="text-emerald-600" />
+                      <span>สแกนสลิป หรือเลือกรูปภาพ</span>
+                    </button>
+                  )}
+                </div>
               </div>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                size="md"
-                fullWidth
-                onClick={() => onOpenScanner?.(type)}
-                className="py-2.5 border-dashed hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 text-neutral-700 dark:text-neutral-300"
-              >
-                <Camera size={16} strokeWidth={1.5} className="mr-2 text-emerald-600 dark:text-emerald-400" />
-                <span>แตะเพื่อสแกนสลิป หรือเลือกรูปภาพ</span>
-              </Button>
             )}
           </div>
 
           {/* Future Date Warning */}
           {isFutureDate && (
-            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40 text-xs text-amber-700 dark:text-amber-300 flex items-center gap-2">
-              <AlertCircle size={16} className="shrink-0 text-amber-500" />
-              <span>วันที่ที่ระบุเป็นวันในอนาคต (โปรดตรวจสอบความถูกต้อง)</span>
+            <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 text-xs text-amber-700 dark:text-amber-300 flex items-center gap-2">
+              <AlertCircle size={15} className="shrink-0 text-amber-500" />
+              <span>วันที่ที่ระบุเป็นวันในอนาคต</span>
             </div>
           )}
 
           {/* Error Message */}
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 text-xs text-red-600 dark:text-red-400 flex items-center gap-2">
-              <AlertTriangle size={15} strokeWidth={1.5} />
-              <span>{errorMsg}</span>
+            <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950/40 border-2 border-red-400 text-xs text-red-600 dark:text-red-400 flex items-center gap-2">
+              <AlertTriangle size={15} strokeWidth={2} />
+              <span className="font-bold">{errorMsg}</span>
             </div>
           )}
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2 pt-2">
-            {initialTransaction && onDelete && (
-              <Button
-                type="button"
-                variant="danger"
-                size="md"
-                onClick={() => setShowDeleteConfirm(true)}
-                className="w-12 px-0 shrink-0"
-                title="ลบรายการ"
-              >
-                <Trash2 size={18} strokeWidth={1.5} />
-              </Button>
-            )}
-            <Button
-              type="button"
-              variant="primary"
-              size="lg"
-              fullWidth
-              onClick={() => handleSubmit(false)}
-            >
-              {initialTransaction ? 'บันทึกการแก้ไข' : 'บันทึกรายการ'}
-            </Button>
-          </div>
         </div>
       </BottomSheet>
 

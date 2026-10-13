@@ -1,135 +1,163 @@
-import React, { useEffect, useState } from 'react';
-import { ShieldCheck, Sparkles } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
 
 interface SplashScreenProps {
-  isReady: boolean;
+  isReady?: boolean;
   onFinish: () => void;
-  minDurationMs?: number;
-  maxTimeoutMs?: number;
 }
 
-export const SplashScreen: React.FC<SplashScreenProps> = ({
-  isReady,
-  onFinish,
-  minDurationMs = 850,
-  maxTimeoutMs = 1500,
-}) => {
-  const [minTimeElapsed, setMinTimeElapsed] = useState(false);
+export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
+  const [hasLanded, setHasLanded] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
-  const [progress, setProgress] = useState(15);
+  const hasPlayedAudio = useRef(false);
+
+  // Play iconic 8-bit Game Boy double chime using Web Audio API
+  const playRetroChime = () => {
+    if (hasPlayedAudio.current) return;
+    hasPlayedAudio.current = true;
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      const now = ctx.currentTime;
+      // Tone 1: High crisp square wave (1046 Hz - C6)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'square';
+      osc1.frequency.setValueAtTime(1046.5, now);
+      gain1.gain.setValueAtTime(0.08, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.12);
+
+      // Tone 2: Higher bell chime (2093 Hz - C7)
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'square';
+      osc2.frequency.setValueAtTime(2093, now + 0.08);
+      gain2.gain.setValueAtTime(0.12, now + 0.08);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.08);
+      osc2.stop(now + 0.35);
+    } catch {
+      // Audio autoplay policy blocked or not supported - fails silently
+    }
+  };
 
   useEffect(() => {
-    // Smooth progress simulation: 15% -> 60% -> 90% -> 100%
-    const p1 = setTimeout(() => setProgress(55), 200);
-    const p2 = setTimeout(() => setProgress(85), 500);
+    // 1. Logo drops and lands at 320ms
+    const landTimer = setTimeout(() => {
+      setHasLanded(true);
+      playRetroChime();
+    }, 320);
 
-    const minTimer = setTimeout(() => {
-      setMinTimeElapsed(true);
-    }, minDurationMs);
-
-    // Hard fallback timeout: guarantees splash screen exits even if network lags
-    const maxTimer = setTimeout(() => {
-      setProgress(100);
+    // 2. Start fade out at 550ms
+    const fadeTimer = setTimeout(() => {
       setIsFadingOut(true);
-    }, maxTimeoutMs);
+    }, 550);
+
+    // 3. Complete and call onFinish at 650ms
+    const finishTimer = setTimeout(() => {
+      onFinish();
+    }, 650);
 
     return () => {
-      clearTimeout(p1);
-      clearTimeout(p2);
-      clearTimeout(minTimer);
-      clearTimeout(maxTimer);
+      clearTimeout(landTimer);
+      clearTimeout(fadeTimer);
+      clearTimeout(finishTimer);
     };
-  }, [minDurationMs, maxTimeoutMs]);
+  }, [onFinish]);
 
-  useEffect(() => {
-    if (minTimeElapsed && isReady && !isFadingOut) {
-      setProgress(100);
-      setIsFadingOut(true);
-    }
-  }, [minTimeElapsed, isReady, isFadingOut]);
-
-  useEffect(() => {
-    if (isFadingOut) {
-      const finishTimer = setTimeout(() => {
-        onFinish();
-      }, 500); // 500ms matching transition-all duration-500
-      return () => clearTimeout(finishTimer);
-    }
-  }, [isFadingOut, onFinish]);
+  // When isReady becomes true or user taps to skip immediately
+  const handleQuickSkip = () => {
+    setIsFadingOut(true);
+    setTimeout(onFinish, 80);
+  };
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-between px-6 py-10 bg-[#070b10] text-white select-none transition-all duration-500 ease-out ${
-        isFadingOut ? 'opacity-0 scale-[1.04] pointer-events-none' : 'opacity-100 scale-100'
+      onClick={handleQuickSkip}
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center p-4 bg-[#1E231A] select-none transition-opacity duration-150 ease-out cursor-pointer ${
+        isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
-      aria-label="กำลังโหลดเข้าสู่แอพ PAOKOO"
+      aria-label="Game Boy Boot Screen - แตะเพื่อข้าม"
     >
-      {/* Background Ambient Radial Glows */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Central emerald aura */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px] bg-emerald-500/15 rounded-full blur-[90px] animate-pulse" />
-        {/* Subtle teal secondary ambient */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] h-[220px] bg-teal-400/10 rounded-full blur-[70px]" />
-        {/* Decorative concentric rings */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] rounded-full border border-white/[0.04] pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] rounded-full border border-white/[0.02] pointer-events-none" />
-      </div>
+      {/* Game Boy Console Screen Bezel */}
+      <div className="relative w-full max-w-[340px] aspect-[4/3.6] bg-[#8B956D] border-4 border-[#242A20] rounded-2xl shadow-[6px_6px_0px_#0A0F0A] flex flex-col p-3 overflow-hidden">
+        {/* Top Bezel: Twin Pinstripes & Text */}
+        <div className="flex items-center justify-between px-1 pb-2">
+          {/* Left twin stripes */}
+          <div className="flex flex-col gap-0.5 w-12">
+            <div className="h-[2px] bg-[#8B1E43] rounded-full" />
+            <div className="h-[2px] bg-[#1E3A8A] rounded-full" />
+          </div>
 
-      {/* Top spacer to balance layout */}
-      <div className="w-full flex justify-end items-center opacity-60">
-        <span className="text-[10px] text-emerald-400/70 font-mono tracking-widest uppercase flex items-center gap-1">
-          <Sparkles size={11} className="animate-spin text-emerald-400" />
-          <span>v0.1.0 PWA</span>
-        </span>
-      </div>
+          <span className="font-silkscreen text-[9px] tracking-wider text-[#242A20] font-bold">
+            DOT MATRIX WITH STEREO SOUND
+          </span>
 
-      {/* Main Center Content: Brand Logo & Typography */}
-      <div className="relative z-10 flex flex-col items-center text-center space-y-4 my-auto">
-        {/* Outer Glowing Badge Accent */}
-        <div className="relative inline-flex items-baseline">
-          {/* Base Two-Tone Title */}
-          <h1 className="font-brand text-5xl sm:text-6xl font-black tracking-tight leading-none flex items-baseline drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
-            <span className="text-white drop-shadow-[0_2px_12px_rgba(255,255,255,0.35)]">
-              PAO
-            </span>
-            <span className="bg-gradient-to-r from-emerald-300 via-teal-200 to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_2px_20px_rgba(52,211,153,0.7)]">
-              KOO
-            </span>
-            <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_12px_#34d399] ml-1.5 mb-1.5 animate-pulse" />
-          </h1>
-
-          {/* Text Shimmer Effect sweeping across letters */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 pointer-events-none select-none font-brand text-5xl sm:text-6xl font-black tracking-tight leading-none flex items-baseline bg-gradient-to-r from-transparent via-white/40 to-transparent bg-clip-text text-transparent animate-shimmer-pass"
-          >
-            <span>PAOKOO</span>
+          {/* Right twin stripes */}
+          <div className="flex flex-col gap-0.5 w-12">
+            <div className="h-[2px] bg-[#8B1E43] rounded-full" />
+            <div className="h-[2px] bg-[#1E3A8A] rounded-full" />
           </div>
         </div>
 
-        {/* Tagline */}
-        <p className="text-xs sm:text-sm text-neutral-400 font-medium tracking-wide">
-          บันทึกรายรับรายจ่าย บัญชีคู่กระเป๋าเดียวกัน
-        </p>
-
-        {/* High-tech Micro Progress Bar */}
-        <div className="w-36 h-1 bg-neutral-800/80 rounded-full overflow-hidden mt-6 shadow-inner relative">
+        {/* LCD Screen Display Window (Classic DMG Olive Green) */}
+        <div className="relative flex-1 bg-[#9BBC0F] border-2 border-[#242A20] rounded-lg shadow-inner flex flex-col items-center justify-center overflow-hidden">
+          {/* Subtle Scanlines effect */}
           <div
-            className="h-full bg-gradient-to-r from-teal-400 via-emerald-400 to-emerald-300 rounded-full transition-all duration-300 ease-out shadow-[0_0_10px_#10b981]"
-            style={{ width: `${progress}%` }}
+            className="absolute inset-0 pointer-events-none opacity-15"
+            style={{
+              backgroundImage: 'repeating-linear-gradient(0deg, #0F380F 0px, #0F380F 1px, transparent 1px, transparent 2px)',
+              backgroundSize: '100% 2px',
+            }}
           />
-        </div>
-      </div>
 
-      {/* Bottom Footer Info */}
-      <div className="relative z-10 flex flex-col items-center gap-1.5 text-center">
-        <div className="flex items-center gap-1.5 text-[11px] text-neutral-400/90 font-medium">
-          <ShieldCheck size={13} className="text-emerald-400 shrink-0" />
-          <span>ระบบปลอดภัยระดับสูง • ออฟไลน์ & ซิงค์เรียลไทม์</span>
+          {/* Battery LED on left bezel side */}
+          <div className="absolute top-2 left-2 flex items-center gap-1 z-10">
+            <span className="w-2 h-2 rounded-full bg-[#8B1E43] shadow-[0_0_4px_#8B1E43] animate-pulse" />
+            <span className="font-pixel text-[8px] text-[#0F380F] font-bold">BATTERY</span>
+          </div>
+
+          {/* The Iconic Dropping Logo */}
+          <div
+            className="relative z-10 flex flex-col items-center justify-center transition-transform duration-300 ease-[cubic-bezier(0.18,0.89,0.32,1.28)]"
+            style={{
+              transform: hasLanded ? 'translateY(0)' : 'translateY(-120px)',
+              opacity: hasLanded ? 1 : 0.8,
+            }}
+          >
+            <div className="flex items-baseline">
+              <h1 className="font-silkscreen text-3xl sm:text-4xl font-black text-[#0F380F] tracking-widest drop-shadow-[2px_2px_0px_#8BAC0F]">
+                PAOKOO
+              </h1>
+              <span className="font-pixel text-xs text-[#0F380F] font-bold ml-1">
+                ®
+              </span>
+            </div>
+
+            <div
+              className={`font-pixel text-[9px] text-[#306230] font-bold mt-1 tracking-wider transition-opacity duration-150 ${
+                hasLanded ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              HOUSEHOLD FINANCE · 2026
+            </div>
+          </div>
+
+          {/* Fast skip hint at bottom */}
+          <div className="absolute bottom-1 right-2 text-[8px] font-pixel text-[#306230]/70">
+            TOUCH TO SKIP
+          </div>
         </div>
-        <p className="text-[10px] text-neutral-500/70 tracking-wider">
-          HOUSEHOLD FINANCE PLATFORM
-        </p>
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ interface BottomSheetProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  footer?: React.ReactNode;
 }
 
 export const BottomSheet: React.FC<BottomSheetProps> = ({
@@ -13,6 +14,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   onClose,
   title,
   children,
+  footer,
 }) => {
   // Whether the sheet is mounted in the DOM
   const [isMounted, setIsMounted] = useState(isOpen);
@@ -138,9 +140,16 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         </div>
 
         {/* Scrollable Body */}
-        <div className="overflow-y-auto px-5 py-4 pb-safe flex-1 space-y-4">
+        <div className={`overflow-y-auto px-5 py-4 flex-1 space-y-4 ${footer ? '' : 'pb-safe'}`}>
           {children}
         </div>
+
+        {/* Sticky Footer */}
+        {footer && (
+          <div className="px-5 py-3 border-t-2 border-[#242A20] dark:border-[#3C4A38] bg-surface-light dark:bg-surface-dark pb-safe shrink-0">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );
