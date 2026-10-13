@@ -23,8 +23,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
     switch (transaction.type) {
       case 'in':
         return {
-          label: 'ฝากเข้า',
-          code: 'IN',
+          label: 'เงินเข้า',
           icon: ArrowDownLeft,
           iconColor: 'text-[#0F380F]',
           bgColor: 'bg-[#9BBC0F]',
@@ -33,8 +32,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
         };
       case 'out':
         return {
-          label: 'รายจ่าย',
-          code: 'OUT',
+          label: 'จ่ายออก',
           icon: ArrowUpRight,
           iconColor: 'text-white',
           bgColor: 'bg-[#8B1E43]',
@@ -44,7 +42,6 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
       case 'lend':
         return {
           label: 'ให้ยืม',
-          code: 'LEND',
           icon: HandCoins,
           iconColor: 'text-amber-950',
           bgColor: 'bg-[#F59E0B]',
@@ -53,8 +50,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
         };
       case 'back':
         return {
-          label: 'ได้รับคืน',
-          code: 'BACK',
+          label: 'คืนเงิน',
           icon: CornerDownLeft,
           iconColor: 'text-white',
           bgColor: 'bg-[#047857]',
@@ -102,7 +98,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
               {transaction.who}
             </span>
             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border border-[#242A20] dark:border-[#3C4A38] bg-surfaceElevated-light dark:bg-surfaceElevated-dark text-neutral-800 dark:text-neutral-200">
-              {config.code}
+              {config.label}
             </span>
 
             {/* Expense Category Badge with Emoji */}

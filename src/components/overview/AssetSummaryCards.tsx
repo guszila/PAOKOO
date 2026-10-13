@@ -36,22 +36,19 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
 
   return (
     <div className="space-y-2">
-      {/* Section Header with 8-bit aesthetic */}
+      {/* Section Header */}
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 bg-[#9BBC0F] border border-[#242A20] shadow-[1px_1px_0px_#242A20]" />
           <h3 className="text-xs font-bold text-neutral-800 dark:text-neutral-200 tracking-wider">
-            STATUS / สรุปสินทรัพย์
+            สรุปสินทรัพย์
           </h3>
         </div>
-        <span className="text-[10px] font-semibold text-[#242A20]/70 dark:text-[#9BBC0F]/80">
-          2x2 GRID
-        </span>
       </div>
 
       {/* 4 Cards in 2x2 Grid */}
       <div className="grid grid-cols-2 gap-2.5">
-        {/* 1. เงินเก็บคงเหลือ (Current Balance / Main Asset) */}
+        {/* 1. เงินเก็บคงเหลือ */}
         <div className="dmg-screen rounded-xl p-3 flex flex-col justify-between min-h-[110px] relative overflow-hidden group">
           {/* Subtle matrix scanlines overlay */}
           <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(currentColor_1px,transparent_1px)] [background-size:6px_6px] opacity-10" />
@@ -65,9 +62,6 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
                 เงินเก็บคงเหลือ
               </span>
             </div>
-            <span className="text-[9px] font-bold px-1.5 py-0.5 border border-current bg-black/10 rounded">
-              MAIN
-            </span>
           </div>
 
           <div className="my-1.5 relative z-10">
@@ -78,13 +72,11 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
 
           <div className="flex items-center justify-between text-[10px] opacity-90 font-medium relative z-10">
             <span>สินทรัพย์หลัก</span>
-            <span className="text-[9px] font-bold bg-black/20 px-1 rounded-sm border border-current">
-              READY
-            </span>
+            <span className="text-[9px] font-semibold opacity-75">พร้อมใช้</span>
           </div>
         </div>
 
-        {/* 2. เงินที่ให้ยืม / สำรองจ่าย (Lent Out - 2-Player Link) */}
+        {/* 2. เงินที่ให้ยืม / สำรองจ่าย */}
         <div
           onClick={() => setIsDebtorsExpanded(!isDebtorsExpanded)}
           className={`bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[3px_3px_0px_#242A20] dark:shadow-[3px_3px_0px_#0A0F0A] rounded-xl p-3 flex flex-col justify-between min-h-[110px] cursor-pointer select-none transition-all active:translate-x-[1px] active:translate-y-[1px] ${
@@ -100,9 +92,6 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
                 เงินให้ยืม
               </span>
             </div>
-            <span className="text-[9px] font-bold px-1.5 py-0.5 border border-[#242A20] dark:border-[#3C4A38] bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 rounded">
-              2P
-            </span>
           </div>
 
           <div className="my-1.5">
@@ -114,13 +103,13 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
           <div className="flex items-center justify-between text-[10px] text-neutral-600 dark:text-neutral-400 font-medium">
             <span className="truncate">ค้าง {debtors.length} คน</span>
             <div className="flex items-center gap-0.5 text-[9px] font-bold bg-amber-200 dark:bg-amber-900/70 text-amber-900 dark:text-amber-200 px-1.5 py-0.5 rounded border border-[#242A20] dark:border-[#3C4A38]">
-              <span>{isDebtorsExpanded ? 'HIDE' : 'VIEW'}</span>
+              <span>{isDebtorsExpanded ? 'ซ่อน' : 'ดูรายชื่อ'}</span>
               {isDebtorsExpanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
             </div>
           </div>
         </div>
 
-        {/* 3. ค่าใช้จ่ายเดือนนี้ (Expenses / HP DMG) */}
+        {/* 3. ค่าใช้จ่ายเดือนนี้ */}
         <div className="bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[3px_3px_0px_#242A20] dark:shadow-[3px_3px_0px_#0A0F0A] rounded-xl p-3 flex flex-col justify-between min-h-[110px]">
           <div className="flex items-center justify-between gap-1">
             <div className="flex items-center gap-1.5">
@@ -131,9 +120,6 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
                 จ่ายเดือนนี้
               </span>
             </div>
-            <span className="text-[9px] font-bold px-1.5 py-0.5 border border-[#242A20] dark:border-[#3C4A38] bg-red-100 dark:bg-red-950 text-[#8B1E43] dark:text-red-300 rounded">
-              OUT
-            </span>
           </div>
 
           <div className="my-1.5">
@@ -152,7 +138,7 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
           </div>
         </div>
 
-        {/* 4. เงินเข้าเดือนนี้ (Deposits / 1-UP Coin In) */}
+        {/* 4. เงินเข้าเดือนนี้ */}
         <div className="bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[3px_3px_0px_#242A20] dark:shadow-[3px_3px_0px_#0A0F0A] rounded-xl p-3 flex flex-col justify-between min-h-[110px]">
           <div className="flex items-center justify-between gap-1">
             <div className="flex items-center gap-1.5">
@@ -163,9 +149,6 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
                 เงินเข้าเดือนนี้
               </span>
             </div>
-            <span className="text-[9px] font-bold px-1.5 py-0.5 border border-[#242A20] dark:border-[#3C4A38] bg-emerald-100 dark:bg-emerald-950 text-[#306230] dark:text-emerald-300 rounded">
-              1-UP
-            </span>
           </div>
 
           <div className="my-1.5">
@@ -175,10 +158,7 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
           </div>
 
           <div className="flex items-center justify-between text-[10px] text-neutral-600 dark:text-neutral-400 font-medium">
-            <span>ฝากเข้า</span>
-            <span className="text-[9px] font-bold bg-emerald-200 dark:bg-emerald-900/80 text-[#0F380F] dark:text-emerald-200 px-1.5 py-0.2 rounded-sm border border-[#242A20] dark:border-[#3C4A38]">
-              COIN
-            </span>
+            <span>ฝากเข้าสะสม</span>
           </div>
         </div>
       </div>
@@ -189,21 +169,21 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
           <div className="flex items-center justify-between border-b-2 border-dashed border-[#242A20]/30 dark:border-[#3C4A38] pb-1.5">
             <div className="flex items-center gap-1.5">
               <Coins size={14} className="text-amber-600 dark:text-amber-400" />
-              <span className="font-silkscreen text-[10px] font-bold text-neutral-800 dark:text-neutral-200">
-                QUEST / รายการค้างคืน ({debtors.length})
+              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                รายการค้างคืน ({debtors.length} คน)
               </span>
             </div>
             <button
               onClick={() => setIsDebtorsExpanded(false)}
-              className="font-pixel text-[8px] text-neutral-500 hover:text-neutral-800 dark:hover:text-white"
+              className="text-[10px] text-neutral-500 hover:text-neutral-800 dark:hover:text-white font-medium"
             >
-              [X CLOSE]
+              ปิด
             </button>
           </div>
 
           {debtors.length === 0 ? (
             <div className="py-3 text-center text-xs text-neutral-500 font-medium">
-              เคลียร์ครบทุกยอดแล้ว! ALL CLEARED ★
+              เคลียร์ครบทุกยอดแล้ว
             </div>
           ) : (
             <div className="space-y-1.5 pt-1">
@@ -213,8 +193,7 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
                   className="flex items-center justify-between p-2 rounded-lg bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-[#242A20] dark:border-[#3C4A38] gap-2"
                 >
                   <div className="min-w-0">
-                    <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate flex items-center gap-1">
-                      <span className="font-pixel text-[8px] text-amber-600">P:</span>
+                    <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate">
                       {debtor.who}
                     </div>
                     <div className="text-[10px] text-neutral-500 tabular-nums">

@@ -361,7 +361,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
                 }`}
               >
                 <ArrowUpRight size={15} />
-                <span>จ่าย / โอนออก</span>
+                <span>จ่ายออก</span>
               </button>
               <button
                 type="button"
@@ -373,7 +373,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
                 }`}
               >
                 <ArrowDownLeft size={15} />
-                <span>เงินเข้า / ฝากเข้า</span>
+                <span>เงินเข้า</span>
               </button>
             </div>
 

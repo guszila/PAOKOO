@@ -404,14 +404,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 {formatThaiFullDate(activeSelectedDate)}
               </h4>
               <p className="text-[10px] font-medium text-neutral-500">
-                {activeSelectedDate === todayStr ? 'TODAY / วันนี้' : 'SELECTED DAY / วันที่เลือก'}
+                {activeSelectedDate === todayStr ? 'วันนี้' : 'วันที่เลือก'}
               </p>
             </div>
           </div>
 
           {/* Daily Net Summary */}
           <div className="text-right">
-            <span className="text-[10px] font-semibold text-neutral-500 block">NET / สุทธิ</span>
+            <span className="text-[10px] font-semibold text-neutral-500 block">สุทธิ</span>
             <span
               className={`text-sm font-bold tabular-nums ${
                 selectedDaySummary.net >= 0

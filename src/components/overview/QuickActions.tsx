@@ -15,7 +15,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
     {
       type: 'in' as TransactionType,
       label: 'เงินเข้า',
-      sub: '1-UP',
       icon: ArrowDownLeft,
       color: 'text-[#0F380F]',
       bgColor: 'bg-[#9BBC0F]',
@@ -23,7 +22,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
     {
       type: 'out' as TransactionType,
       label: 'จ่ายออก',
-      sub: 'DMG',
       icon: ArrowUpRight,
       color: 'text-white',
       bgColor: 'bg-[#8B1E43]',
@@ -31,7 +29,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
     {
       type: 'lend' as TransactionType,
       label: 'ให้ยืม',
-      sub: '2-PL',
       icon: HandCoins,
       color: 'text-[#451A03]',
       bgColor: 'bg-[#F59E0B]',
@@ -39,7 +36,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
     {
       type: 'back' as TransactionType,
       label: 'คืนเงิน',
-      sub: 'RECV',
       icon: CornerDownLeft,
       color: 'text-white',
       bgColor: 'bg-[#047857]',
@@ -56,7 +52,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
               key={act.type}
               type="button"
               onClick={() => onSelectAction(act.type)}
-              className="flex flex-col items-center justify-center flex-1 min-w-[58px] min-h-[58px] group select-none transition-transform active:translate-x-[1px] active:translate-y-[1px]"
+              className="flex flex-col items-center justify-center flex-1 min-w-[56px] py-1.5 group select-none transition-transform active:translate-x-[1px] active:translate-y-[1px]"
             >
               <div
                 className={`w-11 h-11 rounded-xl flex items-center justify-center border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[2.5px_2.5px_0px_#242A20] dark:shadow-[2.5px_2.5px_0px_#0A0F0A] ${act.bgColor} ${act.color} transition-transform group-active:shadow-none group-active:translate-y-[1px]`}
@@ -66,27 +62,21 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
               <span className="text-[11px] font-bold text-neutral-800 dark:text-neutral-200 mt-1.5 truncate">
                 {act.label}
               </span>
-              <span className="text-[9px] font-semibold text-neutral-500 dark:text-neutral-400">
-                {act.sub}
-              </span>
             </button>
           );
         })}
 
-        {/* Game Boy Camera / Scan Slip shortcut */}
+        {/* Scan Slip shortcut */}
         <button
           type="button"
           onClick={onOpenScanner}
-          className="flex flex-col items-center justify-center flex-1 min-w-[58px] min-h-[58px] group select-none transition-transform active:translate-x-[1px] active:translate-y-[1px]"
+          className="flex flex-col items-center justify-center flex-1 min-w-[56px] py-1.5 group select-none transition-transform active:translate-x-[1px] active:translate-y-[1px]"
         >
           <div className="w-11 h-11 rounded-xl flex items-center justify-center border-2 border-[#242A20] dark:border-[#3C4A38] bg-[#243C78] text-white shadow-[2.5px_2.5px_0px_#242A20] dark:shadow-[2.5px_2.5px_0px_#0A0F0A] transition-transform group-active:shadow-none group-active:translate-y-[1px]">
             <Camera size={19} strokeWidth={2.5} />
           </div>
           <span className="text-[11px] font-bold text-neutral-800 dark:text-neutral-200 mt-1.5 truncate">
-            กล้องสแกน
-          </span>
-          <span className="text-[9px] font-semibold text-neutral-500 dark:text-neutral-400">
-            GB-CAM
+            สแกนสลิป
           </span>
         </button>
       </div>

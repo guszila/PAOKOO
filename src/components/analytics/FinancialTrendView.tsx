@@ -716,10 +716,10 @@ export const FinancialTrendView: React.FC<FinancialTrendViewProps> = ({
       {/* 3. Daily Breakdown Table */}
       <div className="bg-surface-light dark:bg-surface-dark pixel-card rounded-2xl p-4 space-y-3">
         <div className="flex items-center justify-between pb-2 border-b-2 border-dashed border-[#242A20]/20 dark:border-[#3C4A38]/50">
-          <h4 className="font-silkscreen text-xs font-bold text-neutral-800 dark:text-neutral-200">
-            LOGS / การเคลื่อนไหวรายวัน ({activeDaysList.length})
+          <h4 className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+            การเคลื่อนไหวรายวัน ({activeDaysList.length} วัน)
           </h4>
-          <span className="font-pixel text-[8px] text-neutral-500">SELECT TO VIEW</span>
+          <span className="text-[10px] text-neutral-500 font-medium">แตะเพื่อดูรายการ</span>
         </div>
 
         {activeDaysList.length === 0 ? (

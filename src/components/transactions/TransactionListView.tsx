@@ -26,8 +26,8 @@ function getDayHeaderMeta(dateStr: string) {
 
   if (dateStr === todayStr) {
     return {
-      badge: 'TODAY',
-      sublabel: 'วันนี้',
+      badge: 'วันนี้',
+      sublabel: '',
       isToday: true,
       formattedDate: formatThaiFullDate(dateStr),
     };
@@ -35,8 +35,8 @@ function getDayHeaderMeta(dateStr: string) {
 
   if (dateStr === yesterdayStr) {
     return {
-      badge: 'YESTERDAY',
-      sublabel: 'เมื่อวาน',
+      badge: 'เมื่อวาน',
+      sublabel: '',
       isToday: false,
       formattedDate: formatThaiFullDate(dateStr),
     };
@@ -50,8 +50,8 @@ function getDayHeaderMeta(dateStr: string) {
   }
 
   return {
-    badge: dateStr,
-    sublabel: dayName,
+    badge: dayName || dateStr,
+    sublabel: '',
     isToday: false,
     formattedDate: formatThaiFullDate(dateStr),
   };
@@ -175,11 +175,11 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 bg-[#8B1E43] rounded-full" />
             <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 tracking-wider">
-              FILTER / ค้นหาและคัดกรอง
+              ค้นหาและคัดกรอง
             </span>
           </div>
           <span className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-400">
-            {filtered.length}/{transactions.length} ITEMS
+            {filtered.length}/{transactions.length} รายการ
           </span>
         </div>
         <TransactionFilters
@@ -200,7 +200,7 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
       {groupedTransactions.length === 0 ? (
         <div className="py-10 text-center text-xs text-neutral-500 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-2xl flex flex-col items-center gap-2 shadow-[2px_2px_0px_#242A20]">
           <Receipt size={24} strokeWidth={2} className="text-neutral-400" />
-          <span className="text-xs font-bold text-neutral-500">NOT FOUND / ไม่พบรายการ</span>
+          <span className="text-xs font-bold text-neutral-500">ไม่พบรายการ</span>
         </div>
       ) : (
         <div className="space-y-5">

@@ -59,14 +59,14 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <span className="text-[10px] font-semibold mt-0.5">รายการ</span>
         </button>
 
-        {/* Slot 3: Exact Center Floating Action Button (+) - Iconic Game Boy A-Button */}
+        {/* Slot 3: Exact Center Floating Action Button (+) */}
         <div className="flex items-center justify-center h-full relative">
           <div className="relative -top-4 flex flex-col items-center">
             <button
               onClick={onOpenAdd}
               className="relative w-[54px] h-[54px] rounded-full gb-btn-a text-white flex items-center justify-center border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[3px_3px_0px_#242A20] dark:shadow-[3px_3px_0px_#0A0F0A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all select-none group"
-              aria-label="เพิ่มรายการ (A Button)"
-              title="A BUTTON / บันทึกรายการใหม่"
+              aria-label="บันทึกรายการใหม่"
+              title="บันทึกรายการใหม่"
             >
               <Plus
                 size={26}
@@ -74,8 +74,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 className="transition-transform duration-200 group-hover:rotate-90 group-active:scale-90"
               />
             </button>
-            <span className="text-[9px] font-bold gb-accent-text mt-1 tracking-wider">
-              A-BTN
+            <span className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-400 mt-1">
+              เพิ่มรายการ
             </span>
           </div>
         </div>

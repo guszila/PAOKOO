@@ -45,36 +45,36 @@ export const Header: React.FC<HeaderProps> = ({
       case 'overview':
         return {
           title: APP_NAME,
-          subtitle: 'บันทึกรายรับรายจ่าย บัญชีคู่กระเป๋าเดียวกัน',
+          subtitle: 'บันทึกรายรับรายจ่าย บัญชีคู่สำหรับ 2 คน',
           pill1: household ? (
-            household.isLocked ? 'LINK: ซิงค์ 2 คน' : 'LINK: รอเชื่อมต่อ'
+            household.isLocked ? 'ซิงค์ 2 คนเรียบร้อย' : 'รอเชื่อมต่อคู่'
           ) : user ? (
-            'LINK: บัญชีคู่'
+            'โหมดบัญชีคู่'
           ) : (
-            'LINK: ออฟไลน์ (แตะซิงค์)'
+            'ออฟไลน์ (แตะซิงค์)'
           ),
-          pill2: latestDate ? `UPDATED: ${latestDate}` : 'READY TO PLAY',
+          pill2: latestDate ? `อัปเดต: ${latestDate}` : 'พร้อมใช้งาน',
         };
       case 'transactions':
         return {
-          title: 'LOG BOOK',
+          title: 'รายการทั้งหมด',
           subtitle: 'ประวัติเงินเข้า รายจ่าย และยอดเงินให้ยืมทั้งหมด',
-          pill1: `LOGS: ${totalTransactions}`,
-          pill2: 'SELECT TO EDIT',
+          pill1: `${totalTransactions} รายการ`,
+          pill2: 'แตะเพื่อแก้ไข',
         };
       case 'analytics':
         return {
-          title: 'STATS & CHARTS',
+          title: 'สถิติและการเงิน',
           subtitle: 'ปฏิทินรายรับ-จ่าย สถิติรายเดือน และสัดส่วนสินทรัพย์',
-          pill1: 'DONUT / CALENDAR',
-          pill2: 'MONTHLY METRICS',
+          pill1: 'ภาพรวมรายเดือน',
+          pill2: 'ปฏิทิน & สถิติ',
         };
       case 'settings':
         return {
-          title: 'SYSTEM CONFIG',
+          title: 'ตั้งค่าระบบ',
           subtitle: 'จัดการสมาชิกบัญชีคู่ หมวดหมู่ และธีมสีตัวเครื่อง',
-          pill1: household ? household.name : 'LOCAL SAVE',
-          pill2: 'CUSTOMIZE & SYNC',
+          pill1: household ? household.name : 'ข้อมูลในเครื่อง',
+          pill2: 'การตั้งค่าและซิงค์',
         };
     }
   }, [activeTab, household, user, totalTransactions, latestDate]);
@@ -95,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
               className={`cursor-pointer select-none group inline-flex items-baseline gap-2 transition-transform ${
                 isBouncing ? 'scale-95' : 'hover:scale-[1.01]'
               }`}
-              title="PAOKOO - GAME BOY EDITION"
+              title="PAOKOO"
             >
               <h1 className="text-2xl sm:text-3xl font-black tracking-wider flex items-baseline">
                 <span className="text-white drop-shadow-[2px_2px_0px_#181A20]">
@@ -105,9 +105,6 @@ export const Header: React.FC<HeaderProps> = ({
                   KOO
                 </span>
               </h1>
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded gb-accent-bg text-white border border-white/20 shadow-[1.5px_1.5px_0px_#000]">
-                POCKET
-              </span>
             </div>
           ) : (
             <div className="flex items-baseline gap-2">
@@ -117,10 +114,10 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          {/* Retro volume/mode indicator */}
+          {/* Sync mode indicator */}
           <div className="text-[10px] font-semibold text-neutral-400 flex items-center gap-1">
             <Radio size={10} className="text-[#9BBC0F]" />
-            <span>2P DUAL</span>
+            <span>บัญชีคู่</span>
           </div>
         </div>
 

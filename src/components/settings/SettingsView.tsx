@@ -169,11 +169,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <Sun size={15} strokeWidth={2} />
             </div>
             <div>
-              <h3 className="font-silkscreen text-xs font-bold text-neutral-900 dark:text-neutral-100">
-                THEME / ธีมและการแสดงผล
+              <h3 className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
+                ธีมและการแสดงผล
               </h3>
               <p className="text-[11px] text-neutral-500">
-                เลือกโหมดสว่าง-มืด และสีตัวเครื่อง Game Boy
+                เลือกโหมดสว่าง-มืด และโทนสีของแอป
               </p>
             </div>
           </div>
@@ -197,7 +197,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <button
             type="button"
             onClick={() => onThemeChange('light')}
-            className={`relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-silkscreen font-bold transition-colors duration-200 active:scale-95 ${
+            className={`relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-colors duration-200 active:scale-95 ${
               theme === 'light'
                 ? 'text-amber-600 dark:text-amber-400'
                 : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
@@ -210,7 +210,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <button
             type="button"
             onClick={() => onThemeChange('dark')}
-            className={`relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-silkscreen font-bold transition-colors duration-200 active:scale-95 ${
+            className={`relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-colors duration-200 active:scale-95 ${
               theme === 'dark'
                 ? 'text-emerald-600 dark:text-emerald-400'
                 : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
@@ -223,7 +223,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <button
             type="button"
             onClick={() => onThemeChange('system')}
-            className={`relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-silkscreen font-bold transition-colors duration-200 active:scale-95 ${
+            className={`relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-colors duration-200 active:scale-95 ${
               theme === 'system'
                 ? 'text-blue-600 dark:text-blue-400'
                 : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
@@ -234,14 +234,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </button>
         </div>
 
-        {/* Color Palette (Game Boy Edition) */}
+        {/* Color Palette */}
         <div className="pt-3 border-t-2 border-dashed border-[#242A20]/20 dark:border-[#3C4A38]/50 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="font-silkscreen text-[11px] font-bold text-neutral-800 dark:text-neutral-200">
-              COLOR EDITIONS / สีธีม Game Boy
+            <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+              โทนสีของแอป
             </span>
-            <span className="font-pixel text-[8px] px-1.5 py-0.5 rounded bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-[#242A20] dark:border-[#3C4A38] text-neutral-700 dark:text-neutral-300">
-              {COLOR_THEMES.find((c) => c.id === colorTheme)?.name || 'DMG Classic'}
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-[#242A20] dark:border-[#3C4A38] text-neutral-700 dark:text-neutral-300">
+              {COLOR_THEMES.find((c) => c.id === colorTheme)?.nameTh || 'เขียวคลาสสิก'}
             </span>
           </div>
 

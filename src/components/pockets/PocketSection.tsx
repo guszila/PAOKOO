@@ -27,10 +27,10 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 bg-[#F59E0B] border border-[#242A20] shadow-[1px_1px_0px_#242A20]" />
           <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 tracking-wider">
-            ITEM SLOTS / กล่องแบ่งเงินใช้
+            กล่องแบ่งเงินใช้
           </span>
           <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-[#242A20] dark:border-[#3C4A38] text-neutral-800 dark:text-neutral-200">
-            {pocketSummaries.length} SLOTS
+            {pocketSummaries.length} กล่อง
           </span>
         </div>
         <button
@@ -38,7 +38,7 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
           className="inline-flex items-center gap-1 text-[11px] font-bold text-[#306230] dark:text-[#9BBC0F] hover:underline p-1"
         >
           <Plus size={12} strokeWidth={3} />
-          <span>+ NEW</span>
+          <span>+ เพิ่มกล่อง</span>
         </button>
       </div>
 
@@ -50,7 +50,7 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
           </div>
           <div>
             <h4 className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
-              NO POCKETS YET / สร้างกล่องแบ่งเงิน
+              ยังไม่มีกล่องแบ่งเงิน
             </h4>
             <p className="text-[11px] text-neutral-600 dark:text-neutral-400 mt-1 max-w-xs mx-auto">
               แบ่งงบกิน เที่ยว ช้อปปิ้ง ตัดเงินแยกจากกองกลางได้ตามใจชอบ
@@ -61,7 +61,7 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B1E43] text-white text-[10px] font-bold rounded-lg border-2 border-[#242A20] shadow-[2px_2px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-transform"
           >
             <Plus size={12} strokeWidth={3} />
-            <span>CREATE POCKET</span>
+            <span>สร้างกล่องใหม่</span>
           </button>
         </div>
       ) : (
@@ -100,16 +100,16 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
                         {pocket.name}
                         {isOverspent ? (
                           <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-100 text-red-600 border border-red-500 font-bold">
-                            OVER
+                            เกินงบ
                           </span>
                         ) : isExhausted ? (
                           <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-500 font-bold">
-                            EMPTY
+                            หมดงบ
                           </span>
                         ) : null}
                       </h4>
                       <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                        MAX: {isMasked ? '••••' : `${formatSatang(summary.totalAllocatedSatang ?? pocket.allocatedSatang)}฿`}
+                        งบ: {isMasked ? '••••' : `${formatSatang(summary.totalAllocatedSatang ?? pocket.allocatedSatang)}฿`}
                       </p>
                     </div>
                   </div>
@@ -122,7 +122,7 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
                       title="เติมเงินเข้ากล่อง"
                     >
                       <PlusCircle size={11} strokeWidth={2.5} />
-                      <span>TOP-UP</span>
+                      <span>เติมเงิน</span>
                     </button>
                     <button
                       onClick={() => onOpenEdit(pocket)}
@@ -151,7 +151,7 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
                     </span>
                   </div>
                   <div className="text-[10px] font-medium text-neutral-600 dark:text-neutral-400">
-                    SPENT: {isMasked ? '••••' : `${formatSatang(spentSatang)}฿`} ({spentPercentage.toFixed(0)}%)
+                    ใช้ไป: {isMasked ? '••••' : `${formatSatang(spentSatang)}฿`} ({spentPercentage.toFixed(0)}%)
                   </div>
                 </div>
 

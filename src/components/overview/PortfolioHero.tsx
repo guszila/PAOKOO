@@ -117,7 +117,7 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
         <div className="flex items-center justify-between relative z-10 text-[10px] font-silkscreen">
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 bg-[#0F380F] dark:bg-[#9BBC0F] rounded-full" />
-            <span className="font-bold tracking-wider">TOTAL ASSETS / ยอดเงินคงเหลือ</span>
+            <span className="font-bold tracking-wider">ยอดเงินคงเหลือ</span>
           </div>
           <button
             onClick={onToggleMask}
@@ -161,7 +161,7 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
           {totalLentOut > 0 && (
             <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-[#0F380F] dark:border-[#3C4A38] bg-[#8BAC0F]/80 dark:bg-[#2A3E26] text-[10px] font-bold">
               <HandCoins size={11} strokeWidth={2.5} />
-              <span>LENT {isMasked ? '••' : `${formatSatang(totalLentOut)}฿`}</span>
+              <span>ให้ยืม {isMasked ? '••' : `${formatSatang(totalLentOut)}฿`}</span>
             </div>
           )}
         </div>
@@ -193,7 +193,7 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
       {/* Subline: Grand Total & Latest Update */}
       <div className="mt-2.5 pt-2 border-t-2 border-dashed border-[#242A20]/20 dark:border-[#3C4A38]/50 flex items-center justify-between text-[11px] text-neutral-600 dark:text-neutral-400">
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-semibold text-neutral-500">GRAND TOTAL:</span>
+          <span className="text-[10px] font-semibold text-neutral-500">ยอดรวมสุทธิ:</span>
           <span className="font-bold text-neutral-800 dark:text-neutral-200">
             {isMasked ? '••••' : `${formatSatang(grandTotal)} ฿`}
           </span>
@@ -209,7 +209,7 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 bg-[#8B1E43] rounded-full" />
           <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-            CHART / สัดส่วนการเงิน
+            สัดส่วนการเงิน
           </span>
         </div>
         <button
@@ -217,7 +217,7 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
           className="flex items-center gap-1 text-[10px] font-bold text-neutral-700 dark:text-neutral-300 py-1 px-2 rounded border border-[#242A20] dark:border-[#3C4A38] bg-surfaceElevated-light dark:bg-surfaceElevated-dark shadow-[1px_1px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
           aria-label={isDonutExpanded ? 'ย่อกราฟ' : 'ขยายกราฟ'}
         >
-          <span>{isDonutExpanded ? 'HIDE' : 'SHOW'}</span>
+          <span>{isDonutExpanded ? 'ซ่อน' : 'แสดง'}</span>
           <ChevronDown
             size={12}
             className={`transition-transform duration-200 ${
@@ -230,29 +230,29 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
       {/* Donut Breakdown Section (Collapsible) */}
       {isDonutExpanded && (
         <div className="mt-2.5 space-y-2.5 animate-fade-in">
-          {/* Retro Segmented Control: [A] & [B] Mode Select */}
+          {/* Segmented Control: Wealth & Expenses */}
           <div className="grid grid-cols-2 p-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-xl border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[2px_2px_0px_#242A20] dark:shadow-[2px_2px_0px_#0A0F0A] gap-1 select-none">
             <button
               type="button"
               onClick={() => setDonutTab('wealth')}
-              className={`py-1.5 text-xs font-silkscreen font-bold rounded-lg transition-all ${
+              className={`py-1.5 text-xs font-bold rounded-lg transition-all ${
                 donutTab === 'wealth'
                   ? 'bg-[#9BBC0F] text-[#0F380F] border border-[#242A20] shadow-[1px_1px_0px_#242A20]'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
               }`}
             >
-              [A] เงินของเรา
+              เงินของเรา
             </button>
             <button
               type="button"
               onClick={() => setDonutTab('expenses')}
-              className={`py-1.5 text-xs font-silkscreen font-bold rounded-lg transition-all ${
+              className={`py-1.5 text-xs font-bold rounded-lg transition-all ${
                 donutTab === 'expenses'
                   ? 'bg-[#8B1E43] text-white border border-[#242A20] shadow-[1px_1px_0px_#242A20]'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
               }`}
             >
-              [B] ค่าใช้จ่าย
+              ค่าใช้จ่าย
             </button>
           </div>
 

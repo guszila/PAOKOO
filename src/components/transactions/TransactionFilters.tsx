@@ -29,12 +29,12 @@ export const TransactionFilters: React.FC<TransactionFiltersProps> = ({
   onCategoryChange,
   categories = DEFAULT_EXPENSE_CATEGORIES,
 }) => {
-  const types: { key: TransactionType | 'all'; label: string; code: string }[] = [
-    { key: 'all', label: 'ทั้งหมด', code: 'ALL' },
-    { key: 'in', label: 'ฝากเข้า', code: 'IN' },
-    { key: 'out', label: 'รายจ่าย', code: 'OUT' },
-    { key: 'lend', label: 'ให้ยืม', code: 'LEND' },
-    { key: 'back', label: 'คืนเงิน', code: 'RECV' },
+  const types: { key: TransactionType | 'all'; label: string }[] = [
+    { key: 'all', label: 'ทั้งหมด' },
+    { key: 'in', label: 'เงินเข้า' },
+    { key: 'out', label: 'รายจ่าย' },
+    { key: 'lend', label: 'ให้ยืม' },
+    { key: 'back', label: 'คืนเงิน' },
   ];
 
   return (
@@ -60,7 +60,7 @@ export const TransactionFilters: React.FC<TransactionFiltersProps> = ({
             onChange={(e) => onMonthChange(e.target.value)}
             className="appearance-none pl-7 pr-6 py-2 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl text-xs font-semibold text-neutral-800 dark:text-neutral-200 shadow-[1.5px_1.5px_0px_#242A20] focus:outline-none cursor-pointer"
           >
-            <option value="all">ALL MONTH</option>
+            <option value="all">ทุกเดือน</option>
             {availableMonths.map((m) => (
               <option key={m} value={m}>
                 {m}
@@ -78,7 +78,7 @@ export const TransactionFilters: React.FC<TransactionFiltersProps> = ({
               onChange={(e) => onCategoryChange(e.target.value)}
               className="appearance-none pl-7 pr-6 py-2 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl text-xs font-semibold text-neutral-800 dark:text-neutral-200 shadow-[1.5px_1.5px_0px_#242A20] focus:outline-none cursor-pointer"
             >
-              <option value="all">ALL CATEGORIES</option>
+              <option value="all">ทุกหมวดหมู่</option>
               {categories.map((c) => (
                 <option key={c} value={c}>
                   {getCategoryEmoji(c)} {c}

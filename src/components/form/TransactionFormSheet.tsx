@@ -342,8 +342,8 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
 
           {/* 2. Large Amount Input with Quick Amount Pills */}
           <div className="bg-surfaceElevated-light dark:bg-surfaceElevated-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl p-3 text-center shadow-[2px_2px_0px_#242A20]">
-            <label className="text-[10px] font-silkscreen font-bold text-neutral-500 uppercase tracking-wider block mb-1">
-              AMOUNT / จำนวนเงิน (บาท)
+            <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 block mb-1">
+              จำนวนเงิน (บาท)
             </label>
             <div className="flex items-center justify-center gap-1">
               <span className="text-2xl text-neutral-400 font-light font-silkscreen">฿</span>
