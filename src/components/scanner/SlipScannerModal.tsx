@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { BottomSheet } from '../common/BottomSheet';
 import { Button } from '../common/Button';
-import { Camera, Image as ImageIcon, AlertTriangle, RefreshCw, ArrowRight, ShieldCheck, Wallet, QrCode, Sparkles } from 'lucide-react';
+import { Camera, Image as ImageIcon, AlertTriangle, RefreshCw, ArrowRight, ShieldCheck, Wallet, QrCode, Sparkles, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { scanBankSlip, ScanProgressUpdate, ScanSlipResult } from '../../lib/slip/scannerService';
-import { Transaction } from '../../types/transaction';
+import { Transaction, TransactionType } from '../../types/transaction';
 import { Pocket, PocketSummary } from '../../types/pocket';
 import { formatSatang } from '../../lib/money';
 import { formatSlipDisplayDate } from '../../lib/slip/slipParser';
@@ -18,7 +18,9 @@ interface SlipScannerModalProps {
   memberNames: string[];
   pockets?: Pocket[];
   pocketSummaries?: PocketSummary[];
+  initialType?: TransactionType;
   onApplySlip: (data: {
+    type?: TransactionType;
     amountSatang: number;
     date: string;
     time?: string;
@@ -38,6 +40,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
   memberNames,
   pockets = [],
   pocketSummaries = [],
+  initialType = 'out',
   onApplySlip,
 }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -48,6 +51,13 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
   const [editableAmount, setEditableAmount] = useState<string>('');
   const [selectedPocketId, setSelectedPocketId] = useState<string | undefined>(undefined);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [slipType, setSlipType] = useState<TransactionType>(initialType || 'out');
+
+  useEffect(() => {
+    if (isOpen) {
+      setSlipType(initialType || 'out');
+    }
+  }, [isOpen, initialType]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -61,6 +71,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
     setEditableAmount('');
     setSelectedPocketId(undefined);
     setErrorMsg(null);
+    setSlipType(initialType || 'out');
   };
 
   const handleClose = () => {
@@ -161,6 +172,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
     }
 
     onApplySlip({
+      type: slipType,
       amountSatang,
       date,
       time: parsed.time,
@@ -337,6 +349,34 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
               </div>
             )}
 
+            {/* Transaction Type Selector (จ่าย vs เงินเข้า) */}
+            <div className="flex items-center gap-1.5 p-1 bg-neutral-100 dark:bg-surfaceElevated-dark rounded-2xl border border-border-light dark:border-border-dark">
+              <button
+                type="button"
+                onClick={() => setSlipType('out')}
+                className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                  slipType === 'out'
+                    ? 'bg-red-500 text-white shadow-sm'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                }`}
+              >
+                <ArrowUpRight size={15} />
+                <span>จ่าย / โอนออก</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSlipType('in')}
+                className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                  slipType === 'in'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                }`}
+              >
+                <ArrowDownLeft size={15} />
+                <span>เงินเข้า / ฝากเข้า</span>
+              </button>
+            </div>
+
             {/* Extracted Details Card */}
             <div className="p-4 rounded-3xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm space-y-3">
               <div className="flex items-start justify-between">
@@ -412,9 +452,16 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
               {/* Pocket Selection in Slip Scanner */}
               {pockets && pockets.length > 0 && (
                 <div className="pt-2 border-t border-border-light dark:border-border-dark space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                    <Wallet size={12} />
-                    <span>หักเงินจากกล่อง</span>
+                  <div className="flex items-center justify-between text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                    <div className="flex items-center gap-1.5">
+                      <Wallet size={12} />
+                      <span>{slipType === 'in' ? 'เพิ่มเงินเข้าบัญชีไหน' : 'ตัดเงินจากบัญชีไหน'}</span>
+                    </div>
+                    {selectedPocketId && (
+                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                        {slipType === 'in' ? 'เข้ากล่องแบ่งเงิน' : 'ตัดจากกล่องแบ่งใช้'}
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <button

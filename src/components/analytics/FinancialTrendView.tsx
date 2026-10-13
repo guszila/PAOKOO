@@ -45,6 +45,37 @@ function formatYAxisLabel(satang: number, isMasked: boolean = false): string {
   return baht.toLocaleString('en-US');
 }
 
+/**
+ * Calculates a nice ceiling value for Y-Axis so peak points don't touch the top edge
+ * and grid intervals divide evenly into clean, readable numbers.
+ */
+function getNiceYAxisMax(highestSatang: number): number {
+  if (highestSatang <= 10000) return 10000; // Minimum scale: 100 Baht
+
+  const highestBaht = highestSatang / 100;
+  // Target ceiling with at least 15% headroom so line has breathing room
+  const minTargetBaht = highestBaht * 1.15;
+
+  // Nice step candidates per order of magnitude for 4 intervals (gridlines)
+  const exponent = Math.floor(Math.log10(minTargetBaht / 4));
+  const magnitude = Math.pow(10, Math.max(0, exponent));
+
+  const niceSteps = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
+  let chosenStep = 10 * magnitude;
+
+  for (const stepMultiplier of niceSteps) {
+    const candidateStep = stepMultiplier * magnitude;
+    const candidateMax = candidateStep * 4;
+    if (candidateMax >= minTargetBaht) {
+      chosenStep = candidateStep;
+      break;
+    }
+  }
+
+  const niceMaxBaht = chosenStep * 4;
+  return Math.round(niceMaxBaht * 100);
+}
+
 export const FinancialTrendView: React.FC<FinancialTrendViewProps> = ({
   transactions,
   yearMonth,
@@ -96,10 +127,10 @@ export const FinancialTrendView: React.FC<FinancialTrendViewProps> = ({
   const chartW = svgWidth - padLeft - padRight;
   const chartH = svgHeight - padTop - padBottom;
 
-  // Maximum value for scaling
+  // Maximum value for scaling (with nice headroom buffer so peaks don't hug the top border)
   const { maxVal, pointsCoords } = useMemo(() => {
     const pts = trend.points;
-    if (pts.length === 0) return { maxVal: 1, pointsCoords: [] };
+    if (pts.length === 0) return { maxVal: 10000, pointsCoords: [] };
 
     let highest = 0;
 
@@ -122,6 +153,9 @@ export const FinancialTrendView: React.FC<FinancialTrendViewProps> = ({
 
     if (highest <= 0) highest = 10000; // Fallback scale: 100 Baht
 
+    // Add headroom and round to nice intervals for 4-segment grid
+    const scaleMax = getNiceYAxisMax(highest);
+
     // Map each day to (x, y) coordinates
     const stepX = chartW / Math.max(1, pts.length - 1);
 
@@ -134,12 +168,12 @@ export const FinancialTrendView: React.FC<FinancialTrendViewProps> = ({
       if (chartMode === 'dual') {
         const valIn = calcMode === 'cumulative' ? p.cumulativeIncome : p.income;
         const valOut = calcMode === 'cumulative' ? p.cumulativeExpense : p.expense;
-        yIn = padTop + chartH - (valIn / highest) * chartH;
-        yOut = padTop + chartH - (valOut / highest) * chartH;
+        yIn = padTop + chartH - (valIn / scaleMax) * chartH;
+        yOut = padTop + chartH - (valOut / scaleMax) * chartH;
       } else {
         const valNet = calcMode === 'cumulative' ? p.cumulativeNet : p.net;
         // Midpoint is 0 net
-        yNet = padTop + chartH / 2 - (valNet / highest) * (chartH / 2);
+        yNet = padTop + chartH / 2 - (valNet / scaleMax) * (chartH / 2);
       }
 
       return {
@@ -151,7 +185,7 @@ export const FinancialTrendView: React.FC<FinancialTrendViewProps> = ({
       };
     });
 
-    return { maxVal: highest, pointsCoords: coords };
+    return { maxVal: scaleMax, pointsCoords: coords };
   }, [trend.points, chartMode, calcMode, chartW, chartH, padLeft, padTop]);
 
   // Generate SVG curve paths

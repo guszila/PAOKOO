@@ -10,6 +10,7 @@ export interface Pocket {
 
 export interface PocketSummary {
   pocket: Pocket;
+  totalAllocatedSatang?: number;
   spentSatang: number;
   remainingSatang: number;
   spentPercentage: number;

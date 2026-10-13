@@ -109,7 +109,7 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
                         ) : null}
                       </h4>
                       <p className="font-pixel text-[9px] text-neutral-500 dark:text-neutral-400">
-                        MAX: {isMasked ? '••••' : `${formatSatang(pocket.allocatedSatang)}฿`}
+                        MAX: {isMasked ? '••••' : `${formatSatang(summary.totalAllocatedSatang ?? pocket.allocatedSatang)}฿`}
                       </p>
                     </div>
                   </div>
