@@ -58,7 +58,7 @@ export const TransactionFilters: React.FC<TransactionFiltersProps> = ({
           <select
             value={selectedMonth}
             onChange={(e) => onMonthChange(e.target.value)}
-            className="appearance-none pl-7 pr-6 py-2 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl text-xs font-silkscreen text-neutral-800 dark:text-neutral-200 shadow-[1.5px_1.5px_0px_#242A20] focus:outline-none cursor-pointer"
+            className="appearance-none pl-7 pr-6 py-2 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl text-xs font-semibold text-neutral-800 dark:text-neutral-200 shadow-[1.5px_1.5px_0px_#242A20] focus:outline-none cursor-pointer"
           >
             <option value="all">ALL MONTH</option>
             {availableMonths.map((m) => (
@@ -76,7 +76,7 @@ export const TransactionFilters: React.FC<TransactionFiltersProps> = ({
             <select
               value={selectedCategory}
               onChange={(e) => onCategoryChange(e.target.value)}
-              className="appearance-none pl-7 pr-6 py-2 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl text-xs font-silkscreen text-neutral-800 dark:text-neutral-200 shadow-[1.5px_1.5px_0px_#242A20] focus:outline-none cursor-pointer"
+              className="appearance-none pl-7 pr-6 py-2 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-xl text-xs font-semibold text-neutral-800 dark:text-neutral-200 shadow-[1.5px_1.5px_0px_#242A20] focus:outline-none cursor-pointer"
             >
               <option value="all">ALL CATEGORIES</option>
               {categories.map((c) => (
@@ -98,7 +98,7 @@ export const TransactionFilters: React.FC<TransactionFiltersProps> = ({
             <button
               key={t.key}
               onClick={() => onTypeChange(t.key)}
-              className={`min-h-[32px] px-3 text-xs font-silkscreen font-bold rounded-lg transition-all shrink-0 border-2 border-[#242A20] dark:border-[#3C4A38] active:translate-x-[1px] active:translate-y-[1px] ${
+              className={`min-h-[32px] px-3 text-xs font-bold rounded-lg transition-all shrink-0 border-2 border-[#242A20] dark:border-[#3C4A38] active:translate-x-[1px] active:translate-y-[1px] ${
                 isActive
                   ? 'bg-[#8B1E43] text-white shadow-[2px_2px_0px_#242A20] dark:shadow-[2px_2px_0px_#0A0F0A]'
                   : 'bg-surfaceElevated-light dark:bg-surfaceElevated-dark text-neutral-700 dark:text-neutral-300 shadow-[1.5px_1.5px_0px_#242A20] hover:bg-neutral-200 dark:hover:bg-neutral-800'

@@ -62,14 +62,7 @@ export default {
       },
       fontFamily: {
         pixel: [
-          '"Press Start 2P"',
-          'monospace',
-        ],
-        silkscreen: [
-          '"Silkscreen"',
-          'monospace',
-        ],
-        sans: [
+          '"Outfit"',
           '"Noto Sans Thai"',
           '-apple-system',
           'BlinkMacSystemFont',
@@ -77,8 +70,25 @@ export default {
           'Roboto',
           'sans-serif',
         ],
+        silkscreen: [
+          '"Outfit"',
+          '"Noto Sans Thai"',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          'Roboto',
+          'sans-serif',
+        ],
+        sans: [
+          '"Noto Sans Thai"',
+          '"Outfit"',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          'Roboto',
+          'sans-serif',
+        ],
         brand: [
-          '"Silkscreen"',
           '"Outfit"',
           '"Noto Sans Thai"',
           'sans-serif',

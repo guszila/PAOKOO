@@ -97,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
               title="PAOKOO - GAME BOY EDITION"
             >
-              <h1 className="font-silkscreen text-2xl sm:text-3xl font-bold tracking-wider flex items-baseline">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-wider flex items-baseline">
                 <span className="text-white drop-shadow-[2px_2px_0px_#181A20]">
                   PAO
                 </span>
@@ -105,20 +105,20 @@ export const Header: React.FC<HeaderProps> = ({
                   KOO
                 </span>
               </h1>
-              <span className="font-pixel text-[8px] px-1.5 py-0.5 rounded gb-accent-bg text-white border border-white/20 shadow-[1.5px_1.5px_0px_#000]">
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded gb-accent-bg text-white border border-white/20 shadow-[1.5px_1.5px_0px_#000]">
                 POCKET
               </span>
             </div>
           ) : (
             <div className="flex items-baseline gap-2">
-              <h1 className="font-silkscreen text-xl sm:text-2xl font-bold text-white tracking-wide drop-shadow-[2px_2px_0px_#181A20]">
+              <h1 className="text-xl sm:text-2xl font-black text-white tracking-wide drop-shadow-[2px_2px_0px_#181A20]">
                 {headerContent.title}
               </h1>
             </div>
           )}
 
           {/* Retro volume/mode indicator */}
-          <div className="font-pixel text-[8px] text-neutral-400 flex items-center gap-1">
+          <div className="text-[10px] font-semibold text-neutral-400 flex items-center gap-1">
             <Radio size={10} className="text-[#9BBC0F]" />
             <span>2P DUAL</span>
           </div>
@@ -132,7 +132,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-2 flex-wrap pt-1">
           <button
             onClick={handleSyncChipClick}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-silkscreen bg-[#282A36] hover:bg-[#1E202A] border-2 border-[#242A20] shadow-[2px_2px_0px_#181A20] text-neutral-200 transition-transform active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold bg-[#282A36] hover:bg-[#1E202A] border-2 border-[#242A20] shadow-[2px_2px_0px_#181A20] text-neutral-200 transition-transform active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
           >
             <span
               className={`w-1.5 h-1.5 rounded-sm ${household?.isLocked ? 'bg-[#9BBC0F] shadow-[0_0_4px_#9BBC0F]' : 'bg-amber-400'}`}
@@ -140,7 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span>{headerContent.pill1}</span>
           </button>
 
-          <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-pixel bg-black/40 border border-white/10 text-neutral-300">
+          <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-medium bg-black/40 border border-white/10 text-neutral-300">
             <Clock size={10} className="opacity-70" />
             <span>{headerContent.pill2}</span>
           </div>

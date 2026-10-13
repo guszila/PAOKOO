@@ -99,7 +99,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
             <div className="h-[2px] bg-[#1E3A8A] rounded-full" />
           </div>
 
-          <span className="font-silkscreen text-[9px] tracking-wider text-[#242A20] font-bold">
+          <span className="text-[10px] tracking-wider text-[#242A20] font-bold">
             DOT MATRIX WITH STEREO SOUND
           </span>
 
@@ -124,7 +124,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
           {/* Battery LED on left bezel side */}
           <div className="absolute top-2 left-2 flex items-center gap-1 z-10">
             <span className="w-2 h-2 rounded-full bg-[#8B1E43] shadow-[0_0_4px_#8B1E43] animate-pulse" />
-            <span className="font-pixel text-[8px] text-[#0F380F] font-bold">BATTERY</span>
+            <span className="text-[9px] text-[#0F380F] font-bold tracking-wider">BATTERY</span>
           </div>
 
           {/* The Iconic Dropping Logo */}
@@ -136,16 +136,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
             }}
           >
             <div className="flex items-baseline">
-              <h1 className="font-silkscreen text-3xl sm:text-4xl font-black text-[#0F380F] tracking-widest drop-shadow-[2px_2px_0px_#8BAC0F]">
+              <h1 className="text-3xl sm:text-4xl font-black text-[#0F380F] tracking-widest drop-shadow-[2px_2px_0px_#8BAC0F]">
                 PAOKOO
               </h1>
-              <span className="font-pixel text-xs text-[#0F380F] font-bold ml-1">
+              <span className="text-xs text-[#0F380F] font-black ml-1">
                 ®
               </span>
             </div>
 
             <div
-              className={`font-pixel text-[9px] text-[#306230] font-bold mt-1 tracking-wider transition-opacity duration-150 ${
+              className={`text-[10px] text-[#306230] font-bold mt-1 tracking-wider transition-opacity duration-150 ${
                 hasLanded ? 'opacity-100' : 'opacity-0'
               }`}
             >
@@ -154,7 +154,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
           </div>
 
           {/* Fast skip hint at bottom */}
-          <div className="absolute bottom-1 right-2 text-[8px] font-pixel text-[#306230]/70">
+          <div className="absolute bottom-1 right-2 text-[9px] font-semibold text-[#306230]/70 tracking-wider">
             TOUCH TO SKIP
           </div>
         </div>

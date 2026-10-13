@@ -123,6 +123,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     };
   }, [transactions, yearMonth]);
 
+  // Format short Baht without decimals for narrow monthly summary cards
+  const formatBahtShort = (satang: number) => {
+    const baht = Math.round(satang / 100);
+    return baht.toLocaleString('en-US');
+  };
+
   // Selected day summary & transactions
   const selectedDaySummary = useMemo(() => {
     const dayData = groupedData[activeSelectedDate];
@@ -159,14 +165,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         </button>
 
         <div className="flex items-center gap-2">
-          <span className="font-silkscreen font-bold text-neutral-800 dark:text-neutral-100 text-xs sm:text-sm">
+          <span className="font-bold text-neutral-800 dark:text-neutral-100 text-sm sm:text-base">
             {formatThaiMonthYear(yearMonth)}
           </span>
           {!todayStr.startsWith(yearMonth) && (
             <button
               type="button"
               onClick={handleGoToday}
-              className="font-pixel text-[9px] px-2 py-0.5 rounded bg-[#9BBC0F] text-[#0F380F] border border-[#242A20] shadow-[1px_1px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] select-none"
+              className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#9BBC0F] text-[#0F380F] border border-[#242A20] shadow-[1px_1px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] select-none"
             >
               TODAY
             </button>
@@ -186,35 +192,35 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       {/* 2. Monthly Summary Strip (Income, Expense, Net) */}
       <div className="grid grid-cols-3 gap-2">
         {/* Income Card */}
-        <div className="p-2.5 rounded-xl bg-surface-light dark:bg-surface-dark pixel-card-sm text-center">
+        <div className="p-2 sm:p-2.5 rounded-xl bg-surface-light dark:bg-surface-dark pixel-card-sm text-center">
           <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-neutral-600 dark:text-neutral-400 mb-0.5">
             <TrendingUp size={12} strokeWidth={2.5} className="text-[#306230] dark:text-emerald-400" />
             <span>เงินเข้า</span>
           </div>
-          <div className="font-silkscreen text-xs font-bold text-[#306230] dark:text-emerald-400 tabular-nums truncate">
-            {isMasked ? '••••' : `+${formatSatang(monthSummary.inTotal)} ฿`}
+          <div className="font-silkscreen text-[11px] sm:text-xs font-bold text-[#306230] dark:text-emerald-400 tabular-nums truncate">
+            {isMasked ? '••••' : `+${formatBahtShort(monthSummary.inTotal)} ฿`}
           </div>
         </div>
 
         {/* Expense Card */}
-        <div className="p-2.5 rounded-xl bg-surface-light dark:bg-surface-dark pixel-card-sm text-center">
+        <div className="p-2 sm:p-2.5 rounded-xl bg-surface-light dark:bg-surface-dark pixel-card-sm text-center">
           <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-neutral-600 dark:text-neutral-400 mb-0.5">
             <TrendingDown size={12} strokeWidth={2.5} className="text-[#8B1E43] dark:text-red-400" />
             <span>จ่ายออก</span>
           </div>
-          <div className="font-silkscreen text-xs font-bold text-[#8B1E43] dark:text-red-400 tabular-nums truncate">
-            {isMasked ? '••••' : `-${formatSatang(monthSummary.outTotal)} ฿`}
+          <div className="font-silkscreen text-[11px] sm:text-xs font-bold text-[#8B1E43] dark:text-red-400 tabular-nums truncate">
+            {isMasked ? '••••' : `-${formatBahtShort(monthSummary.outTotal)} ฿`}
           </div>
         </div>
 
         {/* Net Card */}
-        <div className="p-2.5 rounded-xl bg-surface-light dark:bg-surface-dark pixel-card-sm text-center">
+        <div className="p-2 sm:p-2.5 rounded-xl bg-surface-light dark:bg-surface-dark pixel-card-sm text-center">
           <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-neutral-600 dark:text-neutral-400 mb-0.5">
             <Scale size={12} strokeWidth={2.5} className="text-neutral-700 dark:text-neutral-300" />
             <span>สุทธิ</span>
           </div>
           <div
-            className={`font-silkscreen text-xs font-bold tabular-nums truncate ${
+            className={`font-silkscreen text-[11px] sm:text-xs font-bold tabular-nums truncate ${
               monthSummary.net >= 0
                 ? 'text-[#306230] dark:text-emerald-400'
                 : 'text-[#8B1E43] dark:text-red-400'
@@ -222,7 +228,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           >
             {isMasked
               ? '••••'
-              : `${monthSummary.net >= 0 ? '+' : ''}${formatSatang(monthSummary.net)} ฿`}
+              : `${monthSummary.net >= 0 ? '+' : '-'}${formatBahtShort(Math.abs(monthSummary.net))} ฿`}
           </div>
         </div>
       </div>
@@ -234,7 +240,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           {WEEKDAYS.map((wd) => (
             <div
               key={wd.label}
-              className={`font-silkscreen text-[10px] font-bold py-0.5 ${
+              className={`text-[11px] font-bold py-0.5 ${
                 wd.isSun
                   ? 'text-red-500 dark:text-red-400'
                   : wd.isSat
@@ -271,9 +277,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     setSelectedDate(day.dateStr);
                   }
                 }}
-                className={`relative min-h-[52px] sm:min-h-[58px] p-1 rounded-xl flex flex-col items-center justify-between select-none cursor-pointer transition-all duration-150 ${
+                className={`relative min-h-[54px] sm:min-h-[60px] p-1 rounded-xl flex flex-col items-center justify-between select-none cursor-pointer transition-all duration-150 ${
                   isSelected
-                    ? 'bg-[#242A20] text-white dark:bg-white dark:text-[#242A20] border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[2px_2px_0px_#242A20] dark:shadow-[2px_2px_0px_#fff] font-bold'
+                    ? 'bg-[#9BBC0F] text-[#0F380F] border-2 border-[#242A20] dark:border-[#9BBC0F] shadow-[2px_2px_0px_#242A20] dark:shadow-[2px_2px_0px_#0A0F0A] font-bold'
                     : day.isToday
                     ? 'border-2 border-[#306230] dark:border-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40 shadow-[1px_1px_0px_#306230] font-bold'
                     : day.isCurrentMonth
@@ -283,9 +289,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               >
                 {/* Day Number */}
                 <span
-                  className={`font-silkscreen text-xs font-bold leading-tight ${
+                  className={`text-xs font-bold leading-tight ${
                     isSelected
-                      ? 'text-white dark:text-neutral-900'
+                      ? 'text-[#0F380F]'
                       : day.isSunday
                       ? 'text-red-500 dark:text-red-400'
                       : day.isSaturday
@@ -297,15 +303,15 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 </span>
 
                 {/* Amount Badges Container with fixed height & 2 designated rows */}
-                <div className="w-full h-[26px] flex flex-col justify-end gap-0.5 overflow-hidden">
+                <div className="w-full h-[28px] flex flex-col justify-end gap-0.5 overflow-hidden">
                   {/* Row 1: Income Slot */}
-                  <div className="h-[12px] w-full flex items-center justify-center">
+                  <div className="h-[13px] w-full flex items-center justify-center">
                     {hasIncome && (
                       <span
-                        className={`font-pixel text-[8px] font-bold px-1 py-0.2 rounded-xs leading-none truncate w-full text-center transition-opacity duration-150 ${
+                        className={`font-sans font-bold text-[9px] tracking-tight leading-none px-1 py-0.5 rounded-[3px] w-full text-center whitespace-nowrap overflow-hidden transition-opacity duration-150 ${
                           isSelected
-                            ? 'bg-emerald-400 text-[#0F380F]'
-                            : 'bg-emerald-100 dark:bg-emerald-950/80 text-[#0F380F] dark:text-emerald-300 border border-[#242A20]/30'
+                            ? 'bg-[#0F380F] text-[#9BBC0F] font-extrabold'
+                            : 'bg-emerald-100 dark:bg-emerald-950/90 text-emerald-800 dark:text-emerald-300 border border-emerald-400/40 dark:border-emerald-600/50'
                         } ${showIncome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                       >
                         {isMasked ? '•••' : `+${formatCompactAmount(summary.inAmount)}`}
@@ -314,13 +320,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   </div>
 
                   {/* Row 2: Expense Slot */}
-                  <div className="h-[12px] w-full flex items-center justify-center">
+                  <div className="h-[13px] w-full flex items-center justify-center">
                     {hasExpense && (
                       <span
-                        className={`font-pixel text-[8px] font-bold px-1 py-0.2 rounded-xs leading-none truncate w-full text-center transition-opacity duration-150 ${
+                        className={`font-sans font-bold text-[9px] tracking-tight leading-none px-1 py-0.5 rounded-[3px] w-full text-center whitespace-nowrap overflow-hidden transition-opacity duration-150 ${
                           isSelected
-                            ? 'bg-red-400 text-[#4A0D21]'
-                            : 'bg-red-100 dark:bg-red-950/80 text-[#8B1E43] dark:text-red-300 border border-[#242A20]/30'
+                            ? 'bg-[#8B1E43] text-white font-extrabold'
+                            : 'bg-rose-100 dark:bg-rose-950/90 text-rose-800 dark:text-rose-300 border border-rose-400/40 dark:border-rose-700/50'
                         } ${showExpense ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                       >
                         {isMasked ? '•••' : `-${formatCompactAmount(summary.outAmount)}`}
@@ -351,9 +357,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             <button
               type="button"
               onClick={() => setFilterType('out')}
-              className={`relative z-10 flex-1 py-1.5 px-2 text-xs text-center select-none rounded-lg transition-colors duration-150 font-silkscreen ${
+              className={`relative z-10 flex-1 py-1.5 px-2 text-xs font-bold text-center select-none rounded-lg transition-colors duration-150 ${
                 filterType === 'out'
-                  ? 'text-red-600 dark:text-red-400 font-bold'
+                  ? 'text-red-600 dark:text-red-400'
                   : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
               }`}
             >
@@ -362,9 +368,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             <button
               type="button"
               onClick={() => setFilterType('in')}
-              className={`relative z-10 flex-1 py-1.5 px-2 text-xs text-center select-none rounded-lg transition-colors duration-150 font-silkscreen ${
+              className={`relative z-10 flex-1 py-1.5 px-2 text-xs font-bold text-center select-none rounded-lg transition-colors duration-150 ${
                 filterType === 'in'
-                  ? 'text-emerald-600 dark:text-emerald-400 font-bold'
+                  ? 'text-emerald-600 dark:text-emerald-400'
                   : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
               }`}
             >
@@ -373,9 +379,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             <button
               type="button"
               onClick={() => setFilterType('all')}
-              className={`relative z-10 flex-1 py-1.5 px-2 text-xs text-center select-none rounded-lg transition-colors duration-150 font-silkscreen ${
+              className={`relative z-10 flex-1 py-1.5 px-2 text-xs font-bold text-center select-none rounded-lg transition-colors duration-150 ${
                 filterType === 'all'
-                  ? 'text-neutral-900 dark:text-neutral-100 font-bold'
+                  ? 'text-neutral-900 dark:text-neutral-100'
                   : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
               }`}
             >
@@ -394,10 +400,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               <CalendarIcon size={14} strokeWidth={2.5} />
             </div>
             <div>
-              <h4 className="font-silkscreen text-xs font-bold text-neutral-900 dark:text-neutral-100">
+              <h4 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
                 {formatThaiFullDate(activeSelectedDate)}
               </h4>
-              <p className="font-pixel text-[9px] text-neutral-500">
+              <p className="text-[10px] font-medium text-neutral-500">
                 {activeSelectedDate === todayStr ? 'TODAY / วันนี้' : 'SELECTED DAY / วันที่เลือก'}
               </p>
             </div>
@@ -405,9 +411,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
           {/* Daily Net Summary */}
           <div className="text-right">
-            <span className="font-pixel text-[8px] text-neutral-500 block">NET / สุทธิ</span>
+            <span className="text-[10px] font-semibold text-neutral-500 block">NET / สุทธิ</span>
             <span
-              className={`font-silkscreen text-xs font-bold tabular-nums ${
+              className={`text-sm font-bold tabular-nums ${
                 selectedDaySummary.net >= 0
                   ? 'text-[#306230] dark:text-emerald-400'
                   : 'text-[#8B1E43] dark:text-red-400'
@@ -423,9 +429,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         {/* 3-column day summary strip */}
         <div className="grid grid-cols-3 gap-2 py-2 px-1 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-xl border-2 border-[#242A20] dark:border-[#3C4A38] text-center">
           <div>
-            <span className="font-pixel text-[8px] text-neutral-500 block mb-0.5">สุทธิ</span>
+            <span className="text-[10px] font-semibold text-neutral-500 block mb-0.5">สุทธิ</span>
             <span
-              className={`font-silkscreen text-xs font-bold tabular-nums ${
+              className={`font-silkscreen text-[11px] sm:text-xs font-bold tabular-nums truncate block ${
                 selectedDaySummary.net >= 0
                   ? 'text-[#306230] dark:text-emerald-400'
                   : 'text-[#8B1E43] dark:text-red-400'
@@ -438,15 +444,15 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           </div>
 
           <div>
-            <span className="font-pixel text-[8px] text-neutral-500 block mb-0.5">เข้า</span>
-            <span className="font-silkscreen text-xs font-bold text-[#306230] dark:text-emerald-400 tabular-nums">
+            <span className="text-[10px] font-semibold text-neutral-500 block mb-0.5">เข้า</span>
+            <span className="font-silkscreen text-[11px] sm:text-xs font-bold text-[#306230] dark:text-emerald-400 tabular-nums truncate block">
               {isMasked ? '••••' : `+${formatSatang(selectedDaySummary.inAmount)} ฿`}
             </span>
           </div>
 
           <div>
-            <span className="font-pixel text-[8px] text-neutral-500 block mb-0.5">จ่าย</span>
-            <span className="font-silkscreen text-xs font-bold text-[#8B1E43] dark:text-red-400 tabular-nums">
+            <span className="text-[10px] font-semibold text-neutral-500 block mb-0.5">จ่าย</span>
+            <span className="font-silkscreen text-[11px] sm:text-xs font-bold text-[#8B1E43] dark:text-red-400 tabular-nums truncate block">
               {isMasked ? '••••' : `-${formatSatang(selectedDaySummary.outAmount)} ฿`}
             </span>
           </div>

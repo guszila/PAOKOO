@@ -135,17 +135,17 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
           className="mt-2 flex items-baseline gap-2 cursor-pointer select-none active:scale-[0.98] transition-transform relative z-10"
           title="แตะเพื่อโปรยเหรียญ! ★"
         >
-          <span className="font-silkscreen text-3xl sm:text-4xl font-bold tracking-tight truncate leading-tight">
+          <span className="text-3xl sm:text-4xl font-black tracking-tight truncate leading-tight">
             {isMasked ? '••••••••' : formatSatang(currentBalance)}
           </span>
-          <span className="font-pixel text-xs opacity-80">
+          <span className="text-sm font-bold opacity-80">
             ฿
           </span>
         </div>
 
         {/* Screen Bottom Metrics: Net change & Lent badge */}
         <div className="mt-2.5 flex items-center gap-2 flex-wrap relative z-10 text-[10px]">
-          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-[#0F380F] dark:border-[#3C4A38] bg-[#8BAC0F]/80 dark:bg-[#2A3E26] font-pixel text-[9px] shadow-[1px_1px_0px_#0F380F]">
+          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-[#0F380F] dark:border-[#3C4A38] bg-[#8BAC0F]/80 dark:bg-[#2A3E26] text-[10px] font-bold shadow-[1px_1px_0px_#0F380F]">
             {thisMonthNet >= 0 ? (
               <TrendingUp size={11} strokeWidth={3} />
             ) : (
@@ -159,7 +159,7 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
           </div>
 
           {totalLentOut > 0 && (
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-[#0F380F] dark:border-[#3C4A38] bg-[#8BAC0F]/80 dark:bg-[#2A3E26] font-pixel text-[9px]">
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-[#0F380F] dark:border-[#3C4A38] bg-[#8BAC0F]/80 dark:bg-[#2A3E26] text-[10px] font-bold">
               <HandCoins size={11} strokeWidth={2.5} />
               <span>LENT {isMasked ? '••' : `${formatSatang(totalLentOut)}฿`}</span>
             </div>
@@ -173,7 +173,7 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="text-xs">🏦</span>
             <span className="text-neutral-600 dark:text-neutral-400 truncate text-[11px]">กองกลาง:</span>
-            <span className="font-silkscreen font-bold text-neutral-900 dark:text-neutral-100 text-[11px] tabular-nums">
+            <span className="font-bold text-neutral-900 dark:text-neutral-100 text-[11px] tabular-nums">
               {isMasked ? '••••' : `${formatSatang(mainSavingsBalance ?? currentBalance)} ฿`}
             </span>
           </div>
@@ -181,7 +181,7 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="text-xs">👛</span>
             <span className="text-neutral-600 dark:text-neutral-400 truncate text-[11px]">กล่องแบ่ง:</span>
-            <span className="font-silkscreen font-bold text-neutral-900 dark:text-neutral-100 text-[11px] tabular-nums">
+            <span className="font-bold text-neutral-900 dark:text-neutral-100 text-[11px] tabular-nums">
               {isMasked
                 ? '••••'
                 : `${formatSatang(pocketSummaries.reduce((sum, p) => sum + p.remainingSatang, 0))} ฿`}
@@ -192,9 +192,9 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
 
       {/* Subline: Grand Total & Latest Update */}
       <div className="mt-2.5 pt-2 border-t-2 border-dashed border-[#242A20]/20 dark:border-[#3C4A38]/50 flex items-center justify-between text-[11px] text-neutral-600 dark:text-neutral-400">
-        <div className="flex items-center gap-1">
-          <span className="font-silkscreen text-[9px]">GRAND TOTAL:</span>
-          <span className="font-silkscreen font-bold text-neutral-800 dark:text-neutral-200">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-semibold text-neutral-500">GRAND TOTAL:</span>
+          <span className="font-bold text-neutral-800 dark:text-neutral-200">
             {isMasked ? '••••' : `${formatSatang(grandTotal)} ฿`}
           </span>
         </div>
@@ -208,13 +208,13 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({
       <div className="mt-3 pt-2 border-t-2 border-[#242A20] dark:border-[#3C4A38] flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 bg-[#8B1E43] rounded-full" />
-          <span className="font-silkscreen text-[10px] font-bold text-neutral-800 dark:text-neutral-200">
+          <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
             CHART / สัดส่วนการเงิน
           </span>
         </div>
         <button
           onClick={() => setIsDonutExpanded(!isDonutExpanded)}
-          className="flex items-center gap-1 font-pixel text-[9px] text-neutral-700 dark:text-neutral-300 py-1 px-2 rounded border border-[#242A20] dark:border-[#3C4A38] bg-surfaceElevated-light dark:bg-surfaceElevated-dark shadow-[1px_1px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+          className="flex items-center gap-1 text-[10px] font-bold text-neutral-700 dark:text-neutral-300 py-1 px-2 rounded border border-[#242A20] dark:border-[#3C4A38] bg-surfaceElevated-light dark:bg-surfaceElevated-dark shadow-[1px_1px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
           aria-label={isDonutExpanded ? 'ย่อกราฟ' : 'ขยายกราฟ'}
         >
           <span>{isDonutExpanded ? 'HIDE' : 'SHOW'}</span>

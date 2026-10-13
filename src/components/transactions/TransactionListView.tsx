@@ -174,11 +174,11 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 bg-[#8B1E43] rounded-full" />
-            <span className="font-silkscreen text-[11px] font-bold text-neutral-800 dark:text-neutral-200 tracking-wider">
+            <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 tracking-wider">
               FILTER / ค้นหาและคัดกรอง
             </span>
           </div>
-          <span className="font-pixel text-[9px] text-neutral-600 dark:text-neutral-400">
+          <span className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-400">
             {filtered.length}/{transactions.length} ITEMS
           </span>
         </div>
@@ -200,7 +200,7 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
       {groupedTransactions.length === 0 ? (
         <div className="py-10 text-center text-xs text-neutral-500 bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] rounded-2xl flex flex-col items-center gap-2 shadow-[2px_2px_0px_#242A20]">
           <Receipt size={24} strokeWidth={2} className="text-neutral-400" />
-          <span className="font-silkscreen text-[11px]">NOT FOUND / ไม่พบรายการ</span>
+          <span className="text-xs font-bold text-neutral-500">NOT FOUND / ไม่พบรายการ</span>
         </div>
       ) : (
         <div className="space-y-5">
@@ -214,7 +214,7 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
                     <div className="flex items-center gap-2 min-w-0">
                       {/* Badge (TODAY, YESTERDAY, or Date) */}
                       <span
-                        className={`font-silkscreen text-[9px] font-bold px-2 py-0.5 rounded border border-[#242A20] dark:border-[#3C4A38] shadow-[1px_1px_0px_#242A20] shrink-0 ${
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded border border-[#242A20] dark:border-[#3C4A38] shadow-[1px_1px_0px_#242A20] shrink-0 ${
                           meta.isToday
                             ? 'bg-[#9BBC0F] text-[#0F380F]'
                             : 'bg-[#242A20] text-[#9BBC0F] dark:bg-[#3C4A38] dark:text-[#9BBC0F]'
@@ -235,14 +235,14 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
                       )}
 
                       {/* Item Count */}
-                      <span className="font-pixel text-[9px] text-neutral-500 shrink-0">
+                      <span className="text-[10px] text-neutral-500 shrink-0">
                         · {group.items.length} รายการ
                       </span>
                     </div>
 
                     {/* Daily Net Badge */}
-                    <div className="flex items-center gap-1 shrink-0 font-silkscreen text-[10px] px-1.5 py-0.5 rounded bg-surface-light dark:bg-surface-dark border border-[#242A20] dark:border-[#3C4A38] shadow-[1px_1px_0px_#242A20]">
-                      <span className="font-pixel text-[8px] text-neutral-500">สุทธิ</span>
+                    <div className="flex items-center gap-1 shrink-0 text-[11px] px-1.5 py-0.5 rounded bg-surface-light dark:bg-surface-dark border border-[#242A20] dark:border-[#3C4A38] shadow-[1px_1px_0px_#242A20]">
+                      <span className="text-[9.5px] font-bold text-neutral-500">สุทธิ</span>
                       <span
                         className={`font-bold tabular-nums ${
                           group.netSatang >= 0

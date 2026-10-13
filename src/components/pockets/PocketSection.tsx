@@ -26,16 +26,16 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 bg-[#F59E0B] border border-[#242A20] shadow-[1px_1px_0px_#242A20]" />
-          <span className="font-silkscreen text-[11px] font-bold text-neutral-800 dark:text-neutral-200 tracking-wider">
+          <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 tracking-wider">
             ITEM SLOTS / กล่องแบ่งเงินใช้
           </span>
-          <span className="font-pixel text-[8px] px-1.5 py-0.5 rounded bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-[#242A20] dark:border-[#3C4A38] text-neutral-800 dark:text-neutral-200">
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-[#242A20] dark:border-[#3C4A38] text-neutral-800 dark:text-neutral-200">
             {pocketSummaries.length} SLOTS
           </span>
         </div>
         <button
           onClick={onOpenCreate}
-          className="inline-flex items-center gap-1 font-silkscreen text-[10px] font-bold text-[#306230] dark:text-[#9BBC0F] hover:underline p-1"
+          className="inline-flex items-center gap-1 text-[11px] font-bold text-[#306230] dark:text-[#9BBC0F] hover:underline p-1"
         >
           <Plus size={12} strokeWidth={3} />
           <span>+ NEW</span>
@@ -49,7 +49,7 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
             <Sparkles size={18} strokeWidth={2.5} />
           </div>
           <div>
-            <h4 className="font-silkscreen text-xs font-bold text-neutral-900 dark:text-neutral-100">
+            <h4 className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
               NO POCKETS YET / สร้างกล่องแบ่งเงิน
             </h4>
             <p className="text-[11px] text-neutral-600 dark:text-neutral-400 mt-1 max-w-xs mx-auto">
@@ -58,7 +58,7 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
           </div>
           <button
             onClick={onOpenCreate}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B1E43] text-white font-silkscreen text-[10px] font-bold rounded-lg border-2 border-[#242A20] shadow-[2px_2px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-transform"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B1E43] text-white text-[10px] font-bold rounded-lg border-2 border-[#242A20] shadow-[2px_2px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-transform"
           >
             <Plus size={12} strokeWidth={3} />
             <span>CREATE POCKET</span>
@@ -99,16 +99,16 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
                       <h4 className="text-xs font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
                         {pocket.name}
                         {isOverspent ? (
-                          <span className="font-pixel text-[8px] px-1 py-0.2 rounded bg-red-100 text-red-600 border border-red-500 font-bold">
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-100 text-red-600 border border-red-500 font-bold">
                             OVER
                           </span>
                         ) : isExhausted ? (
-                          <span className="font-pixel text-[8px] px-1 py-0.2 rounded bg-amber-100 text-amber-700 border border-amber-500 font-bold">
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-500 font-bold">
                             EMPTY
                           </span>
                         ) : null}
                       </h4>
-                      <p className="font-pixel text-[9px] text-neutral-500 dark:text-neutral-400">
+                      <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
                         MAX: {isMasked ? '••••' : `${formatSatang(summary.totalAllocatedSatang ?? pocket.allocatedSatang)}฿`}
                       </p>
                     </div>
@@ -118,7 +118,7 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => onOpenTopUp(summary)}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-silkscreen font-bold rounded-md bg-[#9BBC0F] text-[#0F380F] border border-[#242A20] shadow-[1px_1px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-md bg-[#9BBC0F] text-[#0F380F] border border-[#242A20] shadow-[1px_1px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
                       title="เติมเงินเข้ากล่อง"
                     >
                       <PlusCircle size={11} strokeWidth={2.5} />
@@ -138,7 +138,7 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
                 <div className="mt-2.5 flex items-baseline justify-between">
                   <div className="flex items-baseline gap-1">
                     <span
-                      className={`font-silkscreen text-xl font-bold tracking-tight tabular-nums ${
+                      className={`text-xl font-extrabold tracking-tight tabular-nums ${
                         isOverspent
                           ? 'text-[#8B1E43] dark:text-red-400'
                           : 'text-neutral-900 dark:text-neutral-100'
@@ -150,7 +150,7 @@ export const PocketSection: React.FC<PocketSectionProps> = ({
                       {isOverspent ? '฿ (เกิน)' : '฿ คงเหลือ'}
                     </span>
                   </div>
-                  <div className="font-pixel text-[9px] text-neutral-600 dark:text-neutral-400">
+                  <div className="text-[10px] font-medium text-neutral-600 dark:text-neutral-400">
                     SPENT: {isMasked ? '••••' : `${formatSatang(spentSatang)}฿`} ({spentPercentage.toFixed(0)}%)
                   </div>
                 </div>

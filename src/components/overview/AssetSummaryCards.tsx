@@ -40,11 +40,11 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 bg-[#9BBC0F] border border-[#242A20] shadow-[1px_1px_0px_#242A20]" />
-          <h3 className="font-silkscreen text-[11px] font-bold text-neutral-800 dark:text-neutral-200 tracking-wider">
+          <h3 className="text-xs font-bold text-neutral-800 dark:text-neutral-200 tracking-wider">
             STATUS / สรุปสินทรัพย์
           </h3>
         </div>
-        <span className="font-pixel text-[9px] text-[#242A20]/70 dark:text-[#9BBC0F]/80">
+        <span className="text-[10px] font-semibold text-[#242A20]/70 dark:text-[#9BBC0F]/80">
           2x2 GRID
         </span>
       </div>
@@ -65,20 +65,20 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
                 เงินเก็บคงเหลือ
               </span>
             </div>
-            <span className="font-pixel text-[8px] px-1 py-0.5 border border-current bg-black/10 rounded">
+            <span className="text-[9px] font-bold px-1.5 py-0.5 border border-current bg-black/10 rounded">
               MAIN
             </span>
           </div>
 
           <div className="my-1.5 relative z-10">
-            <div className="font-silkscreen text-base font-bold tracking-tight truncate leading-tight">
+            <div className="text-base font-extrabold tracking-tight truncate leading-tight">
               {isMasked ? '••••••' : `${formatSatang(currentBalance)} ฿`}
             </div>
           </div>
 
           <div className="flex items-center justify-between text-[10px] opacity-90 font-medium relative z-10">
             <span>สินทรัพย์หลัก</span>
-            <span className="font-pixel text-[8px] bg-black/20 px-1 rounded-sm border border-current">
+            <span className="text-[9px] font-bold bg-black/20 px-1 rounded-sm border border-current">
               READY
             </span>
           </div>
@@ -100,20 +100,20 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
                 เงินให้ยืม
               </span>
             </div>
-            <span className="font-pixel text-[8px] px-1 py-0.5 border border-[#242A20] dark:border-[#3C4A38] bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 rounded">
+            <span className="text-[9px] font-bold px-1.5 py-0.5 border border-[#242A20] dark:border-[#3C4A38] bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 rounded">
               2P
             </span>
           </div>
 
           <div className="my-1.5">
-            <div className="font-silkscreen text-base font-bold text-amber-700 dark:text-amber-400 tracking-tight truncate leading-tight">
+            <div className="text-base font-extrabold text-amber-700 dark:text-amber-400 tracking-tight truncate leading-tight">
               {isMasked ? '••••••' : `${formatSatang(totalLentOut)} ฿`}
             </div>
           </div>
 
           <div className="flex items-center justify-between text-[10px] text-neutral-600 dark:text-neutral-400 font-medium">
             <span className="truncate">ค้าง {debtors.length} คน</span>
-            <div className="flex items-center gap-0.5 font-pixel text-[8px] bg-amber-200 dark:bg-amber-900/70 text-amber-900 dark:text-amber-200 px-1 py-0.5 rounded border border-[#242A20] dark:border-[#3C4A38]">
+            <div className="flex items-center gap-0.5 text-[9px] font-bold bg-amber-200 dark:bg-amber-900/70 text-amber-900 dark:text-amber-200 px-1.5 py-0.5 rounded border border-[#242A20] dark:border-[#3C4A38]">
               <span>{isDebtorsExpanded ? 'HIDE' : 'VIEW'}</span>
               {isDebtorsExpanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
             </div>
@@ -131,13 +131,13 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
                 จ่ายเดือนนี้
               </span>
             </div>
-            <span className="font-pixel text-[8px] px-1 py-0.5 border border-[#242A20] dark:border-[#3C4A38] bg-red-100 dark:bg-red-950 text-[#8B1E43] dark:text-red-300 rounded">
+            <span className="text-[9px] font-bold px-1.5 py-0.5 border border-[#242A20] dark:border-[#3C4A38] bg-red-100 dark:bg-red-950 text-[#8B1E43] dark:text-red-300 rounded">
               OUT
             </span>
           </div>
 
           <div className="my-1.5">
-            <div className="font-silkscreen text-base font-bold text-[#8B1E43] dark:text-red-400 tracking-tight truncate leading-tight">
+            <div className="text-base font-extrabold text-[#8B1E43] dark:text-red-400 tracking-tight truncate leading-tight">
               {isMasked ? '••••••' : `-${formatSatang(thisMonthExpenses)} ฿`}
             </div>
           </div>
@@ -146,7 +146,7 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
             <span className="truncate max-w-[85px]" title={topExpenseCategory?.category || 'ไม่มีรายจ่าย'}>
               {topExpenseCategory ? topExpenseCategory.category : 'ไม่มีจ่าย'}
             </span>
-            <span className="font-pixel text-[8px] text-[#8B1E43] dark:text-red-400">
+            <span className="text-[10px] font-bold text-[#8B1E43] dark:text-red-400">
               {topExpenseCategory ? `${formatSatang(topExpenseCategory.amount)}฿` : '0฿'}
             </span>
           </div>
@@ -163,20 +163,20 @@ export const AssetSummaryCards: React.FC<AssetSummaryCardsProps> = ({
                 เงินเข้าเดือนนี้
               </span>
             </div>
-            <span className="font-pixel text-[8px] px-1 py-0.5 border border-[#242A20] dark:border-[#3C4A38] bg-emerald-100 dark:bg-emerald-950 text-[#306230] dark:text-emerald-300 rounded">
+            <span className="text-[9px] font-bold px-1.5 py-0.5 border border-[#242A20] dark:border-[#3C4A38] bg-emerald-100 dark:bg-emerald-950 text-[#306230] dark:text-emerald-300 rounded">
               1-UP
             </span>
           </div>
 
           <div className="my-1.5">
-            <div className="font-silkscreen text-base font-bold text-[#306230] dark:text-emerald-400 tracking-tight truncate leading-tight">
+            <div className="text-base font-extrabold text-[#306230] dark:text-emerald-400 tracking-tight truncate leading-tight">
               {isMasked ? '••••••' : `+${formatSatang(thisMonthDeposits)} ฿`}
             </div>
           </div>
 
           <div className="flex items-center justify-between text-[10px] text-neutral-600 dark:text-neutral-400 font-medium">
             <span>ฝากเข้า</span>
-            <span className="font-pixel text-[8px] bg-emerald-200 dark:bg-emerald-900/80 text-[#0F380F] dark:text-emerald-200 px-1 rounded-sm border border-[#242A20] dark:border-[#3C4A38]">
+            <span className="text-[9px] font-bold bg-emerald-200 dark:bg-emerald-900/80 text-[#0F380F] dark:text-emerald-200 px-1.5 py-0.2 rounded-sm border border-[#242A20] dark:border-[#3C4A38]">
               COIN
             </span>
           </div>

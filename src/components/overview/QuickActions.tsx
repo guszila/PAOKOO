@@ -63,10 +63,10 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
               >
                 <Icon size={19} strokeWidth={2.75} />
               </div>
-              <span className="font-silkscreen text-[10px] font-bold text-neutral-800 dark:text-neutral-200 mt-1.5 truncate">
+              <span className="text-[11px] font-bold text-neutral-800 dark:text-neutral-200 mt-1.5 truncate">
                 {act.label}
               </span>
-              <span className="font-pixel text-[8px] text-neutral-500 dark:text-neutral-400">
+              <span className="text-[9px] font-semibold text-neutral-500 dark:text-neutral-400">
                 {act.sub}
               </span>
             </button>
@@ -82,10 +82,10 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           <div className="w-11 h-11 rounded-xl flex items-center justify-center border-2 border-[#242A20] dark:border-[#3C4A38] bg-[#243C78] text-white shadow-[2.5px_2.5px_0px_#242A20] dark:shadow-[2.5px_2.5px_0px_#0A0F0A] transition-transform group-active:shadow-none group-active:translate-y-[1px]">
             <Camera size={19} strokeWidth={2.5} />
           </div>
-          <span className="font-silkscreen text-[10px] font-bold text-neutral-800 dark:text-neutral-200 mt-1.5 truncate">
+          <span className="text-[11px] font-bold text-neutral-800 dark:text-neutral-200 mt-1.5 truncate">
             กล้องสแกน
           </span>
-          <span className="font-pixel text-[8px] text-neutral-500 dark:text-neutral-400">
+          <span className="text-[9px] font-semibold text-neutral-500 dark:text-neutral-400">
             GB-CAM
           </span>
         </button>

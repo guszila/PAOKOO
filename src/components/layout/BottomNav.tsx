@@ -35,7 +35,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           >
             <Home size={18} strokeWidth={activeTab === 'overview' ? 2.5 : 2} />
           </div>
-          <span className="font-silkscreen text-[9px] mt-0.5">ภาพรวม</span>
+          <span className="text-[10px] font-semibold mt-0.5">ภาพรวม</span>
         </button>
 
         {/* Tab 2: Transactions (Log) */}
@@ -56,7 +56,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           >
             <Receipt size={18} strokeWidth={activeTab === 'transactions' ? 2.5 : 2} />
           </div>
-          <span className="font-silkscreen text-[9px] mt-0.5">รายการ</span>
+          <span className="text-[10px] font-semibold mt-0.5">รายการ</span>
         </button>
 
         {/* Slot 3: Exact Center Floating Action Button (+) - Iconic Game Boy A-Button */}
@@ -74,7 +74,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 className="transition-transform duration-200 group-hover:rotate-90 group-active:scale-90"
               />
             </button>
-            <span className="font-pixel text-[8px] font-bold gb-accent-text mt-1">
+            <span className="text-[9px] font-bold gb-accent-text mt-1 tracking-wider">
               A-BTN
             </span>
           </div>
@@ -98,7 +98,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           >
             <PieChart size={18} strokeWidth={activeTab === 'analytics' ? 2.5 : 2} />
           </div>
-          <span className="font-silkscreen text-[9px] mt-0.5">สถิติ</span>
+          <span className="text-[10px] font-semibold mt-0.5">สถิติ</span>
         </button>
 
         {/* Tab 5: Settings (Options) */}
@@ -119,7 +119,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           >
             <Settings size={18} strokeWidth={activeTab === 'settings' ? 2.5 : 2} />
           </div>
-          <span className="font-silkscreen text-[9px] mt-0.5">ตั้งค่า</span>
+          <span className="text-[10px] font-semibold mt-0.5">ตั้งค่า</span>
         </button>
       </div>
     </nav>

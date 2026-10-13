@@ -101,13 +101,13 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
             <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate">
               {transaction.who}
             </span>
-            <span className="font-pixel text-[8px] px-1 py-0.2 rounded border border-[#242A20] dark:border-[#3C4A38] bg-surfaceElevated-light dark:bg-surfaceElevated-dark text-neutral-800 dark:text-neutral-200">
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border border-[#242A20] dark:border-[#3C4A38] bg-surfaceElevated-light dark:bg-surfaceElevated-dark text-neutral-800 dark:text-neutral-200">
               {config.code}
             </span>
 
             {/* Expense Category Badge with Emoji */}
             {displayCategory && (
-              <span className="flex items-center gap-1 text-[10px] px-1.5 py-0.2 rounded bg-neutral-200/80 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-[#242A20]/40">
+              <span className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-neutral-200/80 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-[#242A20]/40">
                 <span>{getCategoryEmoji(displayCategory)}</span>
                 <span className="font-medium">{displayCategory}</span>
               </span>
@@ -115,14 +115,14 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
 
             {/* Pocket Badge */}
             {pocketName && (
-              <span className="flex items-center gap-0.5 text-[9px] font-pixel px-1 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-[#242A20]">
-                <Wallet size={8} />
+              <span className="flex items-center gap-0.5 text-[9.5px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-[#242A20]">
+                <Wallet size={9} />
                 <span>{pocketName}</span>
               </span>
             )}
 
             {transaction.slipThumbnail && (
-              <span className="flex items-center text-[9px] font-pixel text-blue-600 bg-blue-100 dark:bg-blue-950 px-1 rounded border border-[#242A20]" title="มีสลิป">
+              <span className="flex items-center text-[9px] font-bold text-blue-600 bg-blue-100 dark:bg-blue-950 px-1.5 py-0.5 rounded border border-[#242A20]" title="มีสลิป">
                 <ReceiptText size={9} className="mr-0.5" />
                 SLIP
               </span>
@@ -140,7 +140,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
       </div>
 
       <div className="text-right shrink-0 ml-2">
-        <div className={`font-silkscreen text-xs font-bold tabular-nums ${config.amountColor}`}>
+        <div className={`text-sm font-bold tabular-nums tracking-tight ${config.amountColor}`}>
           {isMasked ? '••••' : `${config.sign}${formatSatang(transaction.amount)}฿`}
         </div>
       </div>
