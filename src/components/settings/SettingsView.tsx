@@ -27,7 +27,7 @@ interface SettingsViewProps {
   onThemeChange: (theme: ThemeMode) => void;
   colorTheme?: ColorTheme;
   onColorThemeChange?: (color: ColorTheme) => void;
-  transactions: Transaction[];
+  transactions?: Transaction[];
   members: string[];
   categories: string[];
   user: User | null;
@@ -38,7 +38,7 @@ interface SettingsViewProps {
   onUpdateMembers: (newMembers: string[]) => void;
   onAddCategory: (category: string) => void;
   onDeleteCategory: (category: string) => void;
-  onImportData: (importedTxs: Transaction[], importedMembers?: string[], importedCategories?: string[]) => void;
+  onImportData?: (importedTxs: Transaction[], importedMembers?: string[], importedCategories?: string[]) => void;
   onResetData: () => void;
   localTransactionsCount?: number;
   onMigrateLocalToCloud?: () => Promise<{ count: number }>;
@@ -49,7 +49,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onThemeChange,
   colorTheme = 'dmg',
   onColorThemeChange,
-  transactions,
   members,
   categories,
   user,
@@ -60,7 +59,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onUpdateMembers,
   onAddCategory,
   onDeleteCategory,
-  onImportData,
   onResetData,
   localTransactionsCount = 0,
   onMigrateLocalToCloud,

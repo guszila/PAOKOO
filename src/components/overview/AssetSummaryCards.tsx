@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { OutstandingDebtor } from '../../types/transaction';
 import { formatSatang } from '../../lib/money';
-import { Button } from '../common/Button';
 import {
   Wallet,
   HandCoins,

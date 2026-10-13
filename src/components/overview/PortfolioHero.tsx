@@ -13,7 +13,6 @@ import {
   ChevronRight,
   HandCoins,
   Clock,
-  Sparkles,
 } from 'lucide-react';
 
 import { PocketSummary } from '../../types/pocket';
