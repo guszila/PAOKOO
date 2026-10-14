@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { BottomSheet } from '../common/BottomSheet';
 import { Button } from '../common/Button';
 import { Camera, Image as ImageIcon, AlertTriangle, RefreshCw, ArrowRight, ShieldCheck, Wallet, QrCode, Sparkles, ArrowDownLeft, ArrowUpRight, HandCoins, CornerDownLeft } from 'lucide-react';
@@ -31,6 +31,10 @@ interface SlipScannerModalProps {
     fullSlipBase64: string;
     pocketId?: string;
   }) => void;
+  onAttachToExisting?: (
+    txId: string,
+    slipData: { slipThumbnail: string; fullSlipBase64: string; refNo?: string }
+  ) => void;
 }
 
 export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
@@ -42,6 +46,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
   pocketSummaries = [],
   initialType = 'out',
   onApplySlip,
+  onAttachToExisting,
 }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -78,6 +83,22 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
     resetState();
     onClose();
   };
+
+  const matchingTx = useMemo(() => {
+    if (!scanResult) return null;
+    if (scanResult.duplicateTx) return scanResult.duplicateTx;
+
+    const satang = scanResult.parsed.amountSatang;
+    const slipDate = scanResult.parsed.date;
+    if (satang && slipDate) {
+      return (
+        existingTransactions.find(
+          (t) => !t.slipThumbnail && t.amount === satang && t.date === slipDate
+        ) || null
+      );
+    }
+    return null;
+  }, [scanResult, existingTransactions]);
 
   // Whenever modal closes from outside or backdrop, guarantee state & camera are completely reset
   useEffect(() => {
@@ -346,16 +367,41 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
         {/* Scan Result Preview & Confirmation */}
         {scanResult && !isScanning && (
           <div className="space-y-4">
-            {/* Duplicate Slip Alert Banner */}
-            {scanResult.duplicateTx && (
-              <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2.5">
-                <AlertTriangle size={18} className="shrink-0 mt-0.5 text-amber-600" />
-                <div>
-                  <p className="font-bold">⚠️ แจ้งเตือน: สลิปนี้อาจถูกบันทึกไปแล้ว</p>
-                  <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5 leading-relaxed">
-                    พบรหัสอ้างอิงตรงกับรายการวันที่ {scanResult.duplicateTx.date} (ยอด {formatSatang(scanResult.duplicateTx.amount)})
-                  </p>
+            {/* Duplicate Slip or Matching Existing Transaction Alert Banner */}
+            {matchingTx && (
+              <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-300 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 space-y-2.5">
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle size={18} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                  <div>
+                    <p className="font-bold">
+                      {matchingTx.slipThumbnail
+                        ? '⚠️ สลิปนี้มีรายการบันทึกอยู่แล้ว'
+                        : '💡 พบรายการย้อนหลังที่ตรงกับสลิปนี้'}
+                    </p>
+                    <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5 leading-relaxed">
+                      รายการวันที่ {matchingTx.date} ({matchingTx.who}) ยอด {formatSatang(matchingTx.amount)} ฿
+                      {matchingTx.slipThumbnail ? ' (มีสลิปแนบอยู่แล้ว)' : ' (ยังไม่มีสลิปแนบ)'}
+                    </p>
+                  </div>
                 </div>
+
+                {onAttachToExisting && !matchingTx.slipThumbnail && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onAttachToExisting(matchingTx.id, {
+                        slipThumbnail: scanResult.thumbnailBase64,
+                        fullSlipBase64: scanResult.fullBase64,
+                        refNo: scanResult.parsed.refNo,
+                      });
+                      handleClose();
+                    }}
+                    className="w-full py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-[1px_1px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] transition-all"
+                  >
+                    <Sparkles size={14} />
+                    <span>แนบสลิปนี้ให้รายการเดิมทันที (ไม่เพิ่มใหม่)</span>
+                  </button>
+                )}
               </div>
             )}
 

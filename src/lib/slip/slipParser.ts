@@ -21,55 +21,55 @@ export interface ParsedSlipData {
  */
 export const THAI_MONTH_LOOKUP: Record<string, string> = {
   // Jan (มกราคม / ม.ค.)
-  'มกราคม': '01', 'มกรา': '01', 'ม.ค.': '01', 'ม.ค': '01', 'มค': '01', 'ม,ค': '01',
-  'jan': '01', 'january': '01', 'un': '01', 'u.n.': '01',
+  'มกราคม': '01', 'มกรา': '01', 'ม.ค.': '01', 'ม.ค': '01', 'มค': '01', 'ม,ค': '01', 'ม.a.': '01', 'ม.a': '01',
+  'jan': '01', 'january': '01', 'jan.': '01', 'un': '01', 'u.n.': '01',
 
   // Feb (กุมภาพันธ์ / ก.พ.)
-  'กุมภาพันธ์': '02', 'กุมภา': '02', 'ก.พ.': '02', 'ก.พ': '02', 'กพ': '02', 'ก,พ': '02',
-  'feb': '02', 'february': '02', 'nw': '02', 'n.w.': '02',
+  'กุมภาพันธ์': '02', 'กุมภา': '02', 'ก.พ.': '02', 'ก.พ': '02', 'กพ': '02', 'ก,พ': '02', 'ก.w.': '02', 'ก.w': '02',
+  'feb': '02', 'february': '02', 'feb.': '02', 'nw': '02', 'n.w.': '02',
 
   // Mar (มีนาคม / มี.ค.)
-  'มีนาคม': '03', 'มีนา': '03', 'มี.ค.': '03', 'มี.ค': '03', 'มีค': '03', 'มี,ค': '03',
-  'mar': '03', 'march': '03',
+  'มีนาคม': '03', 'มีนา': '03', 'มี.ค.': '03', 'มี.ค': '03', 'มีค': '03', 'มี,ค': '03', 'มี.a.': '03', 'มี.a': '03',
+  'mar': '03', 'march': '03', 'mar.': '03',
 
   // Apr (เมษายน / เม.ย.)
-  'เมษายน': '04', 'เมษา': '04', 'เม.ย.': '04', 'เม.ย': '04', 'เมย': '04', 'เม,ย': '04',
-  'apr': '04', 'april': '04',
+  'เมษายน': '04', 'เมษา': '04', 'เม.ย.': '04', 'เม.ย': '04', 'เมย': '04', 'เม,ย': '04', 'เม.u.': '04', 'เม.u': '04',
+  'apr': '04', 'april': '04', 'apr.': '04',
 
   // May (พฤษภาคม / พ.ค.)
-  'พฤษภาคม': '05', 'พฤษภา': '05', 'พ.ค.': '05', 'พ.ค': '05', 'พค': '05', 'พ,ค': '05',
+  'พฤษภาคม': '05', 'พฤษภา': '05', 'พ.ค.': '05', 'พ.ค': '05', 'พค': '05', 'พ,ค': '05', 'w.a.': '05', 'w.a': '05', 'พ.a.': '05',
   'may': '05',
 
   // Jun (มิถุนายน / มิ.ย.)
-  'มิถุนายน': '06', 'มิถุนา': '06', 'มิ.ย.': '06', 'มิ.ย': '06', 'มิย': '06', 'มิ,ย': '06',
-  'jun': '06', 'june': '06',
+  'มิถุนายน': '06', 'มิถุนา': '06', 'มิ.ย.': '06', 'มิ.ย': '06', 'มิย': '06', 'มิ,ย': '06', 'มิ.u.': '06', 'มิ.u': '06',
+  'jun': '06', 'june': '06', 'jun.': '06',
 
   // Jul (กรกฎาคม / ก.ค.)
-  'กรกฎาคม': '07', 'กรกฎา': '07', 'ก.ค.': '07', 'ก.ค': '07', 'กค': '07', 'ก,ค': '07',
-  'jul': '07', 'july': '07',
+  'กรกฎาคม': '07', 'กรกฎา': '07', 'ก.ค.': '07', 'ก.ค': '07', 'กค': '07', 'ก,ค': '07', 'ก.a.': '07', 'ก.a': '07', 'n.a.': '07', 'n.a': '07',
+  'jul': '07', 'july': '07', 'jul.': '07',
 
   // Aug (สิงหาคม / ส.ค.)
-  'สิงหาคม': '08', 'สิงหา': '08', 'ส.ค.': '08', 'ส.ค': '08', 'สค': '08', 'ส,ค': '08',
-  'aug': '08', 'august': '08',
+  'สิงหาคม': '08', 'สิงหา': '08', 'ส.ค.': '08', 'ส.ค': '08', 'สค': '08', 'ส,ค': '08', 'ส.a.': '08', 'ส.a': '08', 'a.a.': '08', 'a.a': '08',
+  'aug': '08', 'august': '08', 'aug.': '08',
 
   // Sep (กันยายน / ก.ย.) - very common in test slips
   'กันยายน': '09', 'กันยา': '09', 'ก.ย.': '09', 'ก.ย': '09', 'กย': '09', 'ก,ย': '09',
-  'sep': '09', 'sept': '09', 'september': '09',
+  'sep': '09', 'sept': '09', 'september': '09', 'sep.': '09',
   // OCR typos for ก.ย.
   'ถุย': '09', 'กุย': '09', 'ne': '09', 'ne.': '09', 'n.e.': '09', 'n.e': '09',
-  'nย': '09', 'n.ย.': '09', 'ก.น.': '09', 'nu': '09', 'ny': '09',
+  'nย': '09', 'n.ย.': '09', 'ก.น.': '09', 'nu': '09', 'ny': '09', 'n.u.': '09', 'n.u': '09',
 
   // Oct (ตุลาคม / ต.ค.)
-  'ตุลาคม': '10', 'ตุลา': '10', 'ต.ค.': '10', 'ต.ค': '10', 'ตค': '10', 'ต,ค': '10',
-  'oct': '10', 'october': '10',
+  'ตุลาคม': '10', 'ตุลา': '10', 'ต.ค.': '10', 'ต.ค': '10', 'ตค': '10', 'ต,ค': '10', 'ต.a.': '10', 'ต.a': '10', 'm.a.': '10', 'm.a': '10',
+  'oct': '10', 'october': '10', 'oct.': '10',
 
   // Nov (พฤศจิกายน / พ.ย.)
-  'พฤศจิกายน': '11', 'พฤศจิกา': '11', 'พ.ย.': '11', 'พ.ย': '11', 'พย': '11', 'พ,ย': '11',
-  'nov': '11', 'november': '11',
+  'พฤศจิกายน': '11', 'พฤศจิกา': '11', 'พ.ย.': '11', 'พ.ย': '11', 'พย': '11', 'พ,ย': '11', 'พ.u.': '11', 'พ.u': '11', 'w.u.': '11', 'w.u': '11',
+  'nov': '11', 'november': '11', 'nov.': '11',
 
   // Dec (ธันวาคม / ธ.ค.)
-  'ธันวาคม': '12', 'ธันวา': '12', 'ธ.ค.': '12', 'ธ.ค': '12', 'ธค': '12', 'ธ,ค': '12',
-  'dec': '12', 'december': '12',
+  'ธันวาคม': '12', 'ธันวา': '12', 'ธ.ค.': '12', 'ธ.ค': '12', 'ธค': '12', 'ธ,ค': '12', 'ธ.a.': '12', 'ธ.a': '12',
+  'dec': '12', 'december': '12', 'dec.': '12',
 };
 
 /**
@@ -255,12 +255,12 @@ export function extractSlipAmount(text: string): number | undefined {
   // Primary keywords specifically denoting transfer amount
   const primaryAmountKeywords = [
     'จำนวนเงิน', 'จํานวนเงิน', 'ยอดเงิน', 'ยอดโอน', 'ยอดชำระ', 'ยอดรวม', 'ยอดสุทธิ',
-    'โอนเงินสำเร็จ', 'โอนสำเร็จ', 'สำเร็จ', 'amount', 'total'
+    'amount', 'total', 'transfer amount', 'paid', 'transferred'
   ];
 
-  // Secondary keywords (headers like Transfer, จ่ายบิลสำเร็จ)
+  // Secondary keywords (headers like Transfer, จ่ายบิล, โอนเงิน)
   const secondaryKeywords = [
-    'จำนวน', 'จํานวน', 'โอนเงิน', 'จ่ายบิล', 'ชำระบิล', 'transfer', 'transferred'
+    'จำนวน', 'จํานวน', 'transfer', 'โอนเงินสำเร็จ', 'โอนสำเร็จ', 'รายการสำเร็จ', 'จ่ายบิลสำเร็จ', 'ชำระเงินสำเร็จ'
   ];
 
   // Helper to check if a line is a date, time, account number, or fee
@@ -269,10 +269,44 @@ export function extractSlipAmount(text: string): number | undefined {
     if (low.includes('ค่าธรรมเนียม') || low.includes('fee')) return true;
     if (low.includes('วันที่') || low.includes('date')) return true;
     if (low.includes('เวลา') && !low.includes('บาท') && !low.includes('thb') && !low.includes('จำนวน') && !low.includes('ยอด')) return true;
-    if (low.includes('รหัส') || low.includes('ref') || low.includes('หมายเลข')) return true;
-    // Only ignore if it is a pure time line like "12:31 น." without any currency or amount keywords
-    if (/\b[0-2]?\d:[0-5]\d\b/.test(low) && !low.includes('บาท') && !low.includes('thb') && !low.includes('จำนวน') && !low.includes('ยอด')) return true;
+    if (low.includes('รหัสอ้างอิง') || low.includes('หมายเลขอ้างอิง') || low.includes('เลขที่ทำรายการ') || low.includes('เลขที่รายการ') || low.includes('transaction id')) return true;
+    
+    // Pure time line without amount keywords
+    if (/\b[0-2]?\d:[0-5]\d\b/.test(low) && !low.includes('บาท') && !low.includes('thb') && !low.includes('จำนวน') && !low.includes('ยอด') && !low.includes('amount')) return true;
+    
+    // Time with Thai suffix "น." (e.g. "14.30 น.", "18:22 น.")
+    if (/\b\d{1,2}[\.:]\d{2}\s*น\.?/.test(low) && !low.includes('บาท') && !low.includes('thb') && !low.includes('จำนวน') && !low.includes('ยอด') && !low.includes('amount')) return true;
+    
+    // Line containing Thai or English month abbreviation (e.g. "14 ต.ค. 69", "14 Oct 2026")
+    const hasMonth = /(?:ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(low);
+    if (hasMonth && !low.includes('บาท') && !low.includes('thb') && !low.includes('จำนวน') && !low.includes('ยอด') && !low.includes('amount')) return true;
+    
     return false;
+  };
+
+  // Helper to normalize OCR noise in numbers (e.g. "1, 000.00" -> "1,000.00", "1,OOO.OO" -> "1,000.00")
+  const cleanNumberLine = (raw: string): string => {
+    let s = raw.trim();
+    // Fix spaces around commas and dots in digits:
+    s = s.replace(/(\d)\s*,\s*(\d)/g, '$1,$2');
+    s = s.replace(/(\d)\s*\.\s*(\d)/g, '$1.$2');
+
+    // Remove leading currency symbols:
+    s = s.replace(/^[฿\$\¥\€\£]\s*/g, '');
+
+    // In lines that look like numbers (with decimal point or currency), fix common OCR letter-for-digit confusions:
+    if (/[\.,]\s*(\d{2}|[Oo]{2}|-)/.test(s) || /(?:บาท|thb|baht)/i.test(s)) {
+      s = s.replace(/([0-9,])O([0-9,\.])/g, '$10$2');
+      s = s.replace(/([0-9,])o([0-9,\.])/g, '$10$2');
+      s = s.replace(/\.OO\b/g, '.00');
+      s = s.replace(/\.oo\b/g, '.00');
+      s = s.replace(/\.o0\b/g, '.00');
+      s = s.replace(/\.0o\b/g, '.00');
+      s = s.replace(/^[lI|]([0-9,\.])/g, '1$1');
+      s = s.replace(/([,\.])[lI|]([0-9])/g, '$11$2');
+    }
+
+    return s;
   };
 
   // Helper to extract decimal number from line
@@ -280,9 +314,10 @@ export function extractSlipAmount(text: string): number | undefined {
     if (isIgnoredLine(target)) return undefined;
 
     // Clean any leading amount labels with optional colon (e.g. "จำนวนเงิน: 1000.00" -> "1000.00")
-    const cleaned = target.replace(/(?:จำนวนเงิน|จํานวนเงิน|ยอดเงิน|ยอดโอน|ยอดชำระ|ยอดรวม|โอนเงินสำเร็จ|โอนสำเร็จ|สำเร็จ|amount|total)\s*[:\-]?/gi, ' ').trim();
+    let cleaned = target.replace(/(?:จำนวนเงิน|จํานวนเงิน|ยอดเงิน|ยอดโอน|ยอดชำระ|ยอดรวม|โอนเงินสำเร็จ|โอนสำเร็จ|รายการสำเร็จ|สำเร็จ|amount|total)\s*[:\-]?/gi, ' ').trim();
+    cleaned = cleanNumberLine(cleaned);
 
-    // Pattern A: Match standard decimal (e.g. "150.00 THB", "800.00", "552.12 บาท", "1,250.50")
+    // Pattern A: Match standard decimal (e.g. "150.00 THB", "800.00", "552.12 บาท", "1,250.50", "฿1,000.00")
     const mDecimal = cleaned.match(/(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d+)\s*[\.,]\s*(\d{2}|-)(?:\s*(?:บาท|thb|baht|\.-))?(?:[^\d]|$)/i);
     if (mDecimal) {
       const cents = mDecimal[2] === '-' ? '00' : mDecimal[2];
@@ -292,8 +327,9 @@ export function extractSlipAmount(text: string): number | undefined {
       if (satang > 0) return satang;
     }
 
-    // Pattern B: Match integer amount followed by currency (e.g. "500 บาท", "150 THB")
-    const mInt = cleaned.match(/(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d{2,7})\s*(?:บาท|thb|baht|\.-)(?:[^\d]|$)/i);
+    // Pattern B: Match integer amount followed by currency or prefix (e.g. "500 บาท", "150 THB", "฿1,000")
+    const mInt = cleaned.match(/(?:^|[^\d,])(?:฿\s*)?(\d{1,3}(?:,\d{3})+|\d{2,7})\s*(?:บาท|thb|baht|\.-)(?:[^\d]|$)/i) ||
+                 cleaned.match(/(?:^|\s)฿\s*(\d{1,3}(?:,\d{3})+|\d{2,7})(?:[^\d]|$)/i);
     if (mInt) {
       const numStr = mInt[1].replace(/,/g, '');
       const satang = parseToSatang(numStr);
@@ -311,7 +347,7 @@ export function extractSlipAmount(text: string): number | undefined {
     const hasPrimary = primaryAmountKeywords.some((kw) => line.includes(kw));
     if (hasPrimary) {
       // 1a. Check on the same line
-      const cleanLine = line.replace(/(?:จำนวนเงิน|จํานวนเงิน|ยอดเงิน|ยอดโอน|ยอดชำระ|ยอดรวม|โอนเงินสำเร็จ|โอนสำเร็จ|สำเร็จ|amount|total)\s*[:\-]?/i, '').trim();
+      const cleanLine = line.replace(/(?:จำนวนเงิน|จํานวนเงิน|ยอดเงิน|ยอดโอน|ยอดชำระ|ยอดรวม|โอนเงินสำเร็จ|โอนสำเร็จ|รายการสำเร็จ|สำเร็จ|amount|total)\s*[:\-]?/i, '').trim();
       const onSameLine = parseDecimalFromLine(cleanLine);
       if (onSameLine !== undefined) return onSameLine;
 
@@ -335,10 +371,10 @@ export function extractSlipAmount(text: string): number | undefined {
     }
   }
 
-  // Pass 3: Lines explicitly containing currency suffix (THB, บาท, Baht)
+  // Pass 3: Lines explicitly containing currency suffix (THB, บาท, Baht, ฿)
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (line.match(/(?:บาท|thb|baht)/i) && !line.includes('ค่าธรรมเนียม') && !line.toLowerCase().includes('fee')) {
+    if (line.match(/(?:บาท|thb|baht|฿)/i) && !line.includes('ค่าธรรมเนียม') && !line.toLowerCase().includes('fee')) {
       const amt = parseDecimalFromLine(line);
       if (amt !== undefined) return amt;
     }
@@ -348,53 +384,91 @@ export function extractSlipAmount(text: string): number | undefined {
   const allMatches: number[] = [];
   for (const line of lines) {
     if (isIgnoredLine(line)) continue;
+    const cleaned = cleanNumberLine(line);
     const regex = /(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d+)\s*[\.,]\s*(\d{2})(?:[^\d]|$)/g;
     let match;
-    while ((match = regex.exec(line)) !== null) {
+    while ((match = regex.exec(cleaned)) !== null) {
       const numStr = `${match[1].replace(/,/g, '')}.${match[2]}`;
       const satang = parseToSatang(numStr);
-      if (satang > 0) {
+      // Skip 0.00 and standard year numbers
+      if (satang > 0 && satang !== 256700 && satang !== 256800 && satang !== 256900 && satang !== 202400 && satang !== 202500 && satang !== 202600) {
         allMatches.push(satang);
       }
     }
   }
 
   if (allMatches.length > 0) {
-    return Math.max(...allMatches);
+    return allMatches[0];
   }
 
   return undefined;
 }
 
 /**
- * Extracts Time in HH:mm format from slip text
+ * Extracts Time in HH:mm format from slip text with high-precision multi-strategy matching
  */
 export function extractSlipTime(text: string): string | undefined {
-  // 1. Time with colon: "12:31", "21:44", "09:05:22"
-  const colonMatch = text.match(/\b([01]?\d|2[0-3])[:]([0-5]\d)(?::[0-5]\d)?\b/);
-  if (colonMatch) {
-    const hh = colonMatch[1].padStart(2, '0');
-    const mm = colonMatch[2];
-    return `${hh}:${mm}`;
+  const lines = text.split('\n');
+  const thaiSuffix = '(?:น\\.?|น|hrs|hr|am|pm|[4wuv]\\.)';
+
+  // Strategy 1: Explicit Time Marker with "เวลา" or "time"
+  // Examples: "เวลา 18:22 น.", "เวลา: 18:22", "เวลา : 18.22 น.", "Time: 18:22"
+  for (const line of lines) {
+    const timeLabelMatch = line.match(/(?:เวลา|time)\s*[:\-]?\s*([01]?\d|2[0-3])\s*[:\.]\s*([0-5]\d)(?:\s*[:\.]\s*[0-5]\d)?/i);
+    if (timeLabelMatch) {
+      const hh = timeLabelMatch[1].padStart(2, '0');
+      const mm = timeLabelMatch[2];
+      return `${hh}:${mm}`;
+    }
   }
 
-  // 2. 4-digit time glued to Thai น. or OCR misread: "12314.", "1231น.", "1231 น.", "1231w."
-  const gluedThaiMatch = text.match(/\b([01]?\d|2[0-3])([0-5]\d)\s*(?:น\.?|[4wuv]\.)/i);
-  if (gluedThaiMatch) {
-    const hh = gluedThaiMatch[1].padStart(2, '0');
-    const mm = gluedThaiMatch[2];
-    return `${hh}:${mm}`;
+  // Strategy 2: Time with Thai 'น.' or English suffix (supports both : and .)
+  // Examples: "12:31 น.", "12.31 น.", "12:31:45 น.", "12:31น.", "12.31น."
+  const explicitSuffixRegex = new RegExp(`\\b([01]?\\d|2[0-3])\\s*[:\\.]\\s*([0-5]\\d)(?:\\s*[:\\.]\\s*[0-5]\\d)?\\s*${thaiSuffix}`, 'i');
+  for (const line of lines) {
+    const m = line.match(explicitSuffixRegex);
+    if (m) {
+      const hh = m[1].padStart(2, '0');
+      const mm = m[2];
+      return `${hh}:${mm}`;
+    }
   }
 
-  // 3. Time with dot and Thai น. or OCR artifacts: "12.31 น.", "12.31 4."
-  const dotThaiMatch = text.match(/\b([01]?\d|2[0-3])[\.]([0-5]\d)\s*(?:น\.?|[4wuv]\.|\b)/i);
-  if (dotThaiMatch) {
-    const hh = dotThaiMatch[1].padStart(2, '0');
-    const mm = dotThaiMatch[2];
-    return `${hh}:${mm}`;
+  // Strategy 3: Time following a date on the same line
+  // Examples: "14 ต.ค. 2567 18:22", "14 ต.ค. 67, 18:22", "14 ต.ค. 67 - 18:22", "14/10/2024 18:22", "14 ต.ค. 67 - 18.22"
+  const dateTimeRegex = /(?:25\d{2}|20\d{2}|\b[567]\d)\s*(?:[\,\-•\|]|\s+)\s*([01]?\d|2[0-3])[:\.]([0-5]\d)(?::[0-5]\d)?\b/;
+  for (const line of lines) {
+    const m = line.match(dateTimeRegex);
+    if (m) {
+      const hh = m[1].padStart(2, '0');
+      const mm = m[2];
+      return `${hh}:${mm}`;
+    }
   }
 
-  // 4. 4 digits right after year (e.g. "69 1231" or "2569 1231")
+  // Strategy 4: 4-digit time glued to Thai 'น.' or OCR misreads (e.g. "1231 น.", "1231น.", "1231w.", "12314.")
+  for (const line of lines) {
+    const m = line.match(/\b([01]?\d|2[0-3])([0-5]\d)\s*(?:น\.?|น|[4wuv]\.)/i);
+    if (m) {
+      const hh = m[1].padStart(2, '0');
+      const mm = m[2];
+      return `${hh}:${mm}`;
+    }
+  }
+
+  // Strategy 5: Standalone Time with COLON "HH:mm" (Never dot, to prevent matching decimals like 20.00)
+  for (const line of lines) {
+    const low = line.toLowerCase();
+    if (low.includes('xxx') || low.includes('ค่าธรรมเนียม') || low.includes('fee') || low.includes('http') || low.includes('www')) continue;
+    const colonMatch = line.match(/\b([01]?\d|2[0-3])[:]([0-5]\d)(?::[0-5]\d)?\b/);
+    if (colonMatch) {
+      const hh = colonMatch[1].padStart(2, '0');
+      const mm = colonMatch[2];
+      return `${hh}:${mm}`;
+    }
+  }
+
+  // Strategy 6: 4 digits right after year (e.g. "2569 1231" or "69 1231")
   const afterYearMatch = text.match(/(?:25\d{2}|20\d{2}|\b[567]\d)\s+([01]\d|2[0-3])([0-5]\d)\b/);
   if (afterYearMatch) {
     const hh = afterYearMatch[1];
@@ -406,15 +480,18 @@ export function extractSlipTime(text: string): string | undefined {
 }
 
 /**
- * Extracts Date in YYYY-MM-DD format from slip text
+ * Extracts Date in YYYY-MM-DD format from slip text with single-line & multi-line wrapped support
  */
 export function extractSlipDate(text: string): string | undefined {
   const lines = text.split('\n');
 
-  // Strategy A: Thai/English text date within each single line
-  // Example: "04 ต.ค. 2569", "13 ก.ย. 2569", "12 ก.ย. 69", "30 Sep 2026"
+  // Strategy A: Thai/English text date within each single line or joined adjacent lines
+  // Example: "04 ต.ค. 2569", "13 ก.ย. 2569", "12 ก.ย. 69", "30 Sep 2026", "14 ต.ค. 67, 18:22"
   const thaiDateRegex = /(?:^|[^\d])(\d{1,2})\s*[\s\.\-\/]?\s*([^\s\d]{2,15})\s*[\s\.\-\/]?\s*(\d{2,4})(?:[^\d]|$)/;
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Check single line
     const match = line.match(thaiDateRegex);
     if (match) {
       const day = parseInt(match[1], 10);
@@ -423,13 +500,64 @@ export function extractSlipDate(text: string): string | undefined {
 
       if (monthStr && day >= 1 && day <= 31) {
         const gregorianYear = convertBuddhistToGregorianYear(rawYear);
-        const dayStr = day.toString().padStart(2, '0');
-        return `${gregorianYear}-${monthStr}-${dayStr}`;
+        if (gregorianYear >= 2020 && gregorianYear <= 2035) {
+          const dayStr = day.toString().padStart(2, '0');
+          return `${gregorianYear}-${monthStr}-${dayStr}`;
+        }
+      }
+    }
+
+    // Check joined line with next line (for wrapped date layouts)
+    if (i + 1 < lines.length) {
+      const joined = `${line.trim()} ${lines[i + 1].trim()}`;
+      const jMatch = joined.match(thaiDateRegex);
+      if (jMatch) {
+        const day = parseInt(jMatch[1], 10);
+        const monthStr = matchMonthToken(jMatch[2]);
+        const rawYear = parseInt(jMatch[3], 10);
+
+        if (monthStr && day >= 1 && day <= 31) {
+          const gregorianYear = convertBuddhistToGregorianYear(rawYear);
+          if (gregorianYear >= 2020 && gregorianYear <= 2035) {
+            const dayStr = day.toString().padStart(2, '0');
+            return `${gregorianYear}-${monthStr}-${dayStr}`;
+          }
+        }
       }
     }
   }
 
-  // Strategy B: Numeric date "DD/MM/YYYY", "DD-MM-YYYY", "DD.MM.YYYY"
+  // Strategy B: English Month Date "14 October 2024", "October 14, 2024", "14-Oct-2024", "14-Oct-24"
+  const engDateRegex1 = /\b(\d{1,2})[\s\-\/\.](Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[\s\-\/\.](\d{2,4})\b/i;
+  const engDateRegex2 = /\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[\s\-\/\.](\d{1,2})(?:st|nd|rd|th)?[\s\,\-\/\.]+(\d{2,4})\b/i;
+  for (const line of lines) {
+    const m1 = line.match(engDateRegex1);
+    if (m1) {
+      const d = parseInt(m1[1], 10);
+      const mStr = matchMonthToken(m1[2]);
+      const y = parseInt(m1[3], 10);
+      if (mStr && d >= 1 && d <= 31) {
+        const year = convertBuddhistToGregorianYear(y);
+        if (year >= 2020 && year <= 2035) {
+          return `${year}-${mStr}-${d.toString().padStart(2, '0')}`;
+        }
+      }
+    }
+    const m2 = line.match(engDateRegex2);
+    if (m2) {
+      const mStr = matchMonthToken(m2[1]);
+      const d = parseInt(m2[2], 10);
+      const y = parseInt(m2[3], 10);
+      if (mStr && d >= 1 && d <= 31) {
+        const year = convertBuddhistToGregorianYear(y);
+        if (year >= 2020 && year <= 2035) {
+          return `${year}-${mStr}-${d.toString().padStart(2, '0')}`;
+        }
+      }
+    }
+  }
+
+  // Strategy C: Numeric date "DD/MM/YYYY", "DD-MM-YYYY", "DD.MM.YYYY"
   const numericRegex = /(?:^|[^\d])(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})(?:[^\d]|$)/;
   for (const line of lines) {
     const match = line.match(numericRegex);
@@ -439,12 +567,14 @@ export function extractSlipDate(text: string): string | undefined {
       const y = parseInt(match[3], 10);
       if (d >= 1 && d <= 31 && m >= 1 && m <= 12) {
         const year = convertBuddhistToGregorianYear(y);
-        return `${year}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+        if (year >= 2020 && year <= 2035) {
+          return `${year}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+        }
       }
     }
   }
 
-  // Strategy C: ISO date "YYYY-MM-DD"
+  // Strategy D: ISO date "YYYY-MM-DD" or "YYYY/MM/DD"
   const isoRegex = /\b(20\d{2}|25\d{2})[\/\-](\d{1,2})[\/\-](\d{1,2})\b/;
   for (const line of lines) {
     const match = line.match(isoRegex);
@@ -454,7 +584,9 @@ export function extractSlipDate(text: string): string | undefined {
       const d = parseInt(match[3], 10);
       if (d >= 1 && d <= 31 && m >= 1 && m <= 12) {
         const year = convertBuddhistToGregorianYear(y);
-        return `${year}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+        if (year >= 2020 && year <= 2035) {
+          return `${year}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+        }
       }
     }
   }
@@ -464,16 +596,18 @@ export function extractSlipDate(text: string): string | undefined {
 
 /**
  * Decodes transaction timestamp embedded in bank reference numbers:
- * 1. KBank PromptPay/Slip Ref: 01 + Y (year digit, e.g. 6 = 2026) + DDD (day of year 001-366) + HHmm (time)
+ * 1. KBank & MAKE reference format: 01 + YearDigit + DayOfYear (3 digits) + HHmm (4 digits)
  *    Example: 016273123127ATF02002 -> 2026-09-30 12:31
- * 2. Standard timestamp prefix: YYYYMMDDHHmmss
+ * 2. Standard timestamp prefix: YYYYMMDDHHmmss or YYYYMMDD_HHmm (SCB, KTB, BBL, TTB)
+ * 3. Compact date prefix: YYYYMMDD
  */
 export function extractDateTimeFromRefNo(refNo?: string): { date?: string; time?: string } {
   if (!refNo || !refNo.trim()) return {};
   const clean = refNo.trim();
 
-  // Pattern 1: KBank reference format (01 + YearDigit + DayOfYear + HHmm)
-  const kbankMatch = clean.match(/^01([0-9])([0-3][0-9]{2})([0-2][0-9][0-5][0-9])/);
+  // Pattern 1: KBank & MAKE reference format (01 + YearDigit + DayOfYear + HHmm)
+  // Supports bank code prefixes like 0040162731231... or standalone 0162731231...
+  const kbankMatch = clean.match(/(?:^|[A-Za-z0-9_-])01([4-9])([0-3][0-9]{2})([0-2][0-9][0-5][0-9])/);
   if (kbankMatch) {
     const yearDigit = parseInt(kbankMatch[1], 10);
     const dayOfYear = parseInt(kbankMatch[2], 10);
@@ -481,7 +615,7 @@ export function extractDateTimeFromRefNo(refNo?: string): { date?: string; time?
     const hour = timeStr.slice(0, 2);
     const min = timeStr.slice(2, 4);
 
-    // KBank year digit: 4=2024, 5=2025, 6=2026, etc.
+    // KBank year digit: 4=2024, 5=2025, 6=2026, 7=2027, 8=2028, 9=2029
     const year = 2020 + yearDigit;
     if (dayOfYear >= 1 && dayOfYear <= 366) {
       const d = new Date(Date.UTC(year, 0, 1));
@@ -489,19 +623,31 @@ export function extractDateTimeFromRefNo(refNo?: string): { date?: string; time?
       const yyyy = d.getUTCFullYear();
       const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
       const dd = String(d.getUTCDate()).padStart(2, '0');
-      return {
-        date: `${yyyy}-${mm}-${dd}`,
-        time: `${hour}:${min}`,
-      };
+      const hNum = parseInt(hour, 10);
+      const mNum = parseInt(min, 10);
+      if (hNum >= 0 && hNum <= 23 && mNum >= 0 && mNum <= 59) {
+        return {
+          date: `${yyyy}-${mm}-${dd}`,
+          time: `${hour}:${min}`,
+        };
+      }
     }
   }
 
-  // Pattern 2: Standard ISO compact timestamp YYYYMMDDHHmmss
-  const compactMatch = clean.match(/^(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])([0-5]\d)/);
+  // Pattern 2: Standard ISO compact timestamp YYYYMMDDHHmmss or YYYYMMDD_HHmm (SCB, KTB, BBL, TTB)
+  const compactMatch = clean.match(/(20[2-3]\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])(?:_|\s*)?([01]\d|2[0-3])([0-5]\d)/);
   if (compactMatch) {
     return {
       date: `${compactMatch[1]}-${compactMatch[2]}-${compactMatch[3]}`,
       time: `${compactMatch[4]}:${compactMatch[5]}`,
+    };
+  }
+
+  // Pattern 3: Compact date only YYYYMMDD
+  const dateOnlyMatch = clean.match(/(20[2-3]\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])/);
+  if (dateOnlyMatch) {
+    return {
+      date: `${dateOnlyMatch[1]}-${dateOnlyMatch[2]}-${dateOnlyMatch[3]}`,
     };
   }
 
@@ -519,15 +665,13 @@ export function extractSlipDateTime(
   let date = extractSlipDate(text);
   let time = extractSlipTime(text);
 
-  // If date or time missing, check reference number metadata
-  if (!date || !time) {
-    const fromRef = extractDateTimeFromRefNo(refNo);
-    if (!date && fromRef.date) {
-      date = fromRef.date;
-    }
-    if (!time && fromRef.time) {
-      time = fromRef.time;
-    }
+  // Recover missing date or time from bank reference number metadata (when OCR text is cut off or blurry)
+  const fromRef = extractDateTimeFromRefNo(refNo);
+  if (!date && fromRef.date) {
+    date = fromRef.date;
+  }
+  if (!time && fromRef.time) {
+    time = fromRef.time;
   }
 
   return { date, time };

@@ -44,8 +44,8 @@ export async function preprocessSlipImage(source: File | Blob | string): Promise
   const origW = img.naturalWidth || img.width;
   const origH = img.naturalHeight || img.height;
 
-  // 1. OCR Canvas (max 1400px for optimal speed & OCR accuracy)
-  const ocrMaxDim = 1400;
+  // 1. OCR Canvas (max 1800px, optimal resolution for small Thai & English text)
+  const ocrMaxDim = 1800;
   let ocrW = origW;
   let ocrH = origH;
   if (ocrW > ocrMaxDim || ocrH > ocrMaxDim) {
@@ -56,6 +56,12 @@ export async function preprocessSlipImage(source: File | Blob | string): Promise
       ocrW = Math.round((ocrW * ocrMaxDim) / ocrH);
       ocrH = ocrMaxDim;
     }
+  }
+
+  // Ensure minimum width of 960px if original allows, so small fonts are tall enough for Tesseract
+  if (ocrW < 960 && origW >= 960) {
+    ocrH = Math.round((ocrH * 960) / ocrW);
+    ocrW = 960;
   }
 
   const ocrCanvas = document.createElement('canvas');
@@ -69,15 +75,28 @@ export async function preprocessSlipImage(source: File | Blob | string): Promise
   const rawImageData = ctx.getImageData(0, 0, ocrW, ocrH);
   const ocrImageData = ctx.getImageData(0, 0, ocrW, ocrH);
 
-  // 2. High-contrast Grayscale Boost for OCR
+  // 2. High-contrast Grayscale Boost & Dark Mode Inversion for OCR
   // Enhance contrast to make small numbers and Thai text stand out against backgrounds
   const data = ocrImageData.data;
+  let totalLum = 0;
+  const pixelCount = data.length / 4;
+  for (let i = 0; i < data.length; i += 4) {
+    totalLum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+  }
+  const avgLum = totalLum / pixelCount;
+  const isDarkMode = avgLum < 110;
+
   for (let i = 0; i < data.length; i += 4) {
     const r = data[i];
     const g = data[i + 1];
     const b = data[i + 2];
     // Perceived luminance
     let gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+    // Invert if dark mode so Tesseract always sees dark text on light background
+    if (isDarkMode) {
+      gray = 255 - gray;
+    }
 
     // Contrast stretching (increase distance from midpoint 128)
     gray = (gray - 128) * 1.35 + 128;

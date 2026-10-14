@@ -240,4 +240,98 @@ MAKE by KBank
     expect(parsed.refNo).toBe('016287201524MAKE123');
     expect(parsed.bankName).toContain('MAKE');
   });
+
+  // 10. OCR Artifacts: spaces in amount, character substitutions, and dot-separated time
+  it('should handle OCR spacing artifacts, dot time with น., and character substitutions in amount', () => {
+    const noisyOcrText = `
+KBank กสิกรไทย
+โอนเงินสำเร็จ
+วันที่ 14 ต.ค. 2569 เวลา 18.22 น.
+จำนวนเงิน: 1, 000.00 บาท
+ค่าธรรมเนียม: 0.00 บาท
+รหัสอ้างอิง: 016288182200KBNK12345
+จาก: นาย ภาณุเดช
+ไปยัง: นางสาว มาลี
+    `.trim();
+
+    const parsed = parseSlipText(noisyOcrText, null, ['โฟกัส']);
+
+    expect(parsed.amountSatang).toBe(100000); // 1, 000.00 -> 1,000.00 -> 100000 satang
+    expect(parsed.amountFormatted).toBe('1,000.00');
+    expect(parsed.date).toBe('2026-10-14');
+    expect(parsed.time).toBe('18:22'); // 18.22 น. correctly parsed as 18:22
+    expect(parsed.refNo).toBe('016288182200KBNK12345');
+  });
+
+  // 11. Small amount should not be confused with time
+  it('should correctly distinguish small amount 20.00 from time 14:30', () => {
+    const slipText = `
+โอนเงินสำเร็จ
+14 ต.ค. 69 14.30 น.
+จำนวนเงิน 20.00 บาท
+รหัสอ้างอิง: 202610141430001
+    `.trim();
+
+    const parsed = parseSlipText(slipText, null, ['โฟกัส']);
+
+    expect(parsed.amountSatang).toBe(2000); // 20.00 -> 2000 satang (NOT 14.30 or 0)
+    expect(parsed.amountFormatted).toBe('20.00');
+    expect(parsed.time).toBe('14:30'); // Not 20:00!
+    expect(parsed.date).toBe('2026-10-14');
+  });
+
+  // 12. Wrapped date across two lines and OCR month typo
+  it('should parse wrapped date across lines and OCR month variations like ต.a.', () => {
+    const wrappedDateSlip = `
+SCB EASY
+รายการสำเร็จ
+วันที่ทำรายการ
+15 ต.a. 2569
+เวลา 08:45 น.
+จำนวนเงิน 350.00 บาท
+รหัสอ้างอิง 202610150845123456
+    `.trim();
+
+    const parsed = parseSlipText(wrappedDateSlip, null, ['โฟกัส']);
+
+    expect(parsed.date).toBe('2026-10-15');
+    expect(parsed.time).toBe('08:45');
+    expect(parsed.amountSatang).toBe(35000);
+    expect(parsed.amountFormatted).toBe('350.00');
+  });
+
+  // 13. English date formatting
+  it('should parse English date formats like 14 Oct 2026', () => {
+    const engDateSlip = `
+Bangkok Bank
+Transfer Successful
+14 Oct 2026, 09:12
+Amount 1,200.50 THB
+Ref: 202610140912123456
+    `.trim();
+
+    const parsed = parseSlipText(engDateSlip, null, ['โฟกัส']);
+
+    expect(parsed.date).toBe('2026-10-14');
+    expect(parsed.time).toBe('09:12');
+    expect(parsed.amountSatang).toBe(120050);
+    expect(parsed.amountFormatted).toBe('1,200.50');
+  });
+
+  // 14. Fallback recovery of date & time from bank reference number when OCR date line is cropped
+  it('should recover date and time from bank ref number when text date is missing or cropped', () => {
+    const croppedSlip = `
+KBANK โอนเงินสำเร็จ
+จำนวนเงิน 500.00 บาท
+016273123127ATF02002
+    `.trim();
+
+    const parsed = parseSlipText(croppedSlip, null, ['โฟกัส']);
+
+    expect(parsed.amountSatang).toBe(50000);
+    expect(parsed.date).toBe('2026-09-30'); // Day 273 of 2026 is 30 Sep
+    expect(parsed.time).toBe('12:31'); // 1231
+    expect(parsed.refNo).toBe('016273123127ATF02002');
+  });
 });
+

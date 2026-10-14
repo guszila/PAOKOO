@@ -436,24 +436,61 @@ export function App() {
     fullSlipBase64: string;
     pocketId?: string;
   }) => {
-    setSelectedTxForEdit(null);
-    const resolvedType = data.type || scannerInitialType || 'out';
-    const resolvedWho = data.who || (resolvedType === 'lend' || resolvedType === 'back' ? '' : (currentMemberName || activeMembers[0] || ''));
+    // If user was already editing an existing transaction, KEEP selectedTxForEdit so it saves with that transaction's ID!
+    const isEditing = Boolean(selectedTxForEdit);
+    const resolvedType = data.type || (isEditing ? selectedTxForEdit?.type : scannerInitialType) || 'out';
+    const resolvedWho = data.who || (isEditing ? selectedTxForEdit?.who : (resolvedType === 'lend' || resolvedType === 'back' ? '' : (currentMemberName || activeMembers[0] || '')));
     setPrefillData({
       type: resolvedType,
-      amount: data.amountSatang,
+      amount: data.amountSatang || selectedTxForEdit?.amount,
       who: resolvedWho,
-      note: data.note,
-      date: data.date,
-      time: data.time,
-      refNo: data.refNo,
+      note: isEditing ? (selectedTxForEdit?.note || data.note) : data.note,
+      date: isEditing ? (selectedTxForEdit?.date || data.date) : data.date,
+      time: isEditing ? (selectedTxForEdit?.time || data.time) : data.time,
+      refNo: data.refNo || selectedTxForEdit?.refNo,
       slipThumbnail: data.slipThumbnail,
       fullSlipBase64: data.fullSlipBase64,
-      category: resolvedType === 'out' ? (categories[0] || 'อาหาร') : undefined,
-      pocketId: data.pocketId,
+      category: resolvedType === 'out' ? (isEditing ? selectedTxForEdit?.category : (categories[0] || 'อาหาร')) : undefined,
+      pocketId: data.pocketId || selectedTxForEdit?.pocketId,
     });
     setIsFormOpen(true);
   };
+
+  // Directly attach slip to an existing transaction retroactively without creating a duplicate
+  const handleAttachSlipToExisting = useCallback(
+    (txId: string, slipData: { slipThumbnail: string; fullSlipBase64: string; refNo?: string }) => {
+      const targetTx = activeTransactions.find((t) => t.id === txId);
+      if (!targetTx) return;
+
+      const updates: Partial<Omit<Transaction, 'id' | 'createdAt'>> = {
+        slipThumbnail: slipData.slipThumbnail,
+        hasFullSlip: true,
+      };
+      if (slipData.refNo) {
+        updates.refNo = slipData.refNo;
+      }
+
+      if (isCloudActive) {
+        saveCloudTransaction(
+          {
+            ...targetTx,
+            ...updates,
+          },
+          txId
+        );
+      } else {
+        updateLocalTx(txId, updates);
+      }
+
+      showToast({
+        type: 'success',
+        title: 'แนบสลิปเรียบร้อยแล้ว ✨',
+        message: `แนบสลิปให้กับรายการวันที่ ${targetTx.date} (${targetTx.who}) สำเร็จ`,
+      });
+      setIsScannerOpen(false);
+    },
+    [activeTransactions, isCloudActive, saveCloudTransaction, updateLocalTx, showToast]
+  );
 
   // Quick Action click (opens form pre-selected with type and auto defaults who for in/out)
   const handleQuickAction = (type: TransactionType) => {
@@ -701,7 +738,11 @@ export function App() {
       {/* Add / Edit Form Bottom Sheet */}
       <TransactionFormSheet
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={() => {
+          setIsFormOpen(false);
+          setSelectedTxForEdit(null);
+          setPrefillData(null);
+        }}
         onSave={handleSaveTransaction}
         onDelete={handleDeleteTransaction}
         initialTransaction={selectedTxForEdit}
@@ -725,6 +766,7 @@ export function App() {
         pocketSummaries={pocketSummaries}
         initialType={scannerInitialType}
         onApplySlip={handleApplySlip}
+        onAttachToExisting={handleAttachSlipToExisting}
       />
 
       {/* Pocket Create / Edit Modal */}

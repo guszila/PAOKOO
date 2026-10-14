@@ -22,6 +22,7 @@ import {
   Image as ImageIcon,
 } from 'lucide-react';
 import { SlipViewerModal } from '../scanner/SlipViewerModal';
+import { SlipScannerModal } from '../scanner/SlipScannerModal';
 import { Pocket, PocketSummary } from '../../types/pocket';
 import { EmojiPickerModal } from '../common/EmojiPickerModal';
 import { POPULAR_EXPENSE_EMOJIS, setLeadingEmoji, getCategoryEmoji, extractEmoji } from '../../config/emojis';
@@ -101,7 +102,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
   categories = DEFAULT_EXPENSE_CATEGORIES,
   pockets = [],
   pocketSummaries = [],
-  onOpenScanner,
+  onOpenScanner: _onOpenScanner,
 }) => {
   const [type, setType] = useState<TransactionType>('out');
   const [amountStr, setAmountStr] = useState<string>('');
@@ -123,6 +124,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isProcessingSlip, setIsProcessingSlip] = useState(false);
+  const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const todayStr = useMemo(() => getLocalDateString(), []);
@@ -179,19 +181,19 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
     if (!isOpen) return;
 
     if (initialTransaction) {
-      setType(initialTransaction.type);
-      setAmountStr(satangToBaht(initialTransaction.amount).toString());
-      setWho(initialTransaction.who);
-      setShowCustomWho(!memberNames.includes(initialTransaction.who));
-      setNote(initialTransaction.note || '');
-      setCategory(initialTransaction.category || 'อื่นๆ');
-      setSelectedPocketId(initialTransaction.pocketId);
-      setDate(initialTransaction.date);
-      setTime(initialTransaction.time || '');
-      setRefNo(initialTransaction.refNo || '');
-      setSlipThumbnail(initialTransaction.slipThumbnail);
-      setFullSlipBase64(undefined);
-      setShowMoreDetails(Boolean(initialTransaction.note || initialTransaction.pocketId || initialTransaction.slipThumbnail));
+      setType(prefill?.type || initialTransaction.type);
+      setAmountStr(prefill?.amount ? satangToBaht(prefill.amount).toString() : satangToBaht(initialTransaction.amount).toString());
+      setWho(prefill?.who || initialTransaction.who);
+      setShowCustomWho(!memberNames.includes(prefill?.who || initialTransaction.who));
+      setNote(prefill?.note !== undefined ? prefill.note : (initialTransaction.note || ''));
+      setCategory(prefill?.category || initialTransaction.category || 'อื่นๆ');
+      setSelectedPocketId(prefill?.pocketId !== undefined ? prefill.pocketId : initialTransaction.pocketId);
+      setDate(prefill?.date || initialTransaction.date);
+      setTime(prefill?.time !== undefined ? prefill.time : (initialTransaction.time || ''));
+      setRefNo(prefill?.refNo || initialTransaction.refNo || '');
+      setSlipThumbnail(prefill?.slipThumbnail !== undefined ? prefill.slipThumbnail : initialTransaction.slipThumbnail);
+      setFullSlipBase64(prefill?.fullSlipBase64);
+      setShowMoreDetails(Boolean(prefill?.slipThumbnail || initialTransaction.note || initialTransaction.pocketId || initialTransaction.slipThumbnail));
     } else if (prefill) {
       setType(prefill.type || 'out');
       setAmountStr(prefill.amount ? satangToBaht(prefill.amount).toString() : '');
@@ -646,7 +648,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => onOpenScanner?.(type)}
+                    onClick={() => setIsScannerModalOpen(true)}
                     className="h-10 px-2.5 rounded-xl border-2 border-[#242A20] dark:border-[#3C4A38] bg-amber-100 dark:bg-amber-950/70 text-amber-950 dark:text-amber-200 font-bold text-xs flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none select-none hover:bg-amber-200 transition-all"
                   >
                     <Camera size={15} strokeWidth={2.5} className="text-amber-600 dark:text-amber-400" />
@@ -910,7 +912,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
-                        onClick={() => onOpenScanner?.(type)}
+                        onClick={() => setIsScannerModalOpen(true)}
                         className="py-2.5 px-3 rounded-xl border-2 border-dashed border-[#242A20]/40 dark:border-[#3C4A38] text-xs font-bold flex items-center justify-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                       >
                         <Camera size={15} strokeWidth={2} className="text-emerald-600" />
@@ -1007,6 +1009,43 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
         onClose={() => setIsEmojiPickerOpen(false)}
         onSelectEmoji={(emoji) => setNote((prev) => setLeadingEmoji(prev, emoji))}
         currentEmoji={extractEmoji(note)}
+      />
+
+      {/* Embedded Slip Scanner Modal (Preserves Transaction & Edit Context) */}
+      <SlipScannerModal
+        isOpen={isScannerModalOpen}
+        onClose={() => setIsScannerModalOpen(false)}
+        existingTransactions={existingTransactions}
+        memberNames={memberNames}
+        pockets={pockets}
+        pocketSummaries={pocketSummaries}
+        initialType={type}
+        onApplySlip={(scanned) => {
+          setSlipThumbnail(scanned.slipThumbnail);
+          setFullSlipBase64(scanned.fullSlipBase64);
+          if (scanned.refNo) setRefNo(scanned.refNo);
+
+          if (!initialTransaction) {
+            // New transaction: fill all extracted data
+            if (scanned.type) setType(scanned.type);
+            if (scanned.amountSatang) setAmountStr(satangToBaht(scanned.amountSatang).toString());
+            if (scanned.who) setWho(scanned.who);
+            if (scanned.note) setNote(scanned.note);
+            if (scanned.date) setDate(scanned.date);
+            if (scanned.time) setTime(scanned.time);
+            if (scanned.pocketId) setSelectedPocketId(scanned.pocketId);
+          } else {
+            // Existing transaction: preserve identity and only fill empty fields
+            if (!amountStr || parseFloat(amountStr) <= 0) {
+              if (scanned.amountSatang) setAmountStr(satangToBaht(scanned.amountSatang).toString());
+            }
+            if (!who.trim() && scanned.who) {
+              setWho(scanned.who);
+            }
+          }
+          setShowMoreDetails(true);
+          setIsScannerModalOpen(false);
+        }}
       />
     </>
   );
