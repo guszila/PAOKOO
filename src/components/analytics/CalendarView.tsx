@@ -281,7 +281,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     setSelectedDate(day.dateStr);
                   }
                 }}
-                className={`relative min-h-[54px] sm:min-h-[60px] p-1 rounded-xl flex flex-col items-center justify-between select-none cursor-pointer transition-all duration-150 ${
+                className={`relative min-h-[58px] sm:min-h-[64px] p-1 rounded-xl flex flex-col items-center justify-between select-none cursor-pointer transition-all duration-150 ${
                   isSelected
                     ? 'bg-[#9BBC0F] text-[#0F380F] border-2 border-[#242A20] dark:border-[#9BBC0F] shadow-[2px_2px_0px_#242A20] dark:shadow-[2px_2px_0px_#0A0F0A] font-bold'
                     : day.isToday
@@ -306,37 +306,33 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   {day.dayNumber}
                 </span>
 
-                {/* Amount Badges Container with fixed height & 2 designated rows */}
-                <div className="w-full h-[28px] flex flex-col justify-end gap-0.5 overflow-hidden">
-                  {/* Row 1: Income Slot */}
-                  <div className="h-[13px] w-full flex items-center justify-center">
-                    {hasIncome && (
-                      <span
-                        className={`font-sans font-bold text-[9px] tracking-tight leading-none px-1 py-0.5 rounded-[3px] w-full text-center whitespace-nowrap overflow-hidden transition-opacity duration-150 ${
-                          isSelected
-                            ? 'bg-[#0F380F] text-[#9BBC0F] font-extrabold'
-                            : 'bg-emerald-100 dark:bg-emerald-950/90 text-emerald-800 dark:text-emerald-300 border border-emerald-400/40 dark:border-emerald-600/50'
-                        } ${showIncome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                      >
-                        {isMasked ? '•••' : `+${formatCompactAmount(dayIncome)}`}
-                      </span>
-                    )}
-                  </div>
+                {/* Amount Badges Container: fully visible without overflow clipping */}
+                <div className="w-full flex flex-col justify-end gap-[2px] mt-auto">
+                  {/* Income Badge */}
+                  {showIncome && (
+                    <span
+                      className={`font-sans font-bold text-[8.5px] sm:text-[9px] tracking-tight leading-none px-0.5 sm:px-1 py-[2px] rounded-[3px] w-full text-center truncate block transition-colors ${
+                        isSelected
+                          ? 'bg-[#0F380F] text-[#9BBC0F] font-extrabold'
+                          : 'bg-emerald-100 dark:bg-emerald-950/90 text-emerald-800 dark:text-emerald-300 border border-emerald-400/40 dark:border-emerald-600/50'
+                      }`}
+                    >
+                      {isMasked ? '•••' : `+${formatCompactAmount(dayIncome)}`}
+                    </span>
+                  )}
 
-                  {/* Row 2: Expense Slot */}
-                  <div className="h-[13px] w-full flex items-center justify-center">
-                    {hasExpense && (
-                      <span
-                        className={`font-sans font-bold text-[9px] tracking-tight leading-none px-1 py-0.5 rounded-[3px] w-full text-center whitespace-nowrap overflow-hidden transition-opacity duration-150 ${
-                          isSelected
-                            ? 'bg-[#8B1E43] text-white font-extrabold'
-                            : 'bg-rose-100 dark:bg-rose-950/90 text-rose-800 dark:text-rose-300 border border-rose-400/40 dark:border-rose-700/50'
-                        } ${showExpense ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                      >
-                        {isMasked ? '•••' : `-${formatCompactAmount(dayExpense)}`}
-                      </span>
-                    )}
-                  </div>
+                  {/* Expense Badge */}
+                  {showExpense && (
+                    <span
+                      className={`font-sans font-bold text-[8.5px] sm:text-[9px] tracking-tight leading-none px-0.5 sm:px-1 py-[2px] rounded-[3px] w-full text-center truncate block transition-colors ${
+                        isSelected
+                          ? 'bg-[#8B1E43] text-white font-extrabold'
+                          : 'bg-rose-100 dark:bg-rose-950/90 text-rose-800 dark:text-rose-300 border border-rose-400/40 dark:border-rose-700/50'
+                      }`}
+                    >
+                      {isMasked ? '•••' : `-${formatCompactAmount(dayExpense)}`}
+                    </span>
+                  )}
                 </div>
               </button>
             );
