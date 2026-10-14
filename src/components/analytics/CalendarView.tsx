@@ -111,8 +111,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
     transactions.forEach((tx) => {
       if (tx.date && tx.date.startsWith(yearMonth)) {
-        if (tx.type === 'in') inTotal += tx.amount;
-        if (tx.type === 'out') outTotal += tx.amount;
+        if (tx.type === 'in' || tx.type === 'back') inTotal += tx.amount;
+        if (tx.type === 'out' || tx.type === 'lend') outTotal += tx.amount;
       }
     });
 
@@ -132,10 +132,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   // Selected day summary & transactions
   const selectedDaySummary = useMemo(() => {
     const dayData = groupedData[activeSelectedDate];
+    const totalIn = (dayData?.inAmount || 0) + (dayData?.backAmount || 0);
+    const totalOut = (dayData?.outAmount || 0) + (dayData?.lendAmount || 0);
     return {
-      inAmount: dayData?.inAmount || 0,
-      outAmount: dayData?.outAmount || 0,
-      net: dayData?.net || 0,
+      inAmount: totalIn,
+      outAmount: totalOut,
+      net: totalIn - totalOut,
       transactions: dayData?.transactions || [],
     };
   }, [groupedData, activeSelectedDate]);
@@ -258,8 +260,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           {calendarDays.map((day: CalendarDay) => {
             const isSelected = day.dateStr === activeSelectedDate;
             const summary = groupedData[day.dateStr];
-            const hasIncome = summary && summary.inAmount > 0;
-            const hasExpense = summary && summary.outAmount > 0;
+            const dayIncome = (summary?.inAmount || 0) + (summary?.backAmount || 0);
+            const dayExpense = (summary?.outAmount || 0) + (summary?.lendAmount || 0);
+            const hasIncome = dayIncome > 0;
+            const hasExpense = dayExpense > 0;
             const showIncome = (filterType === 'all' || filterType === 'in') && hasIncome;
             const showExpense = (filterType === 'all' || filterType === 'out') && hasExpense;
 
@@ -314,7 +318,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                             : 'bg-emerald-100 dark:bg-emerald-950/90 text-emerald-800 dark:text-emerald-300 border border-emerald-400/40 dark:border-emerald-600/50'
                         } ${showIncome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                       >
-                        {isMasked ? '•••' : `+${formatCompactAmount(summary.inAmount)}`}
+                        {isMasked ? '•••' : `+${formatCompactAmount(dayIncome)}`}
                       </span>
                     )}
                   </div>
@@ -329,7 +333,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                             : 'bg-rose-100 dark:bg-rose-950/90 text-rose-800 dark:text-rose-300 border border-rose-400/40 dark:border-rose-700/50'
                         } ${showExpense ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                       >
-                        {isMasked ? '•••' : `-${formatCompactAmount(summary.outAmount)}`}
+                        {isMasked ? '•••' : `-${formatCompactAmount(dayExpense)}`}
                       </span>
                     )}
                   </div>

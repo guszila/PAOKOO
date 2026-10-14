@@ -250,7 +250,7 @@ export function useHousehold(user: User | null) {
       const payload: Record<string, any> = {
         id: txId,
         type: txData.type,
-        amount: txData.amount,
+        amount: Math.round(txData.amount),
         who: txData.who,
         note: txData.note || '',
         date: txData.date,
@@ -258,6 +258,7 @@ export function useHousehold(user: User | null) {
         updatedBy: user.uid,
       };
 
+      if (txData.time) payload.time = txData.time;
       if (txData.category) {
         payload.category = txData.category;
       } else if (id) {
@@ -269,8 +270,16 @@ export function useHousehold(user: User | null) {
       } else if (id) {
         payload.pocketId = deleteField();
       }
-      if (txData.refNo) payload.refNo = txData.refNo;
-      if (txData.slipThumbnail) payload.slipThumbnail = txData.slipThumbnail;
+      if (txData.refNo) {
+        payload.refNo = txData.refNo;
+      } else if (id) {
+        payload.refNo = deleteField();
+      }
+      if (txData.slipThumbnail) {
+        payload.slipThumbnail = txData.slipThumbnail;
+      } else if (id) {
+        payload.slipThumbnail = deleteField();
+      }
       if (txData.hasFullSlip !== undefined) payload.hasFullSlip = txData.hasFullSlip;
       if (!id) {
         payload.createdAt = now;

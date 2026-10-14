@@ -8,6 +8,7 @@ export interface ProcessedSlipImage {
   originalHeight: number;
   ocrCanvas: HTMLCanvasElement;
   ocrImageData: ImageData;
+  rawImageData: ImageData;
   thumbnailBase64: string; // < 35 KB, stored in transaction doc
   fullBase64: string; // < 350 KB, for viewing full slip
 }
@@ -64,6 +65,8 @@ export async function preprocessSlipImage(source: File | Blob | string): Promise
   if (!ctx) throw new Error('Cannot acquire canvas 2D context');
 
   ctx.drawImage(img, 0, 0, ocrW, ocrH);
+  // Capture raw image data before contrast enhancement (crucial for QR codes with colorful themes like MAKE by KBank)
+  const rawImageData = ctx.getImageData(0, 0, ocrW, ocrH);
   const ocrImageData = ctx.getImageData(0, 0, ocrW, ocrH);
 
   // 2. High-contrast Grayscale Boost for OCR
@@ -98,6 +101,7 @@ export async function preprocessSlipImage(source: File | Blob | string): Promise
     originalHeight: origH,
     ocrCanvas,
     ocrImageData,
+    rawImageData,
     thumbnailBase64,
     fullBase64,
   };

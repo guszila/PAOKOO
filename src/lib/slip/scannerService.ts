@@ -1,5 +1,5 @@
 import Tesseract from 'tesseract.js';
-import { decodeQRFromImageData, DecodedSlipQR } from './qrDecoder';
+import { tryDecodeQR, DecodedSlipQR } from './qrDecoder';
 import { preprocessSlipImage, ProcessedSlipImage } from './preprocessor';
 import { parseSlipText, ParsedSlipData, checkDuplicateSlip } from './slipParser';
 import { Transaction } from '../../types/transaction';
@@ -47,7 +47,7 @@ export async function scanBankSlip(
     message: 'กำลังตรวจสอบ QR Code สลิปธนาคาร...',
   });
 
-  const decodedQR = decodeQRFromImageData(processed.ocrImageData);
+  const decodedQR = tryDecodeQR(processed.rawImageData, processed.ocrImageData);
 
   // Fast-track if PromptPay payment QR already has amount and details
   if (decodedQR?.isPromptPayPayment && decodedQR.amountSatang) {

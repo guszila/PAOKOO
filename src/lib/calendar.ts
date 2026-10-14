@@ -186,7 +186,7 @@ export function groupTransactionsByDate(
     else if (tx.type === 'lend') item.lendAmount += tx.amount;
     else if (tx.type === 'back') item.backAmount += tx.amount;
 
-    item.net = item.inAmount - item.outAmount;
+    item.net = (item.inAmount + item.backAmount) - (item.outAmount + item.lendAmount);
   });
 
   return map;

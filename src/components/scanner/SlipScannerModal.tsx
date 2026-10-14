@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { BottomSheet } from '../common/BottomSheet';
 import { Button } from '../common/Button';
-import { Camera, Image as ImageIcon, AlertTriangle, RefreshCw, ArrowRight, ShieldCheck, Wallet, QrCode, Sparkles, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
-import { scanBankSlip, ScanProgressUpdate, ScanSlipResult } from '../../lib/slip/scannerService';
+import { Camera, Image as ImageIcon, AlertTriangle, RefreshCw, ArrowRight, ShieldCheck, Wallet, QrCode, Sparkles, ArrowDownLeft, ArrowUpRight, HandCoins, CornerDownLeft } from 'lucide-react';
 import { Transaction, TransactionType } from '../../types/transaction';
 import { Pocket, PocketSummary } from '../../types/pocket';
 import { formatSatang } from '../../lib/money';
@@ -10,6 +9,7 @@ import { formatSlipDisplayDate } from '../../lib/slip/slipParser';
 import { LiveCameraScanner } from './LiveCameraScanner';
 import { DecodedSlipQR } from '../../lib/slip/qrDecoder';
 import { detectSlipEmoji } from '../../config/emojis';
+import { scanBankSlip, ScanProgressUpdate, ScanSlipResult } from '../../lib/slip/scannerService';
 
 interface SlipScannerModalProps {
   isOpen: boolean;
@@ -158,12 +158,22 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
       : (parsed.amountSatang || 0);
     const date = parsed.date || today;
     const refNo = parsed.refNo || '';
-    const who = parsed.matchedMemberWho || memberNames[0] || '';
+    let who = parsed.matchedMemberWho || memberNames[0] || '';
 
     // Smart default note with detected emoji
     let note = parsed.bankName ? `โอนเงินผ่าน ${parsed.bankName}` : 'โอนเงินผ่านธนาคาร';
     if (parsed.senderName && parsed.recipientName) {
       note = `${parsed.senderName} โอนให้ ${parsed.recipientName}`;
+    }
+
+    if (slipType === 'lend') {
+      // For lending, the borrower is the recipient of the transfer
+      who = parsed.recipientName || '';
+      note = parsed.recipientName ? `ให้ยืม (${parsed.recipientName})` : 'ให้ยืมเงิน';
+    } else if (slipType === 'back') {
+      // For repayment, the person repaying is the sender
+      who = parsed.senderName || '';
+      note = parsed.senderName ? `คืนเงิน (${parsed.senderName})` : 'คืนเงินยืม';
     }
 
     const detectedEmoji = detectSlipEmoji((parsed.recipientName || '') + ' ' + (parsed.rawOcrText || ''));
@@ -181,7 +191,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
       note,
       slipThumbnail: thumbnailBase64,
       fullSlipBase64: fullBase64,
-      pocketId: selectedPocketId,
+      pocketId: (slipType === 'out' || slipType === 'in') ? selectedPocketId : undefined,
     });
 
     handleClose();
@@ -349,31 +359,55 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
               </div>
             )}
 
-            {/* Transaction Type Selector (จ่าย vs เงินเข้า) */}
-            <div className="flex items-center gap-1.5 p-1 bg-neutral-100 dark:bg-surfaceElevated-dark rounded-2xl border border-border-light dark:border-border-dark">
+            {/* Transaction Type Selector (จ่าย vs เงินเข้า vs ให้ยืม vs คืนเงิน) */}
+            <div className="grid grid-cols-4 gap-1 p-1 bg-neutral-100 dark:bg-surfaceElevated-dark rounded-2xl border border-border-light dark:border-border-dark">
               <button
                 type="button"
                 onClick={() => setSlipType('out')}
-                className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2 px-1 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-all select-none ${
                   slipType === 'out'
-                    ? 'bg-red-500 text-white shadow-sm'
+                    ? 'bg-red-500 text-white shadow-sm font-bold'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
               >
-                <ArrowUpRight size={15} />
+                <ArrowUpRight size={14} />
                 <span>จ่ายออก</span>
               </button>
               <button
                 type="button"
                 onClick={() => setSlipType('in')}
-                className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2 px-1 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-all select-none ${
                   slipType === 'in'
-                    ? 'bg-emerald-600 text-white shadow-sm'
+                    ? 'bg-emerald-600 text-white shadow-sm font-bold'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
               >
-                <ArrowDownLeft size={15} />
+                <ArrowDownLeft size={14} />
                 <span>เงินเข้า</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSlipType('lend')}
+                className={`py-2 px-1 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-all select-none ${
+                  slipType === 'lend'
+                    ? 'bg-[#F59E0B] text-[#451A03] shadow-sm font-bold'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                }`}
+              >
+                <HandCoins size={14} />
+                <span>ให้ยืม</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSlipType('back')}
+                className={`py-2 px-1 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-all select-none ${
+                  slipType === 'back'
+                    ? 'bg-[#047857] text-white shadow-sm font-bold'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                }`}
+              >
+                <CornerDownLeft size={14} />
+                <span>คืนเงิน</span>
               </button>
             </div>
 

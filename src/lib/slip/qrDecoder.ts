@@ -77,11 +77,17 @@ export function parseBotSlipPayload(raw: string): DecodedSlipQR {
       }
     }
 
-    // Fallback: If not parsed via standard TLV but raw contains standard alphanumeric ref pattern
-    if (!result.refNo && raw.length >= 15) {
-      const match = raw.match(/([A-Za-z0-9]{18,30})/);
-      if (match) {
-        result.refNo = match[1];
+    // Fallback: Check if raw string is a verification URL or contains transaction ID
+    if (!result.refNo) {
+      const urlMatch = raw.match(/(?:ref|id|no|txn|refno)=([A-Za-z0-9]{10,35})/i) ||
+                       raw.match(/\/([A-Za-z0-9]{15,35})(?:\?|$)/) ||
+                       raw.match(/\b(01[0-9]{15,30}[A-Za-z0-9]*)\b/) ||
+                       raw.match(/\b([A-Za-z0-9]{18,32})\b/);
+      if (urlMatch) {
+        result.refNo = urlMatch[1];
+        if (!result.bankName && (raw.toLowerCase().includes('kbank') || raw.toLowerCase().includes('make'))) {
+          result.bankName = 'ธนาคารกสิกรไทย (KBANK / MAKE)';
+        }
       }
     }
   } catch (err) {
@@ -125,4 +131,56 @@ export function decodeQRFromImageData(imageData: ImageData): DecodedSlipQR | nul
     console.warn('jsQR decoding failed:', err);
     return null;
   }
+}
+
+/**
+ * Robust Multi-Pass QR Decoder for Bank Slips:
+ * 1. Full raw image data (works best for colored backgrounds like MAKE by KBank)
+ * 2. Bottom 60% of image data (where bank QR codes reside, avoids interference from top banners/illustrations)
+ * 3. High-contrast preprocessed image data as fallback
+ */
+export function tryDecodeQR(rawImageData: ImageData, ocrImageData?: ImageData): DecodedSlipQR | null {
+  // Pass 1: Full raw image
+  let res = decodeQRFromImageData(rawImageData);
+  if (res?.refNo || res?.isPromptPayPayment) return res;
+
+  // Pass 2: Bottom 60% crop (avoids top icons/decorations in MAKE by KBank)
+  try {
+    const startY = Math.floor(rawImageData.height * 0.4);
+    const subHeight = rawImageData.height - startY;
+    if (subHeight > 80 && rawImageData.width > 80) {
+      const subData = new Uint8ClampedArray(rawImageData.width * subHeight * 4);
+      const srcStart = startY * rawImageData.width * 4;
+      subData.set(rawImageData.data.subarray(srcStart, srcStart + subData.length));
+      const subImageData = new ImageData(subData, rawImageData.width, subHeight);
+      res = decodeQRFromImageData(subImageData);
+      if (res?.refNo || res?.isPromptPayPayment) return res;
+    }
+  } catch (e) {
+    // Ignore canvas slicing error
+  }
+
+  // Pass 3: Preprocessed high-contrast grayscale image
+  if (ocrImageData) {
+    res = decodeQRFromImageData(ocrImageData);
+    if (res?.refNo || res?.isPromptPayPayment) return res;
+
+    // Pass 4: Bottom 60% crop of preprocessed image
+    try {
+      const startY = Math.floor(ocrImageData.height * 0.4);
+      const subHeight = ocrImageData.height - startY;
+      if (subHeight > 80 && ocrImageData.width > 80) {
+        const subData = new Uint8ClampedArray(ocrImageData.width * subHeight * 4);
+        const srcStart = startY * ocrImageData.width * 4;
+        subData.set(ocrImageData.data.subarray(srcStart, srcStart + subData.length));
+        const subImageData = new ImageData(subData, ocrImageData.width, subHeight);
+        res = decodeQRFromImageData(subImageData);
+        if (res?.refNo || res?.isPromptPayPayment) return res;
+      }
+    } catch (e) {
+      // Ignore crop error
+    }
+  }
+
+  return null;
 }

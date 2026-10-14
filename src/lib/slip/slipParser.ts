@@ -111,13 +111,14 @@ export function parseSlipText(
 
   // 2. Parse Reference Number from Text if not found from QR
   if (!result.refNo) {
-    const refMatch = ocrText.match(/(?:เลขที่รายการ|รหัสอ้างอิง|เลขที่อ้างอิง|หมายเลขอ้างอิง|รหัสธุรกรรม|รหัสสลิป|slip\s*(?:id|no)?|ref(?:\s*no)?\.?)\s*[:\-]?\s*([A-Za-z0-9]{10,35})/i);
+    const refMatch = ocrText.match(/(?:เลขที่ทำรายการ|เลขที่รายการ|รหัสอ้างอิง|เลขที่อ้างอิง|หมายเลขอ้างอิง|รหัสธุรกรรม|เลขที่ธุรกรรม|รหัสรายการ|รหัสสลิป|slip\s*(?:id|no)?|ref(?:\s*no)?\.?|transaction\s*(?:id|no)?|tx\s*(?:id|no)?)\s*[:\-]?\s*([A-Za-z0-9]{10,35})/i);
     if (refMatch) {
       result.refNo = refMatch[1].trim();
       result.confidence += 25;
     } else {
-      // Standalone transaction ID pattern (e.g. 016273123127ATF02002)
-      const standaloneRef = ocrText.match(/\b(0[1-9][0-9]{10,14}[A-Za-z0-9]{5,15})\b/);
+      // Standalone transaction ID pattern (e.g. 016273123127ATF02002, 20261014...)
+      const standaloneRef = ocrText.match(/\b(0[1-9][0-9]{10,14}[A-Za-z0-9]{5,15})\b/) ||
+                            ocrText.match(/\b(20[2-3]\d[01]\d[0-3]\d[A-Za-z0-9]{10,25})\b/);
       if (standaloneRef) {
         result.refNo = standaloneRef[1].trim();
         result.confidence += 20;
@@ -184,8 +185,21 @@ export function extractBankFromText(ocrText: string): string | undefined {
   if (text.includes('krungthai') || text.includes('กรุงไทย') || text.includes('ktb') || text.includes('เป๋าตัง') || text.includes('next')) {
     return 'ธนาคารกรุงไทย (KTB)';
   }
-  if (text.includes('kbank') || text.includes('กสิกร') || text.includes('kasikorn') || text.includes('k plus') || text.includes('k+')) {
-    return 'ธนาคารกสิกรไทย (KBANK)';
+  if (
+    text.includes('make by kbank') ||
+    text.includes('make') ||
+    text.includes('เมค') ||
+    text.includes('cloud pocket') ||
+    text.includes('พ็อกเก็ต') ||
+    text.includes('kbank') ||
+    text.includes('กสิกร') ||
+    text.includes('kasikorn') ||
+    text.includes('k plus') ||
+    text.includes('k+')
+  ) {
+    return (text.includes('make') || text.includes('เมค') || text.includes('cloud pocket') || text.includes('พ็อกเก็ต'))
+      ? 'ธนาคารกสิกรไทย (MAKE by KBank)'
+      : 'ธนาคารกสิกรไทย (KBANK)';
   }
   if (text.includes('ttb') || text.includes('ทหารไทยธนชาต') || text.includes('ทีเอ็มบี') || text.includes('ธนชาต')) {
     return 'ธนาคารทหารไทยธนชาต (TTB)';
@@ -240,13 +254,13 @@ export function extractSlipAmount(text: string): number | undefined {
 
   // Primary keywords specifically denoting transfer amount
   const primaryAmountKeywords = [
-    'จำนวนเงิน', 'จํานวนเงิน', 'ยอดเงิน', 'ยอดโอน', 'ยอดชำระ', 'ยอดรวม',
-    'amount', 'total'
+    'จำนวนเงิน', 'จํานวนเงิน', 'ยอดเงิน', 'ยอดโอน', 'ยอดชำระ', 'ยอดรวม', 'ยอดสุทธิ',
+    'โอนเงินสำเร็จ', 'โอนสำเร็จ', 'สำเร็จ', 'amount', 'total'
   ];
 
   // Secondary keywords (headers like Transfer, จ่ายบิลสำเร็จ)
   const secondaryKeywords = [
-    'จำนวน', 'จํานวน', 'โอนเงิน', 'จ่ายบิล', 'ชำระบิล', 'transfer'
+    'จำนวน', 'จํานวน', 'โอนเงิน', 'จ่ายบิล', 'ชำระบิล', 'transfer', 'transferred'
   ];
 
   // Helper to check if a line is a date, time, account number, or fee
@@ -254,9 +268,10 @@ export function extractSlipAmount(text: string): number | undefined {
     const low = l.toLowerCase();
     if (low.includes('ค่าธรรมเนียม') || low.includes('fee')) return true;
     if (low.includes('วันที่') || low.includes('date')) return true;
-    if (low.includes('เวลา') || low.includes('time')) return true;
+    if (low.includes('เวลา') && !low.includes('บาท') && !low.includes('thb') && !low.includes('จำนวน') && !low.includes('ยอด')) return true;
     if (low.includes('รหัส') || low.includes('ref') || low.includes('หมายเลข')) return true;
-    if (low.includes(':')) return true; // HH:mm or key:value
+    // Only ignore if it is a pure time line like "12:31 น." without any currency or amount keywords
+    if (/\b[0-2]?\d:[0-5]\d\b/.test(low) && !low.includes('บาท') && !low.includes('thb') && !low.includes('จำนวน') && !low.includes('ยอด')) return true;
     return false;
   };
 
@@ -264,8 +279,11 @@ export function extractSlipAmount(text: string): number | undefined {
   const parseDecimalFromLine = (target: string): number | undefined => {
     if (isIgnoredLine(target)) return undefined;
 
+    // Clean any leading amount labels with optional colon (e.g. "จำนวนเงิน: 1000.00" -> "1000.00")
+    const cleaned = target.replace(/(?:จำนวนเงิน|จํานวนเงิน|ยอดเงิน|ยอดโอน|ยอดชำระ|ยอดรวม|โอนเงินสำเร็จ|โอนสำเร็จ|สำเร็จ|amount|total)\s*[:\-]?/gi, ' ').trim();
+
     // Pattern A: Match standard decimal (e.g. "150.00 THB", "800.00", "552.12 บาท", "1,250.50")
-    const mDecimal = target.match(/(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d+)\s*[\.,]\s*(\d{2}|-)(?:\s*(?:บาท|thb|baht|\.-))?(?:[^\d]|$)/i);
+    const mDecimal = cleaned.match(/(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d+)\s*[\.,]\s*(\d{2}|-)(?:\s*(?:บาท|thb|baht|\.-))?(?:[^\d]|$)/i);
     if (mDecimal) {
       const cents = mDecimal[2] === '-' ? '00' : mDecimal[2];
       const numStr = `${mDecimal[1].replace(/,/g, '')}.${cents}`;
@@ -275,7 +293,7 @@ export function extractSlipAmount(text: string): number | undefined {
     }
 
     // Pattern B: Match integer amount followed by currency (e.g. "500 บาท", "150 THB")
-    const mInt = target.match(/(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d{2,7})\s*(?:บาท|thb|baht|\.-)(?:[^\d]|$)/i);
+    const mInt = cleaned.match(/(?:^|[^\d,])(\d{1,3}(?:,\d{3})+|\d{2,7})\s*(?:บาท|thb|baht|\.-)(?:[^\d]|$)/i);
     if (mInt) {
       const numStr = mInt[1].replace(/,/g, '');
       const satang = parseToSatang(numStr);
@@ -287,18 +305,18 @@ export function extractSlipAmount(text: string): number | undefined {
     return undefined;
   };
 
-  // Pass 1: Strict search right on or up to 4 lines after PRIMARY keywords ('จำนวนเงิน', 'ยอดเงิน', etc.)
+  // Pass 1: Strict search right on or up to 6 lines after PRIMARY keywords ('จำนวนเงิน', 'ยอดเงิน', 'โอนเงินสำเร็จ', etc.)
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].toLowerCase();
     const hasPrimary = primaryAmountKeywords.some((kw) => line.includes(kw));
     if (hasPrimary) {
-      // 1a. Check on the same line (e.g. "จำนวนเงิน 800.00", "จำนวนเงิน 552.12 บาท")
-      const cleanLine = line.replace(/(?:จำนวนเงิน|จํานวนเงิน|ยอดเงิน|ยอดโอน|ยอดชำระ|ยอดรวม|amount|total)\s*[:\-]?/i, '').trim();
+      // 1a. Check on the same line
+      const cleanLine = line.replace(/(?:จำนวนเงิน|จํานวนเงิน|ยอดเงิน|ยอดโอน|ยอดชำระ|ยอดรวม|โอนเงินสำเร็จ|โอนสำเร็จ|สำเร็จ|amount|total)\s*[:\-]?/i, '').trim();
       const onSameLine = parseDecimalFromLine(cleanLine);
       if (onSameLine !== undefined) return onSameLine;
 
-      // 1b. Check following lines (up to 4 lines down, e.g. BBL where 56.00 THB is next line)
-      for (let j = i + 1; j <= Math.min(i + 4, lines.length - 1); j++) {
+      // 1b. Check following lines (up to 6 lines down)
+      for (let j = i + 1; j <= Math.min(i + 6, lines.length - 1); j++) {
         const amt = parseDecimalFromLine(lines[j]);
         if (amt !== undefined) return amt;
       }
@@ -310,7 +328,7 @@ export function extractSlipAmount(text: string): number | undefined {
     const line = lines[i].toLowerCase();
     const hasSecondary = secondaryKeywords.some((kw) => line.includes(kw));
     if (hasSecondary) {
-      for (let j = i; j <= Math.min(i + 3, lines.length - 1); j++) {
+      for (let j = i; j <= Math.min(i + 6, lines.length - 1); j++) {
         const amt = parseDecimalFromLine(lines[j]);
         if (amt !== undefined) return amt;
       }
@@ -591,28 +609,28 @@ export function extractSenderRecipient(ocrText: string): { sender?: string; reci
 
     // Check sender pattern
     if (!sender) {
-      const match = line.match(/^(?:จาก|ผู้โอน|from)\s*[:\-]?\s*(.*)$/i);
+      const match = line.match(/^(?:จาก|ผู้โอน|โอนจาก|ผู้ส่ง|จากบัญชี|บัญชีต้นทาง|ต้นทาง|ผู้โอนเงิน|บัญชีผู้โอน|from|sender)\s*[:\-]?\s*(.*)$/i);
       if (match) {
         let val = match[1].trim();
         if (!val && i + 1 < lines.length) {
           val = lines[i + 1].trim();
         }
         val = val.replace(/^(?:นาย|นาง|นางสาว|ms\.|mr\.|mrs\.)\s*/i, '');
-        val = val.split(/\b(?:\d{3}[-\s]?\d|xxx|ธนาคาร|กรุงไทย|ไทยพาณิชย์|กรุงเทพ)/i)[0].trim();
+        val = val.split(/\b(?:\d{3}[-\s]?\d|xxx|ธนาคาร|กรุงไทย|ไทยพาณิชย์|กรุงเทพ|กสิกร)/i)[0].trim();
         if (val.length >= 2) sender = val;
       }
     }
 
     // Check recipient pattern
     if (!recipient) {
-      const match = line.match(/^(?:ไปยัง|ไปที่|ผู้รับ|ถึง|to)\s*[:\-]?\s*(.*)$/i);
+      const match = line.match(/^(?:ไปยัง|ไปที่|ผู้รับ|ถึง|รับเงินโดย|โอนให้|โอนเงินให้|ผู้รับเงิน|บัญชีผู้รับเงิน|ส่งให้|ส่งไปยัง|โอนเข้า|โอนไปยัง|บัญชีปลายทาง|ปลายทาง|to|receiver|recipient)\s*[:\-]?\s*(.*)$/i);
       if (match) {
         let val = match[1].trim();
         if (!val && i + 1 < lines.length) {
           val = lines[i + 1].trim();
         }
         val = val.replace(/^(?:นาย|นาง|นางสาว|ms\.|mr\.|mrs\.)\s*/i, '');
-        val = val.split(/\b(?:\d{3}[-\s]?\d|xxx|พร้อมเพย์|ธนาคาร|\()/i)[0].trim();
+        val = val.split(/\b(?:\d{3}[-\s]?\d|xxx|พร้อมเพย์|ธนาคาร|กสิกร|\()/i)[0].trim();
         if (val.length >= 2) recipient = val;
       }
     }

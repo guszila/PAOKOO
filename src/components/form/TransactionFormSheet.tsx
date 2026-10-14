@@ -18,11 +18,15 @@ import {
   X,
   Wallet,
   Smile,
+  ReceiptText,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { SlipViewerModal } from '../scanner/SlipViewerModal';
 import { Pocket, PocketSummary } from '../../types/pocket';
 import { EmojiPickerModal } from '../common/EmojiPickerModal';
 import { POPULAR_EXPENSE_EMOJIS, setLeadingEmoji, getCategoryEmoji, extractEmoji } from '../../config/emojis';
+import { preprocessSlipImage } from '../../lib/slip/preprocessor';
+import { tryDecodeQR } from '../../lib/slip/qrDecoder';
 
 interface TransactionFormSheetProps {
   isOpen: boolean;
@@ -118,10 +122,42 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
   const [showOverRepaymentWarning, setShowOverRepaymentWarning] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isProcessingSlip, setIsProcessingSlip] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const todayStr = useMemo(() => getLocalDateString(), []);
   const yesterdayStr = useMemo(() => getLocalDateString(-1), []);
   const isFutureDate = date > todayStr;
+
+  const handleSlipFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsProcessingSlip(true);
+      setErrorMsg(null);
+      const processed = await preprocessSlipImage(file);
+      setSlipThumbnail(processed.thumbnailBase64);
+      setFullSlipBase64(processed.fullBase64);
+
+      // Fast check for QR code
+      const decodedQR = tryDecodeQR(processed.rawImageData, processed.ocrImageData);
+      if (decodedQR?.refNo && !refNo) {
+        setRefNo(decodedQR.refNo);
+      }
+      if (decodedQR?.amountSatang && (!amountStr || parseFloat(amountStr) <= 0)) {
+        setAmountStr(satangToBaht(decodedQR.amountSatang).toString());
+      }
+      if (decodedQR?.merchantName && !who.trim() && (type === 'lend' || type === 'out')) {
+        setWho(decodedQR.merchantName);
+      }
+    } catch (err: any) {
+      console.error('Failed to process slip image:', err);
+      setErrorMsg('ไม่สามารถอ่านไฟล์รูปภาพสลิปได้');
+    } finally {
+      setIsProcessingSlip(false);
+      if (e.target) e.target.value = '';
+    }
+  };
 
   const handleAddPreset = (value: number) => {
     const current = parseFloat(amountStr) || 0;
@@ -559,6 +595,78 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
             </div>
           )}
 
+          {/* Prominent Slip Section for lend & back */}
+          {(type === 'lend' || type === 'back') && (
+            <div className="p-3 bg-surfaceElevated-light dark:bg-surfaceElevated-dark rounded-xl border-2 border-[#242A20] dark:border-[#3C4A38] shadow-[2px_2px_0px_#242A20] space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5 font-silkscreen">
+                  <ReceiptText size={14} className={type === 'lend' ? 'text-amber-500' : 'text-teal-500'} />
+                  <span>{type === 'lend' ? 'สลิปหลักฐานการให้ยืม' : 'สลิปหลักฐานการรับคืน'}</span>
+                </span>
+                {slipThumbnail && (
+                  <span className="text-[10px] font-pixel text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-[#242A20]">
+                    แนบแล้ว
+                  </span>
+                )}
+              </div>
+
+              {slipThumbnail ? (
+                <div className="p-2.5 rounded-xl bg-surface-light dark:bg-surface-dark border-2 border-[#242A20] dark:border-[#3C4A38] flex items-center justify-between gap-3 shadow-[1px_1px_0px_#242A20]">
+                  <div
+                    className="flex items-center gap-2.5 min-w-0 cursor-pointer"
+                    onClick={() => setIsViewerOpen(true)}
+                  >
+                    <img
+                      src={slipThumbnail}
+                      alt="สลิป"
+                      className="w-10 h-12 object-cover rounded-lg border border-[#242A20] shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100 block truncate">
+                        มีสลิปแนบกับรายการนี้
+                      </span>
+                      <span className="text-[11px] text-amber-600 dark:text-amber-400 font-bold underline">
+                        แตะเพื่อดูสลิปเต็ม
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSlipThumbnail(undefined);
+                      setFullSlipBase64(undefined);
+                    }}
+                    className="p-1.5 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                    title="ลบสลิป"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onOpenScanner?.(type)}
+                    className="h-10 px-2.5 rounded-xl border-2 border-[#242A20] dark:border-[#3C4A38] bg-amber-100 dark:bg-amber-950/70 text-amber-950 dark:text-amber-200 font-bold text-xs flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none select-none hover:bg-amber-200 transition-all"
+                  >
+                    <Camera size={15} strokeWidth={2.5} className="text-amber-600 dark:text-amber-400" />
+                    <span>สแกนสลิป (QR/OCR)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isProcessingSlip}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="h-10 px-2.5 rounded-xl border-2 border-dashed border-[#242A20]/50 dark:border-[#3C4A38] bg-surface-light dark:bg-surface-dark text-neutral-700 dark:text-neutral-300 font-bold text-xs flex items-center justify-center gap-1.5 shadow-[1px_1px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none select-none hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all disabled:opacity-50"
+                  >
+                    <ImageIcon size={15} strokeWidth={2} className="text-neutral-500" />
+                    <span>{isProcessingSlip ? 'กำลังประมวลผล...' : 'แนบรูปจากเครื่อง'}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* 5. More Details Collapsible Accordion (โน้ต, บัญชีย่อย, วันที่, สลิป) */}
           <div className="pt-1">
             <button
@@ -799,14 +907,25 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                       </button>
                     </div>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => onOpenScanner?.(type)}
-                      className="w-full py-2.5 px-3 rounded-xl border-2 border-dashed border-[#242A20]/40 dark:border-[#3C4A38] text-xs font-bold flex items-center justify-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                    >
-                      <Camera size={15} strokeWidth={2} className="text-emerald-600" />
-                      <span>สแกนสลิป หรือเลือกรูปภาพ</span>
-                    </button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onOpenScanner?.(type)}
+                        className="py-2.5 px-3 rounded-xl border-2 border-dashed border-[#242A20]/40 dark:border-[#3C4A38] text-xs font-bold flex items-center justify-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                      >
+                        <Camera size={15} strokeWidth={2} className="text-emerald-600" />
+                        <span>สแกนสลิป</span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isProcessingSlip}
+                        onClick={() => fileInputRef.current?.click()}
+                        className="py-2.5 px-3 rounded-xl border-2 border-dashed border-[#242A20]/40 dark:border-[#3C4A38] text-xs font-bold flex items-center justify-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
+                      >
+                        <ImageIcon size={15} strokeWidth={2} className="text-neutral-500" />
+                        <span>{isProcessingSlip ? 'กำลังประมวลผล...' : 'แนบรูปจากเครื่อง'}</span>
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -829,6 +948,15 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
             </div>
           )}
         </div>
+
+        {/* Hidden direct file input for slip attachment */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleSlipFileChange}
+        />
       </BottomSheet>
 
       {/* Over-repayment Warning Modal */}

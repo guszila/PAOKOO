@@ -192,4 +192,52 @@ TrueMoney ทรูมันนี่
     expect(parsed.refNo).toBe('500012398471');
     expect(parsed.bankName).toContain('TrueMoney');
   });
+
+  // 8. MAKE by KBank
+  it('should parse MAKE by KBank slip accurately', () => {
+    const makeOcrText = `
+MAKE by KBank
+โอนเงินสำเร็จ
+14 ต.ค. 2569 15:45 น.
+จำนวนเงิน
+1,000.00 บาท
+ค่าธรรมเนียม: 0.00 บาท
+จาก: นาย ภาณุเดช ศรีวุฒิทรัพย์
+ไปยัง: นาย สมชาย ยืมเงิน
+ธนาคารกสิกรไทย
+xxx-x-x5678-x
+เลขที่ทำรายการ: 202610149876543210
+    `.trim();
+
+    const parsed = parseSlipText(makeOcrText, null, ['โฟกัส']);
+
+    expect(parsed.amountSatang).toBe(100000); // 1,000.00 บาท
+    expect(parsed.amountFormatted).toBe('1,000.00');
+    expect(parsed.date).toBe('2026-10-14');
+    expect(parsed.time).toBe('15:45');
+    expect(parsed.refNo).toBe('202610149876543210');
+    expect(parsed.bankName).toContain('MAKE');
+    expect(parsed.recipientName).toContain('สมชาย');
+  });
+
+  // 9. MAKE by KBank with amount under title without label
+  it('should parse MAKE by KBank slip with styled amount layout', () => {
+    const makeOcrText = `
+MAKE by KBank
+โอนเงินสำเร็จ
+14 ต.ค. 2569 เวลา 20:15 น.
+1,500.00 THB
+ผู้โอน: นาย ภาณุเดช
+ผู้รับ: นาย เพื่อนร่วมงาน
+เลขที่รายการ: 016287201524MAKE123
+    `.trim();
+
+    const parsed = parseSlipText(makeOcrText, null, ['โฟกัส']);
+
+    expect(parsed.amountSatang).toBe(150000);
+    expect(parsed.date).toBe('2026-10-14');
+    expect(parsed.time).toBe('20:15');
+    expect(parsed.refNo).toBe('016287201524MAKE123');
+    expect(parsed.bankName).toContain('MAKE');
+  });
 });

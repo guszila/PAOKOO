@@ -438,10 +438,11 @@ export function App() {
   }) => {
     setSelectedTxForEdit(null);
     const resolvedType = data.type || scannerInitialType || 'out';
+    const resolvedWho = data.who || (resolvedType === 'lend' || resolvedType === 'back' ? '' : (currentMemberName || activeMembers[0] || ''));
     setPrefillData({
       type: resolvedType,
       amount: data.amountSatang,
-      who: data.who || currentMemberName || activeMembers[0] || '',
+      who: resolvedWho,
       note: data.note,
       date: data.date,
       time: data.time,
