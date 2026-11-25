@@ -333,5 +333,38 @@ KBANK โอนเงินสำเร็จ
     expect(parsed.time).toBe('12:31'); // 1231
     expect(parsed.refNo).toBe('016273123127ATF02002');
   });
+
+  // 15. OCR spaces inside Thai month abbreviation & พ.ศ. prefix
+  it('should parse Thai dates with spaces inside month abbreviations or พ.ศ. prefix', () => {
+    const spacedMonthSlip = `
+SCB โอนเงินสำเร็จ
+14 ต. ค. 2569 10:15 น.
+จำนวนเงิน 420.50 บาท
+    `.trim();
+
+    const parsed1 = parseSlipText(spacedMonthSlip, null, ['โฟกัส']);
+    expect(parsed1.date).toBe('2026-10-14');
+    expect(parsed1.time).toBe('10:15');
+    expect(parsed1.amountSatang).toBe(42050);
+
+    const bePrefixSlip = `
+14 ตุลาคม พ.ศ. 2569
+จำนวนเงิน 99.00 บาท
+    `.trim();
+    const parsed2 = parseSlipText(bePrefixSlip, null, ['โฟกัส']);
+    expect(parsed2.date).toBe('2026-10-14');
+    expect(parsed2.amountSatang).toBe(9900);
+  });
+
+  // 16. Thai numerals & merged date+amount line
+  it('should parse Thai numerals and merged date/amount OCR lines', () => {
+    const mergedSlip = `
+วันที่ ๑๔ ต.ค. ๒๕๖๙ จำนวนเงิน ๑,๒๕๐.๐๐ บาท
+    `.trim();
+
+    const parsed = parseSlipText(mergedSlip, null, ['โฟกัส']);
+    expect(parsed.date).toBe('2026-10-14');
+    expect(parsed.amountSatang).toBe(125000);
+  });
 });
 

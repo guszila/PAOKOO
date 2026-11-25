@@ -73,10 +73,18 @@ export const THAI_MONTH_LOOKUP: Record<string, string> = {
 };
 
 /**
+ * Converts Thai numerals (๐-๙) to Arabic numerals (0-9)
+ */
+export function normalizeThaiDigits(text: string): string {
+  const thaiDigits = '๐๑๒๓๔๕๖๗๘๙';
+  return text.replace(/[๐-๙]/g, (ch) => String(thaiDigits.indexOf(ch)));
+}
+
+/**
  * Normalizes and matches month token against dictionary
  */
 export function matchMonthToken(raw: string): string | undefined {
-  const clean = raw.trim().toLowerCase().replace(/^[^\wก-๙]+|[^\wก-๙]+$/g, '');
+  const clean = raw.trim().toLowerCase().replace(/\s+/g, '').replace(/^[^\wก-๙]+|[^\wก-๙]+$/g, '');
   if (!clean) return undefined;
   if (THAI_MONTH_LOOKUP[clean]) return THAI_MONTH_LOOKUP[clean];
   if (THAI_MONTH_LOOKUP[clean + '.']) return THAI_MONTH_LOOKUP[clean + '.'];
@@ -250,7 +258,7 @@ export function extractBankFromText(ocrText: string): string | undefined {
  * Extracts Amount from slip text across all Thai bank layouts, ignoring 0.00 fees and dates
  */
 export function extractSlipAmount(text: string): number | undefined {
-  const lines = text.split('\n');
+  const lines = normalizeThaiDigits(text).split('\n');
 
   // Primary keywords specifically denoting transfer amount
   const primaryAmountKeywords = [
@@ -266,20 +274,21 @@ export function extractSlipAmount(text: string): number | undefined {
   // Helper to check if a line is a date, time, account number, or fee
   const isIgnoredLine = (l: string) => {
     const low = l.toLowerCase();
+    const hasAmountCue = low.includes('บาท') || low.includes('thb') || low.includes('จำนวน') || low.includes('จํานวน') || low.includes('ยอด') || low.includes('amount');
     if (low.includes('ค่าธรรมเนียม') || low.includes('fee')) return true;
-    if (low.includes('วันที่') || low.includes('date')) return true;
-    if (low.includes('เวลา') && !low.includes('บาท') && !low.includes('thb') && !low.includes('จำนวน') && !low.includes('ยอด')) return true;
+    if ((low.includes('วันที่') || low.includes('date')) && !hasAmountCue) return true;
+    if (low.includes('เวลา') && !hasAmountCue) return true;
     if (low.includes('รหัสอ้างอิง') || low.includes('หมายเลขอ้างอิง') || low.includes('เลขที่ทำรายการ') || low.includes('เลขที่รายการ') || low.includes('transaction id')) return true;
     
     // Pure time line without amount keywords
-    if (/\b[0-2]?\d:[0-5]\d\b/.test(low) && !low.includes('บาท') && !low.includes('thb') && !low.includes('จำนวน') && !low.includes('ยอด') && !low.includes('amount')) return true;
+    if (/\b[0-2]?\d:[0-5]\d\b/.test(low) && !hasAmountCue) return true;
     
     // Time with Thai suffix "น." (e.g. "14.30 น.", "18:22 น.")
-    if (/\b\d{1,2}[\.:]\d{2}\s*น\.?/.test(low) && !low.includes('บาท') && !low.includes('thb') && !low.includes('จำนวน') && !low.includes('ยอด') && !low.includes('amount')) return true;
+    if (/\b\d{1,2}[\.:]\d{2}\s*น\.?/.test(low) && !hasAmountCue) return true;
     
     // Line containing Thai or English month abbreviation (e.g. "14 ต.ค. 69", "14 Oct 2026")
     const hasMonth = /(?:ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(low);
-    if (hasMonth && !low.includes('บาท') && !low.includes('thb') && !low.includes('จำนวน') && !low.includes('ยอด') && !low.includes('amount')) return true;
+    if (hasMonth && !hasAmountCue) return true;
     
     return false;
   };
@@ -408,7 +417,8 @@ export function extractSlipAmount(text: string): number | undefined {
  * Extracts Time in HH:mm format from slip text with high-precision multi-strategy matching
  */
 export function extractSlipTime(text: string): string | undefined {
-  const lines = text.split('\n');
+  const normalizedText = normalizeThaiDigits(text);
+  const lines = normalizedText.split('\n');
   const thaiSuffix = '(?:น\\.?|น|hrs|hr|am|pm|[4wuv]\\.)';
 
   // Strategy 1: Explicit Time Marker with "เวลา" or "time"
@@ -469,7 +479,7 @@ export function extractSlipTime(text: string): string | undefined {
   }
 
   // Strategy 6: 4 digits right after year (e.g. "2569 1231" or "69 1231")
-  const afterYearMatch = text.match(/(?:25\d{2}|20\d{2}|\b[567]\d)\s+([01]\d|2[0-3])([0-5]\d)\b/);
+  const afterYearMatch = normalizedText.match(/(?:25\d{2}|20\d{2}|\b[567]\d)\s+([01]\d|2[0-3])([0-5]\d)\b/);
   if (afterYearMatch) {
     const hh = afterYearMatch[1];
     const mm = afterYearMatch[2];
@@ -483,7 +493,13 @@ export function extractSlipTime(text: string): string | undefined {
  * Extracts Date in YYYY-MM-DD format from slip text with single-line & multi-line wrapped support
  */
 export function extractSlipDate(text: string): string | undefined {
-  const lines = text.split('\n');
+  const normalizeDateLine = (raw: string): string =>
+    normalizeThaiDigits(raw)
+      .replace(/(?:พ\.ศ\.|ค\.ศ\.)\s*/gi, '')
+      .replace(/([ก-ฮ]\.)[ \t]+([ก-ฮ]\.?)/g, '$1$2')
+      .replace(/([ก-ฮ])[ \t]+([ก-ฮ]\.)/g, '$1$2');
+
+  const lines = text.split('\n').map(normalizeDateLine);
 
   // Strategy A: Thai/English text date within each single line or joined adjacent lines
   // Example: "04 ต.ค. 2569", "13 ก.ย. 2569", "12 ก.ย. 69", "30 Sep 2026", "14 ต.ค. 67, 18:22"

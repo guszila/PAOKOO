@@ -37,6 +37,14 @@ interface SlipScannerModalProps {
   ) => void;
 }
 
+const getLocalDateString = (): string => {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
   isOpen,
   onClose,
@@ -54,6 +62,8 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
   const [progress, setProgress] = useState<ScanProgressUpdate | null>(null);
   const [scanResult, setScanResult] = useState<ScanSlipResult | null>(null);
   const [editableAmount, setEditableAmount] = useState<string>('');
+  const [editableDate, setEditableDate] = useState<string>('');
+  const [editableTime, setEditableTime] = useState<string>('');
   const [selectedPocketId, setSelectedPocketId] = useState<string | undefined>(undefined);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [slipType, setSlipType] = useState<TransactionType>(initialType || 'out');
@@ -74,6 +84,8 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
     setProgress(null);
     setScanResult(null);
     setEditableAmount('');
+    setEditableDate('');
+    setEditableTime('');
     setSelectedPocketId(undefined);
     setErrorMsg(null);
     setSlipType(initialType || 'out');
@@ -114,6 +126,8 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
     } else {
       setEditableAmount('');
     }
+    setEditableDate(result.parsed.date || getLocalDateString());
+    setEditableTime(result.parsed.time || '');
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,6 +154,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
       setErrorMsg(err.message || 'ไม่สามารถสแกนสลิปได้ โปรดลองอีกครั้ง');
     } finally {
       setIsScanning(false);
+      if (e.target) e.target.value = '';
     }
   };
 
@@ -172,12 +187,13 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
     if (!scanResult) return;
     const { parsed, thumbnailBase64, fullBase64 } = scanResult;
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getLocalDateString();
     const customNum = parseFloat(editableAmount);
     const amountSatang = !isNaN(customNum) && customNum > 0
       ? Math.round(customNum * 100)
       : (parsed.amountSatang || 0);
-    const date = parsed.date || today;
+    const date = editableDate || parsed.date || today;
+    const time = editableTime || parsed.time;
     const refNo = parsed.refNo || '';
     let who = parsed.matchedMemberWho || memberNames[0] || '';
 
@@ -206,7 +222,7 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
       type: slipType,
       amountSatang,
       date,
-      time: parsed.time,
+      time,
       refNo,
       who,
       note,
@@ -498,22 +514,47 @@ export const SlipScannerModal: React.FC<SlipScannerModalProps> = ({
                 )}
               </div>
 
-              {/* Informational Tip if amount wasn't extracted by OCR */}
-              {!editableAmount && (
+              {/* Informational Tip if OCR failed or amount wasn't extracted */}
+              {(scanResult.ocrFailed || !editableAmount) && (
                 <div className="p-2.5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
-                  💡 <strong>QR Code สลิปธนาคารไม่มีข้อมูลยอดเงิน</strong> (เป็นไปตามมาตรฐานความปลอดภัย BOT) ระบบดึงรหัสอ้างอิงและธนาคารให้แล้ว สามารถพิมพ์ยอดเงินด้านบนเพื่อนำไปลงบัญชีได้ทันทีครับ
+                  {scanResult.ocrFailed ? (
+                    <>⚠️ <strong>ระบบ OCR อ่านข้อความในสลิปไม่สำเร็จ</strong> ระบบดึงรหัสอ้างอิงจาก QR ให้แล้ว สามารถพิมพ์ยอดเงินและเลือกวันที่ด้านล่างได้ทันที</>
+                  ) : (
+                    <>💡 <strong>QR Code สลิปธนาคารไม่มีข้อมูลยอดเงิน</strong> (เป็นไปตามมาตรฐานความปลอดภัย BOT) ระบบดึงรหัสอ้างอิงและธนาคารให้แล้ว สามารถพิมพ์ยอดเงินด้านบนเพื่อนำไปลงบัญชีได้ทันทีครับ</>
+                  )}
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border-light dark:border-border-dark">
                 <div>
-                  <span className="text-[10px] text-neutral-400 block">วันที่และเวลา</span>
-                  <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                    {formatSlipDisplayDate(scanResult.parsed.date, scanResult.parsed.time)}
-                  </span>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] text-neutral-400">วันที่และเวลา</span>
+                    {!scanResult.parsed.date && (
+                      <span className="text-[9px] text-amber-600 dark:text-amber-400 font-semibold">ไม่พบในสลิป</span>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <div className="font-semibold text-neutral-800 dark:text-neutral-200">
+                      {formatSlipDisplayDate(editableDate || scanResult.parsed.date, editableTime || scanResult.parsed.time)}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="date"
+                        value={editableDate}
+                        onChange={(e) => setEditableDate(e.target.value)}
+                        className="text-[11px] px-1.5 py-0.5 rounded-lg border border-border-light dark:border-border-dark bg-neutral-50 dark:bg-surfaceElevated-dark text-neutral-800 dark:text-neutral-200 w-full min-w-0"
+                      />
+                      <input
+                        type="time"
+                        value={editableTime}
+                        onChange={(e) => setEditableTime(e.target.value)}
+                        className="text-[11px] px-1.5 py-0.5 rounded-lg border border-border-light dark:border-border-dark bg-neutral-50 dark:bg-surfaceElevated-dark text-neutral-800 dark:text-neutral-200 w-20 shrink-0"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <div>
-                  <span className="text-[10px] text-neutral-400 block">ธนาคาร</span>
+                  <span className="text-[10px] text-neutral-400 block mb-1">ธนาคาร</span>
                   <span className="font-semibold text-neutral-800 dark:text-neutral-200 truncate block">
                     {scanResult.parsed.bankName || 'ธนาคารทั่วไป'}
                   </span>

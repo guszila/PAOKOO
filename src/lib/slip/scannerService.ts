@@ -16,6 +16,7 @@ export interface ScanSlipResult {
   fullBase64: string;
   decodedQR: DecodedSlipQR | null;
   duplicateTx: Transaction | null;
+  ocrFailed?: boolean;
 }
 
 /**
@@ -75,6 +76,7 @@ export async function scanBankSlip(
   });
 
   let ocrText = '';
+  let ocrFailed = false;
   try {
     const ocrResult = await Tesseract.recognize(
       processed.ocrCanvas,
@@ -95,6 +97,7 @@ export async function scanBankSlip(
     ocrText = ocrResult.data.text;
   } catch (ocrErr) {
     console.warn('Tesseract OCR error:', ocrErr);
+    ocrFailed = true;
     // If OCR fails but QR code was decoded, we can still proceed with QR data
     if (!decodedQR?.refNo) {
       throw new Error('ไม่สามารถอ่านข้อมูลจากสลิปได้ โปรดลองถ่ายใหม่ให้ชัดเจนขึ้น');
@@ -123,5 +126,6 @@ export async function scanBankSlip(
     fullBase64: processed.fullBase64,
     decodedQR,
     duplicateTx,
+    ocrFailed,
   };
 }

@@ -25,9 +25,8 @@ import { SlipViewerModal } from '../scanner/SlipViewerModal';
 import { SlipScannerModal } from '../scanner/SlipScannerModal';
 import { Pocket, PocketSummary } from '../../types/pocket';
 import { EmojiPickerModal } from '../common/EmojiPickerModal';
-import { POPULAR_EXPENSE_EMOJIS, setLeadingEmoji, getCategoryEmoji, extractEmoji } from '../../config/emojis';
-import { preprocessSlipImage } from '../../lib/slip/preprocessor';
-import { tryDecodeQR } from '../../lib/slip/qrDecoder';
+import { POPULAR_EXPENSE_EMOJIS, setLeadingEmoji, getCategoryEmoji, extractEmoji, detectSlipEmoji } from '../../config/emojis';
+import { scanBankSlip, ScanProgressUpdate } from '../../lib/slip/scannerService';
 
 interface TransactionFormSheetProps {
   isOpen: boolean;
@@ -124,6 +123,8 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isProcessingSlip, setIsProcessingSlip] = useState(false);
+  const [slipScanProgress, setSlipScanProgress] = useState<ScanProgressUpdate | null>(null);
+  const [slipNotice, setSlipNotice] = useState<{ kind: 'success' | 'warning'; text: string } | null>(null);
   const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -137,26 +138,123 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
     try {
       setIsProcessingSlip(true);
       setErrorMsg(null);
-      const processed = await preprocessSlipImage(file);
-      setSlipThumbnail(processed.thumbnailBase64);
-      setFullSlipBase64(processed.fullBase64);
+      setSlipNotice(null);
+      setSlipScanProgress({ status: 'preprocessing', progress: 10, message: 'กำลังเตรียมรูปภาพสลิป...' });
 
-      // Fast check for QR code
-      const decodedQR = tryDecodeQR(processed.rawImageData, processed.ocrImageData);
-      if (decodedQR?.refNo && !refNo) {
-        setRefNo(decodedQR.refNo);
+      const result = await scanBankSlip(
+        file,
+        existingTransactions,
+        memberNames,
+        (update) => setSlipScanProgress(update)
+      );
+
+      setSlipThumbnail(result.thumbnailBase64);
+      setFullSlipBase64(result.fullBase64);
+
+      const { parsed, decodedQR, duplicateTx, ocrFailed } = result;
+      const extractedParts: string[] = [];
+
+      if (!initialTransaction) {
+        if (parsed.refNo) setRefNo(parsed.refNo);
+        if (parsed.amountSatang && parsed.amountSatang > 0) {
+          setAmountStr(satangToBaht(parsed.amountSatang).toString());
+          extractedParts.push(`ยอด ${formatSatang(parsed.amountSatang)} ฿`);
+        }
+        if (parsed.date) {
+          setDate(parsed.date);
+          extractedParts.push(`วันที่ ${formatDisplayDate(parsed.date)}${parsed.time ? ` ${parsed.time} น.` : ''}`);
+        }
+        if (parsed.time) {
+          setTime(parsed.time);
+        }
+
+        if (!who.trim()) {
+          let resolvedWho = '';
+          if (type === 'lend') {
+            resolvedWho = parsed.recipientName || decodedQR?.merchantName || '';
+          } else if (type === 'back') {
+            resolvedWho = parsed.senderName || '';
+          } else {
+            resolvedWho = parsed.matchedMemberWho || decodedQR?.merchantName || '';
+          }
+          if (resolvedWho) {
+            setWho(resolvedWho);
+            setShowCustomWho(!memberNames.includes(resolvedWho));
+          }
+        }
+
+        if (!note.trim()) {
+          let autoNote = '';
+          if (type === 'lend' && parsed.recipientName) {
+            autoNote = `ให้ยืม (${parsed.recipientName})`;
+          } else if (type === 'back' && parsed.senderName) {
+            autoNote = `คืนเงิน (${parsed.senderName})`;
+          } else if (parsed.senderName && parsed.recipientName) {
+            autoNote = `${parsed.senderName} โอนให้ ${parsed.recipientName}`;
+          } else if (parsed.bankName) {
+            autoNote = `โอนเงินผ่าน ${parsed.bankName}`;
+          }
+          if (autoNote) {
+            const detectedEmoji = detectSlipEmoji((parsed.recipientName || '') + ' ' + (parsed.rawOcrText || ''));
+            setNote(detectedEmoji ? `${detectedEmoji} ${autoNote}` : autoNote);
+          }
+        }
+
+        setShowMoreDetails(true);
+      } else {
+        if (!refNo && parsed.refNo) setRefNo(parsed.refNo);
+        if ((!amountStr || parseFloat(amountStr) <= 0) && parsed.amountSatang && parsed.amountSatang > 0) {
+          setAmountStr(satangToBaht(parsed.amountSatang).toString());
+          extractedParts.push(`ยอด ${formatSatang(parsed.amountSatang)} ฿`);
+        }
+        if (!date && parsed.date) {
+          setDate(parsed.date);
+          extractedParts.push(`วันที่ ${formatDisplayDate(parsed.date)}`);
+        }
+        if (!time && parsed.time) {
+          setTime(parsed.time);
+        }
+        if (!who.trim()) {
+          const fallbackWho =
+            type === 'lend'
+              ? (parsed.recipientName || decodedQR?.merchantName || '')
+              : type === 'back'
+                ? (parsed.senderName || '')
+                : (parsed.matchedMemberWho || decodedQR?.merchantName || '');
+          if (fallbackWho) {
+            setWho(fallbackWho);
+            setShowCustomWho(!memberNames.includes(fallbackWho));
+          }
+        }
       }
-      if (decodedQR?.amountSatang && (!amountStr || parseFloat(amountStr) <= 0)) {
-        setAmountStr(satangToBaht(decodedQR.amountSatang).toString());
-      }
-      if (decodedQR?.merchantName && !who.trim() && (type === 'lend' || type === 'out')) {
-        setWho(decodedQR.merchantName);
+
+      if (duplicateTx) {
+        setSlipNotice({
+          kind: 'warning',
+          text: `พบสลิปซ้ำกับรายการวันที่ ${formatDisplayDate(duplicateTx.date)} (${duplicateTx.who}) ยอด ${formatSatang(duplicateTx.amount)} ฿`,
+        });
+      } else if (ocrFailed) {
+        setSlipNotice({
+          kind: 'warning',
+          text: 'อ่านรหัสอ้างอิงจาก QR แล้ว แต่ระบบ OCR อ่านตัวเลขและวันที่ไม่สำเร็จ กรุณากรอกยอดเงินและวันที่เอง',
+        });
+      } else if (extractedParts.length > 0) {
+        setSlipNotice({
+          kind: 'success',
+          text: `อ่านข้อมูลจากสลิปแล้ว: ${extractedParts.join(' • ')}`,
+        });
+      } else {
+        setSlipNotice({
+          kind: 'warning',
+          text: 'แนบสลิปแล้ว แต่ไม่พบตัวเลขยอดเงินหรือวันที่ในรูป กรุณาตรวจสอบหรือกรอกข้อมูลเอง',
+        });
       }
     } catch (err: any) {
       console.error('Failed to process slip image:', err);
-      setErrorMsg('ไม่สามารถอ่านไฟล์รูปภาพสลิปได้');
+      setErrorMsg(err?.message || 'ไม่สามารถอ่านไฟล์รูปภาพสลิปได้');
     } finally {
       setIsProcessingSlip(false);
+      setSlipScanProgress(null);
       if (e.target) e.target.value = '';
     }
   };
@@ -226,6 +324,8 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
     }
 
     setErrorMsg(null);
+    setSlipScanProgress(null);
+    setSlipNotice(null);
     setShowOverRepaymentWarning(false);
     setShowDeleteConfirm(false);
   }, [isOpen, initialTransaction, prefill, memberNames, currentMemberName, categories]);
@@ -344,6 +444,42 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
         )}
       </button>
     </div>
+  );
+
+  const handleRemoveSlip = () => {
+    setSlipThumbnail(undefined);
+    setFullSlipBase64(undefined);
+    setSlipNotice(null);
+  };
+
+  const slipStatusFeedback = (
+    <>
+      {isProcessingSlip && slipScanProgress && (
+        <div className="space-y-1 pt-1">
+          <div className="flex items-center justify-between text-[11px] text-neutral-600 dark:text-neutral-300 font-medium">
+            <span className="truncate">{slipScanProgress.message}</span>
+            <span className="tabular-nums shrink-0 ml-2">{slipScanProgress.progress}%</span>
+          </div>
+          <div className="w-full h-1.5 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-emerald-500 transition-all duration-300 rounded-full"
+              style={{ width: `${slipScanProgress.progress}%` }}
+            />
+          </div>
+        </div>
+      )}
+      {!isProcessingSlip && slipNotice && (
+        <div
+          className={`p-2 rounded-lg text-[11px] font-medium leading-relaxed border ${
+            slipNotice.kind === 'success'
+              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300'
+              : 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300'
+          }`}
+        >
+          {slipNotice.text}
+        </div>
+      )}
+    </>
   );
 
   return (
@@ -634,10 +770,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                   </div>
                   <button
                     type="button"
-                    onClick={() => {
-                      setSlipThumbnail(undefined);
-                      setFullSlipBase64(undefined);
-                    }}
+                    onClick={handleRemoveSlip}
                     className="p-1.5 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
                     title="ลบสลิป"
                   >
@@ -662,10 +795,12 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                     className="h-10 px-2.5 rounded-xl border-2 border-dashed border-[#242A20]/50 dark:border-[#3C4A38] bg-surface-light dark:bg-surface-dark text-neutral-700 dark:text-neutral-300 font-bold text-xs flex items-center justify-center gap-1.5 shadow-[1px_1px_0px_#242A20] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none select-none hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all disabled:opacity-50"
                   >
                     <ImageIcon size={15} strokeWidth={2} className="text-neutral-500" />
-                    <span>{isProcessingSlip ? 'กำลังประมวลผล...' : 'แนบรูปจากเครื่อง'}</span>
+                    <span>{isProcessingSlip ? `กำลังอ่านสลิป ${slipScanProgress?.progress ?? 0}%` : 'แนบรูปจากเครื่อง'}</span>
                   </button>
                 </div>
               )}
+
+              {slipStatusFeedback}
             </div>
           )}
 
@@ -898,10 +1033,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                       </div>
                       <button
                         type="button"
-                        onClick={() => {
-                          setSlipThumbnail(undefined);
-                          setFullSlipBase64(undefined);
-                        }}
+                        onClick={handleRemoveSlip}
                         className="p-1.5 text-neutral-400 hover:text-red-500"
                         title="ลบสลิป"
                       >
@@ -925,10 +1057,11 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
                         className="py-2.5 px-3 rounded-xl border-2 border-dashed border-[#242A20]/40 dark:border-[#3C4A38] text-xs font-bold flex items-center justify-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
                       >
                         <ImageIcon size={15} strokeWidth={2} className="text-neutral-500" />
-                        <span>{isProcessingSlip ? 'กำลังประมวลผล...' : 'แนบรูปจากเครื่อง'}</span>
+                        <span>{isProcessingSlip ? `กำลังอ่านสลิป ${slipScanProgress?.progress ?? 0}%` : 'แนบรูปจากเครื่อง'}</span>
                       </button>
                     </div>
                   )}
+                  {slipStatusFeedback}
                 </div>
               </div>
             )}
@@ -1023,6 +1156,7 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
         onApplySlip={(scanned) => {
           setSlipThumbnail(scanned.slipThumbnail);
           setFullSlipBase64(scanned.fullSlipBase64);
+          setSlipNotice(null);
           if (scanned.refNo) setRefNo(scanned.refNo);
 
           if (!initialTransaction) {
@@ -1039,6 +1173,8 @@ export const TransactionFormSheet: React.FC<TransactionFormSheetProps> = ({
             if (!amountStr || parseFloat(amountStr) <= 0) {
               if (scanned.amountSatang) setAmountStr(satangToBaht(scanned.amountSatang).toString());
             }
+            if (!date && scanned.date) setDate(scanned.date);
+            if (!time && scanned.time) setTime(scanned.time);
             if (!who.trim() && scanned.who) {
               setWho(scanned.who);
             }
