@@ -21,6 +21,7 @@ import { User } from 'firebase/auth';
 import { Household } from '../../types/household';
 import { ThemeMode, ColorTheme, COLOR_THEMES } from '../../hooks/useTheme';
 import { Switch } from '../common/Switch';
+import { CenterModal } from '../common/CenterModal';
 
 interface SettingsViewProps {
   theme: ThemeMode;
@@ -516,51 +517,51 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       {/* Type-To-Confirm Reset Modal */}
-      {showResetModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowResetModal(false)} />
-          <div className="relative w-full max-w-sm bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-5 shadow-2xl z-10 space-y-4 animate-fade-in">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-red-100 dark:bg-red-950/50 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
-                <AlertTriangle size={22} strokeWidth={1.5} />
-              </div>
-              <div className="flex-1">
-                <h4 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-                  ยืนยันการรีเซ็ตข้อมูล
-                </h4>
-                <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1 leading-relaxed">
-                  การกระทำนี้จะล้างธุรกรรมทั้งหมดและคืนค่าเริ่มต้น เพื่อยืนยัน กรุณาพิมพ์คำว่า <b className="text-red-600 dark:text-red-400 font-mono">รีเซ็ต</b> หรือ <b className="text-red-600 dark:text-red-400 font-mono">RESET</b> ในช่องด้านล่าง
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <input
-                type="text"
-                value={confirmInput}
-                onChange={(e) => setConfirmInput(e.target.value)}
-                placeholder="พิมพ์ รีเซ็ต หรือ RESET เพื่อยืนยัน"
-                className="w-full px-3.5 py-2.5 bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none"
-                autoFocus
-              />
-            </div>
-
-            <div className="flex items-center gap-2 pt-1">
-              <Button variant="secondary" fullWidth onClick={() => setShowResetModal(false)}>
-                ยกเลิก
-              </Button>
-              <Button
-                variant="danger"
-                fullWidth
-                disabled={confirmInput !== 'RESET' && confirmInput !== 'รีเซ็ต'}
-                onClick={handleExecuteReset}
-              >
-                ยืนยันการรีเซ็ต
-              </Button>
-            </div>
+      <CenterModal
+        isOpen={showResetModal}
+        onClose={() => setShowResetModal(false)}
+        backdropClassName="bg-black/50 backdrop-blur-sm"
+        cardClassName="p-5 space-y-4"
+      >
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-red-100 dark:bg-red-950/50 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
+            <AlertTriangle size={22} strokeWidth={1.5} />
+          </div>
+          <div className="flex-1">
+            <h4 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+              ยืนยันการรีเซ็ตข้อมูล
+            </h4>
+            <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1 leading-relaxed">
+              การกระทำนี้จะล้างธุรกรรมทั้งหมดและคืนค่าเริ่มต้น เพื่อยืนยัน กรุณาพิมพ์คำว่า <b className="text-red-600 dark:text-red-400 font-mono">รีเซ็ต</b> หรือ <b className="text-red-600 dark:text-red-400 font-mono">RESET</b> ในช่องด้านล่าง
+            </p>
           </div>
         </div>
-      )}
+
+        <div>
+          <input
+            type="text"
+            value={confirmInput}
+            onChange={(e) => setConfirmInput(e.target.value)}
+            placeholder="พิมพ์ รีเซ็ต หรือ RESET เพื่อยืนยัน"
+            className="w-full px-3.5 py-2.5 bg-surfaceElevated-light dark:bg-surfaceElevated-dark border border-border-light dark:border-border-dark rounded-xl text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none"
+            autoFocus
+          />
+        </div>
+
+        <div className="flex items-center gap-2 pt-1">
+          <Button variant="secondary" fullWidth onClick={() => setShowResetModal(false)}>
+            ยกเลิก
+          </Button>
+          <Button
+            variant="danger"
+            fullWidth
+            disabled={confirmInput !== 'RESET' && confirmInput !== 'รีเซ็ต'}
+            onClick={handleExecuteReset}
+          >
+            ยืนยันการรีเซ็ต
+          </Button>
+        </div>
+      </CenterModal>
     </div>
   );
 };

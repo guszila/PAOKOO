@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { X } from 'lucide-react';
+import { acquireScrollLock, releaseScrollLock } from '../../lib/scrollLock';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -22,15 +23,20 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const touchStartY = useRef<number | null>(null);
   const touchDeltaY = useRef<number>(0);
+  const didDragRef = useRef<boolean>(false);
+  const hasLockRef = useRef<boolean>(false);
   const [dragOffset, setDragOffset] = useState(0);
 
   useEffect(() => {
     let animFrame: number;
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setTimeout>;
 
     if (isOpen) {
       setIsMounted(true);
-      document.body.style.overflow = 'hidden';
+      if (!hasLockRef.current) {
+        acquireScrollLock();
+        hasLockRef.current = true;
+      }
       // Wait for next animation frame to trigger smooth entry transition
       animFrame = requestAnimationFrame(() => {
         setIsVisible(true);
@@ -41,7 +47,10 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       timer = setTimeout(() => {
         setIsMounted(false);
         setDragOffset(0);
-        document.body.style.overflow = '';
+        if (hasLockRef.current) {
+          releaseScrollLock();
+          hasLockRef.current = false;
+        }
       }, 260);
     }
 
@@ -51,16 +60,38 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    return () => {
+      if (hasLockRef.current) {
+        releaseScrollLock();
+        hasLockRef.current = false;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   // Touch gesture to swipe down to close
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
     touchDeltaY.current = 0;
+    didDragRef.current = false;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (touchStartY.current === null) return;
     const currentY = e.touches[0].clientY;
     const diff = currentY - touchStartY.current;
+    if (diff > 6) {
+      didDragRef.current = true;
+    }
     if (diff > 0) {
       touchDeltaY.current = diff;
       setDragOffset(diff);
@@ -80,7 +111,11 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   if (!isMounted) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end">
+    <div
+      className={`fixed inset-0 z-50 flex flex-col justify-end ${
+        isVisible ? '' : 'pointer-events-none'
+      }`}
+    >
       {/* Backdrop with smooth CSS fade transition */}
       <div
         className={`fixed inset-0 bg-black/50 backdrop-blur-[2px] transition-opacity duration-[260ms] ease-out ${
@@ -103,7 +138,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               ? 'none'
               : 'transform 260ms cubic-bezier(0.32, 0.72, 0, 1)',
         }}
-        className="relative w-full max-w-lg mx-auto bg-surface-light dark:bg-surface-dark border-t border-x border-border-light dark:border-border-dark rounded-t-3xl shadow-2xl z-10 max-h-[92vh] flex flex-col will-change-transform"
+        className="relative w-full max-w-lg mx-auto bg-surface-light dark:bg-surface-dark border-t border-x border-border-light dark:border-border-dark rounded-t-3xl shadow-2xl z-10 max-h-[92dvh] flex flex-col will-change-transform"
       >
         {/* Grab Handle */}
         <div
@@ -111,7 +146,10 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          onClick={onClose}
+          onClick={() => {
+            if (!didDragRef.current) onClose();
+            didDragRef.current = false;
+          }}
         >
           <div className="w-10 h-1.5 bg-neutral-300 dark:bg-neutral-600 rounded-full hover:bg-neutral-400 dark:hover:bg-neutral-500 transition-colors" />
         </div>

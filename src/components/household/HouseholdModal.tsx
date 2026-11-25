@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Household } from '../../types/household';
 import { Button } from '../common/Button';
+import { CenterModal } from '../common/CenterModal';
+import { ConfirmModal } from '../common/ConfirmModal';
 import { Users, Copy, Check, Lock, Plus, ArrowRight, X, AlertCircle, CloudUpload, RefreshCw } from 'lucide-react';
 
 interface HouseholdModalProps {
@@ -38,6 +40,7 @@ export const HouseholdModal: React.FC<HouseholdModalProps> = ({
   const [migrating, setMigrating] = useState(false);
   const [migratedCount, setMigratedCount] = useState<number | null>(null);
   const [migrateError, setMigrateError] = useState<string | null>(null);
+  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
 
   const handleMigrate = async () => {
     if (!onMigrateLocalToCloud) return;
@@ -52,8 +55,6 @@ export const HouseholdModal: React.FC<HouseholdModalProps> = ({
       setMigrating(false);
     }
   };
-
-  if (!isOpen) return null;
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -88,9 +89,8 @@ export const HouseholdModal: React.FC<HouseholdModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-sm bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-3xl p-6 shadow-2xl z-10 space-y-4 animate-fade-in">
+    <>
+      <CenterModal isOpen={isOpen} onClose={onClose} cardClassName="p-6 space-y-4">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
@@ -105,8 +105,10 @@ export const HouseholdModal: React.FC<HouseholdModalProps> = ({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400"
+            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors shrink-0"
+            aria-label="ปิด"
           >
             <X size={18} />
           </button>
@@ -221,11 +223,7 @@ export const HouseholdModal: React.FC<HouseholdModalProps> = ({
               variant="outline"
               size="sm"
               fullWidth
-              onClick={() => {
-                if (confirm('ต้องการยกเลิกการเชื่อมต่อบัญชีคู่นี้จากอุปกรณ์ใช่หรือไม่?')) {
-                  onDisconnect();
-                }
-              }}
+              onClick={() => setShowDisconnectConfirm(true)}
               className="text-xs text-red-500 border-red-200 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/30"
             >
               ยกเลิกการเชื่อมต่อในเครื่องนี้
@@ -244,7 +242,7 @@ export const HouseholdModal: React.FC<HouseholdModalProps> = ({
                 className={`py-1.5 text-xs font-medium rounded-lg transition-all ${
                   tab === 'create'
                     ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white shadow-sm border border-border-light dark:border-border-dark'
-                    : 'text-neutral-500 hover:text-neutral-900'
+                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
                 สร้างบัญชีคู่ (คนแรก)
@@ -258,7 +256,7 @@ export const HouseholdModal: React.FC<HouseholdModalProps> = ({
                 className={`py-1.5 text-xs font-medium rounded-lg transition-all ${
                   tab === 'join'
                     ? 'bg-surface-light dark:bg-surface-dark text-neutral-900 dark:text-white shadow-sm border border-border-light dark:border-border-dark'
-                    : 'text-neutral-500 hover:text-neutral-900'
+                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
                 มีรหัสเชิญ (คนที่สอง)
@@ -345,7 +343,21 @@ export const HouseholdModal: React.FC<HouseholdModalProps> = ({
             )}
           </div>
         )}
-      </div>
-    </div>
+      </CenterModal>
+
+      <ConfirmModal
+        isOpen={showDisconnectConfirm}
+        title="ยกเลิกการเชื่อมต่อบัญชีคู่"
+        message="ต้องการยกเลิกการเชื่อมต่อบัญชีคู่นี้จากอุปกรณ์ใช่หรือไม่?"
+        confirmText="ยืนยันยกเลิก"
+        cancelText="คงไว้ก่อน"
+        isDestructive={true}
+        onConfirm={() => {
+          setShowDisconnectConfirm(false);
+          onDisconnect();
+        }}
+        onCancel={() => setShowDisconnectConfirm(false)}
+      />
+    </>
   );
 };

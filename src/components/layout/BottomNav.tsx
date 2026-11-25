@@ -71,7 +71,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               <Plus
                 size={26}
                 strokeWidth={3}
-                className="transition-transform duration-200 group-hover:rotate-90 group-active:scale-90"
+                className="transition-transform duration-200 sm:group-hover:rotate-90 group-active:scale-90"
               />
             </button>
             <span className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-400 mt-1">

@@ -9,8 +9,14 @@ interface ToastProps {
 
 export const Toast: React.FC<ToastProps> = ({ toast, onDismiss }) => {
   const [isExiting, setIsExiting] = useState(false);
+  const exitTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    if (exitTimerRef.current) {
+      clearTimeout(exitTimerRef.current);
+      exitTimerRef.current = null;
+    }
+
     if (!toast) {
       setIsExiting(false);
       return;
@@ -21,17 +27,26 @@ export const Toast: React.FC<ToastProps> = ({ toast, onDismiss }) => {
 
     const timer = setTimeout(() => {
       setIsExiting(true);
-      setTimeout(onDismiss, 220); // Wait for exit animation
+      exitTimerRef.current = setTimeout(onDismiss, 220); // Wait for exit animation
     }, duration);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (exitTimerRef.current) {
+        clearTimeout(exitTimerRef.current);
+        exitTimerRef.current = null;
+      }
+    };
   }, [toast, onDismiss]);
 
   if (!toast) return null;
 
   const handleManualDismiss = () => {
+    if (exitTimerRef.current) {
+      clearTimeout(exitTimerRef.current);
+    }
     setIsExiting(true);
-    setTimeout(onDismiss, 220);
+    exitTimerRef.current = setTimeout(onDismiss, 220);
   };
 
   const getIconConfig = () => {

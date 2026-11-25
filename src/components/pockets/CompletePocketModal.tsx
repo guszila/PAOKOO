@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BottomSheet } from '../common/BottomSheet';
 import { Button } from '../common/Button';
 import { PocketSummary } from '../../types/pocket';
@@ -34,21 +34,29 @@ export const CompletePocketModal: React.FC<CompletePocketModalProps> = ({
   categories = DEFAULT_EXPENSE_CATEGORIES,
   onCompletePocket,
 }) => {
+  // Selected resolution: 'record_expense' or 'refund_to_pool'
+  const [resolution, setResolution] = useState<'record_expense' | 'refund_to_pool'>(
+    'record_expense'
+  );
+  const [note, setNote] = useState('');
+  const [who, setWho] = useState(memberNames[0] || 'เรา');
+  const [category, setCategory] = useState(
+    categories.includes('ท่องเที่ยว') ? 'ท่องเที่ยว' : categories[0] || 'อื่นๆ'
+  );
+
+  useEffect(() => {
+    if (!isOpen || !pocketSummary) return;
+    setResolution('record_expense');
+    setNote(`เคลียร์กล่อง ${pocketSummary.pocket.name}`);
+    setWho(memberNames[0] || 'เรา');
+    setCategory(categories.includes('ท่องเที่ยว') ? 'ท่องเที่ยว' : categories[0] || 'อื่นๆ');
+  }, [isOpen, pocketSummary, memberNames, categories]);
+
   if (!pocketSummary) return null;
 
   const { pocket, remainingSatang, spentSatang, totalAllocatedSatang } = pocketSummary;
   const budget = totalAllocatedSatang ?? pocket.allocatedSatang;
   const hasRemaining = remainingSatang > 0;
-
-  // Selected resolution: 'record_expense' or 'refund_to_pool'
-  const [resolution, setResolution] = useState<'record_expense' | 'refund_to_pool'>(
-    'record_expense'
-  );
-  const [note, setNote] = useState(`เคลียร์กล่อง ${pocket.name}`);
-  const [who, setWho] = useState(memberNames[0] || 'เรา');
-  const [category, setCategory] = useState(
-    categories.includes('ท่องเที่ยว') ? 'ท่องเที่ยว' : categories[0] || 'อื่นๆ'
-  );
 
   const IconComp = (pocket.icon && POCKET_ICONS[pocket.icon]) || Wallet;
 
